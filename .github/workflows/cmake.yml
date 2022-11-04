@@ -1,0 +1,112 @@
+name: CMake Build
+
+on: 
+  # push代码时触发workflow
+  push:
+    paths-ignore: # 下列文件的变更不触发部署，可以自行添加
+        - 'LICENSE'
+        - '.gitignore'
+        - 'README.md'
+        - 'translations/**'
+        - 'docs/**'
+  pull_request:
+    paths-ignore: # 下列文件的变更不触发部署，可以自行添加
+        - 'LICENSE'
+        - '.gitignore'
+        - 'README.md'
+        - 'translations/**'
+        - 'docs/**'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - macos-latest
+          - ubuntu-latest
+        qt_ver: 
+          - 6.4.0
+        build_type:
+          - "Release"
+        generators:
+          - "Ninja"
+
+    steps:
+      - name: cache vcpkg
+        uses: actions/cache@v3
+        with:
+          path: |
+            C:\vcpkg\installed
+            /usr/local/share/vcpkg/installed
+          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-
+            ${{ runner.os }}-vcpkg-installed-
+      - name: Install dependencies on windows
+        if: startsWith(matrix.os, 'windows')
+        run: |
+          choco install ninja
+          ninja --version
+          cmake --version
+          vcpkg install breakpad --triplet x64-windows
+      - name: Install dependencies on macos
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          brew install ninja
+          ninja --version
+          cmake --version
+          clang --version
+          vcpkg install breakpad --triplet x64-osx
+      - name: Install dependencies on ubuntu
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get install ninja-build
+          ninja --version
+          cmake --version
+          gcc --version
+          vcpkg install breakpad --triplet x64-linux
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ matrix.qt_ver }}
+          install-deps: 'true'
+          modules: 'qt5compat addons.qtnetworkauth addons.qtimageformats'
+          cache: 'true'
+
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Configure Windows
+        if: startsWith(matrix.os, 'windows')
+        env:
+          CMAKE_PREFIX_PATH: ${{env.Qt6_Dir}}
+        shell: bash
+        run: |
+          cmake \
+            -S . \
+            -B ./build \
+            -A x64 \
+            -DCMAKE_INSTALL_PREFIX:PATH=instdir
+      - name: Configure macos or ubuntu
+        if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu')
+        env:
+          CMAKE_PREFIX_PATH: ${{env.Qt6_Dir}}
+        shell: bash
+        run: |
+          cmake \
+            -S . \
+            -B ./build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -G "${{ matrix.generators }}" \
+            -DCMAKE_INSTALL_PREFIX:PATH=instdir
+      - name: Build
+        shell: bash
+        run: |
+          cmake --build ./build --config ${{ matrix.build_type }}
+          
