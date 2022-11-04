@@ -11,9 +11,9 @@
 void setAppInfo()
 {
     qApp->setApplicationVersion("0.0.1");
-    qApp->setApplicationDisplayName(QObject::tr("QPicture Tool"));
-    qApp->setApplicationName(QObject::tr("QPicture Tool"));
-    qApp->setDesktopFileName(QObject::tr("QPicture Tool"));
+    qApp->setApplicationDisplayName(QObject::tr("QGraphicsTool"));
+    qApp->setApplicationName(QObject::tr("QGraphicsTool"));
+    qApp->setDesktopFileName(QObject::tr("QGraphicsTool"));
     qApp->setOrganizationDomain(QObject::tr("Youth"));
     qApp->setOrganizationName(QObject::tr("Youth"));
 }
