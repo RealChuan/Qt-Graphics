@@ -1,4 +1,5 @@
 set(PROJECT_SOURCES
+        customlineitem.cc customlineitem.hpp
         drawwidget.cpp drawwidget.h
         imagelistmodel.cpp imagelistmodel.h
         imageviewer.cpp imageviewer.h
@@ -6,7 +7,9 @@ set(PROJECT_SOURCES
         mainwindow.cpp mainwindow.h
         maskdialog.cpp maskdialog.h
         rounddialog.cc rounddialog.hpp
-        stretchparamssettingdailog.cc stretchparamssettingdailog.hpp)
+        sectionalsubtitlesview.cc sectionalsubtitlesview.hpp
+        stretchparamssettingdailog.cc stretchparamssettingdailog.hpp
+        subtitlsplicingwidget.cc subtitlsplicingwidget.hpp)
 
 if (CMAKE_HOST_WIN32)
   add_library(mainwindow SHARED ${PROJECT_SOURCES} ${SOURCES})

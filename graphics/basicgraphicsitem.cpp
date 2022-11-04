@@ -1,13 +1,13 @@
 #include "basicgraphicsitem.h"
 #include "graphics.h"
 
-#include <QPen>
+#include <QCursor>
 #include <QGraphicsScene>
 #include <QGraphicsSceneHoverEvent>
-#include <QCursor>
-#include <QPainter>
-#include <QWheelEvent>
 #include <QMenu>
+#include <QPainter>
+#include <QPen>
+#include <QWheelEvent>
 
 namespace Graphics {
 
@@ -35,15 +35,13 @@ BasicGraphicsItem::BasicGraphicsItem(QGraphicsItem *parent)
     , d_ptr(new BasicGraphicsItemPrivate(this))
 {
     setPen(QPen(Qt::blue));
-    setFlags(ItemIsSelectable
-             | ItemIsMovable
-             | ItemSendsGeometryChanges
-             | ItemIsFocusable );
+    setFlags(flags() | ItemIsSelectable | ItemIsMovable | ItemSendsGeometryChanges
+             | ItemIsFocusable);
     setAcceptHoverEvents(true);
     createPopMenu();
 }
 
-BasicGraphicsItem::~BasicGraphicsItem(){}
+BasicGraphicsItem::~BasicGraphicsItem() {}
 
 QRectF BasicGraphicsItem::boundingRect() const
 {
@@ -108,6 +106,7 @@ void BasicGraphicsItem::setItemEditable(bool editable)
 
 void BasicGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
+    QAbstractGraphicsShapeItem::hoverMoveEvent(event);
     if (!isValid()) {
         return;
     }
@@ -116,7 +115,7 @@ void BasicGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     d_ptr->hoveredDotIndex = -1;
 
     QPointF pos = event->scenePos();
-    if(shape().contains(pos)){
+    if (shape().contains(pos)) {
         d_ptr->mouseRegin = All;
         setCursor(Qt::SizeAllCursor);
     }
@@ -124,7 +123,7 @@ void BasicGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     for (const QPointF &p : qAsConst(d_ptr->cache)) {
         QPointF m(margin() / 2, margin() / 2);
         QRectF area(p - m, p + m);
-        if(area.contains(pos)){
+        if (area.contains(pos)) {
             d_ptr->hoveredDotIndex = d_ptr->cache.indexOf(p);
             d_ptr->mouseRegin = DotRegion;
             setCursor(Qt::PointingHandCursor);
@@ -142,8 +141,9 @@ void BasicGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 
 void BasicGraphicsItem::keyPressEvent(QKeyEvent *event)
 {
-    if(!isSelected())
+    if (!isSelected()) {
         return;
+    }
     switch (event->key()) {
     case Qt::Key_Delete: emit deleteMyself(); break;
     default: break;
@@ -217,4 +217,4 @@ void BasicGraphicsItem::createPopMenu()
     d_ptr->menu->addAction(tr("Delete"), this, &BasicGraphicsItem::deleteMyself);
 }
 
-}
+} // namespace Graphics

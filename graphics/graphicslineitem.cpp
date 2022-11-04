@@ -1,10 +1,10 @@
 #include "graphicslineitem.h"
 
-#include <QGraphicsSceneHoverEvent>
+#include <QDebug>
 #include <QGraphicsScene>
+#include <QGraphicsSceneHoverEvent>
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
-#include <QDebug>
 
 namespace Graphics {
 
@@ -16,23 +16,24 @@ struct GraphicsLineItem::GraphicsLineItemPrivate
 
 GraphicsLineItem::GraphicsLineItem(QGraphicsItem *parent)
     : BasicGraphicsItem(parent)
-    , d_ptr(new GraphicsLineItemPrivate){}
+    , d_ptr(new GraphicsLineItemPrivate)
+{}
 
-GraphicsLineItem::GraphicsLineItem(const QLineF& line, QGraphicsItem *parent)
+GraphicsLineItem::GraphicsLineItem(const QLineF &line, QGraphicsItem *parent)
     : BasicGraphicsItem(parent)
     , d_ptr(new GraphicsLineItemPrivate)
 {
     setLine(line);
 }
 
-GraphicsLineItem::~GraphicsLineItem(){}
+GraphicsLineItem::~GraphicsLineItem() {}
 
 inline bool checkLine(const QLineF &line, const double margin)
 {
     return !line.isNull() && line.length() > margin;
 }
 
-void GraphicsLineItem::setLine(const QLineF& line)
+void GraphicsLineItem::setLine(const QLineF &line)
 {
     if (!checkLine(line, margin())) {
         return;
@@ -98,7 +99,7 @@ void GraphicsLineItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void GraphicsLineItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     QPolygonF pts_tmp = cache();
-    if(pts_tmp.size() == 1){
+    if (pts_tmp.size() == 1) {
         pts_tmp.append(event->scenePos());
         showHoverLine(pts_tmp);
     }
@@ -106,9 +107,7 @@ void GraphicsLineItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     BasicGraphicsItem::hoverMoveEvent(event);
 }
 
-void GraphicsLineItem::paint(QPainter *painter,
-                             const QStyleOptionGraphicsItem *option,
-                             QWidget*)
+void GraphicsLineItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
     painter->setRenderHint(QPainter::Antialiasing);
     double linew = 2 * pen().widthF() / painter->transform().m11();
@@ -155,4 +154,4 @@ void GraphicsLineItem::showHoverLine(const QPolygonF &ply)
     update();
 }
 
-}
+} // namespace Graphics

@@ -12,7 +12,7 @@ public:
     explicit GraphicsLineItem(const QLineF &line, QGraphicsItem *parent = nullptr);
     ~GraphicsLineItem() override;
 
-    void setLine(const QLineF& line);
+    void setLine(const QLineF &line);
     QLineF line() const;
 
     bool isValid() const override;
@@ -25,14 +25,16 @@ protected:
     void paint(QPainter *painter,
                const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
-private:
+
     void pointsChanged(const QPolygonF &ply);
+
+private:
     void showHoverLine(const QPolygonF &ply);
 
     struct GraphicsLineItemPrivate;
     QScopedPointer<GraphicsLineItemPrivate> d_ptr;
 };
 
-}
+} // namespace Graphics
 
 #endif // GRAPHICSLINEITEM_H

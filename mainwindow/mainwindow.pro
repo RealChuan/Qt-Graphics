@@ -12,15 +12,19 @@ LIBS += \
 DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
+    customlineitem.cc \
     drawwidget.cpp \
     imagelistmodel.cpp \
     imageviewer.cpp \
     mainwindow.cpp \
     maskdialog.cpp \
     rounddialog.cc \
-    stretchparamssettingdailog.cc
+    sectionalsubtitlesview.cc \
+    stretchparamssettingdailog.cc \
+    subtitlsplicingwidget.cc
 
 HEADERS += \
+    customlineitem.hpp \
     drawwidget.h \
     imagelistmodel.h \
     imageviewer.h \
@@ -28,4 +32,6 @@ HEADERS += \
     mainwindow.h \
     maskdialog.h \
     rounddialog.hpp \
-    stretchparamssettingdailog.hpp
+    sectionalsubtitlesview.hpp \
+    stretchparamssettingdailog.hpp \
+    subtitlsplicingwidget.hpp
