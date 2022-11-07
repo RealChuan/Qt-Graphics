@@ -8,7 +8,7 @@ greaterThan(QT_MAJOR_VERSION, 5): QT += core5compat
 
 TEMPLATE = app
 
-TARGET = PictrueTool
+TARGET = QGraphicsTool
 
 LIBS += -L$$APP_OUTPUT_PATH/../libs
 

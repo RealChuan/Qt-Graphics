@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "drawwidget.h"
 #include "imageviewer.h"
+#include "subtitlsplicingwidget.hpp"
 
 #include <utils/utils.h>
 
@@ -14,13 +15,16 @@ public:
     {
         drawWidget = new DrawWidget(owner);
         imageViewer = new ImageViewer(owner);
+        subtitlSplicingWidget = new SubtitlSplicingWidget(owner);
         stackedWidget = new QStackedWidget(owner);
         stackedWidget->addWidget(imageViewer);
         stackedWidget->addWidget(drawWidget);
+        stackedWidget->addWidget(subtitlSplicingWidget);
     }
     QWidget *owner;
     DrawWidget *drawWidget;
     ImageViewer *imageViewer;
+    SubtitlSplicingWidget *subtitlSplicingWidget;
     QStackedWidget *stackedWidget;
 };
 
@@ -55,6 +59,9 @@ void MainWindow::initMenuBar()
     });
     menu->addAction(tr("DrawWidget"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->drawWidget);
+    });
+    menu->addAction(tr("Subtitle splicing"), this, [this] {
+        d_ptr->stackedWidget->setCurrentWidget(d_ptr->subtitlSplicingWidget);
     });
     menuBar()->addMenu(menu);
 }
