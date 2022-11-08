@@ -38,10 +38,12 @@ void GraphicsLineItem::setLine(const QLineF &line)
     if (!checkLine(line, margin())) {
         return;
     }
+    prepareGeometryChange();
     d_ptr->line = line;
     QPolygonF cache;
     cache << line.p1() << line.p2();
     setCache(cache);
+    emit lineChnaged(line);
 }
 
 QLineF GraphicsLineItem::line() const

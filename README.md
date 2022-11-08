@@ -14,3 +14,6 @@
 4. 简单图形绘制界面：
 
    <div align=center><img src="docs/DrawScene.png"></div>
+5. 电影字幕拼接界面：
+
+   <div align=center><img src="docs/FilmSubTiltleSplicing.png"></div>

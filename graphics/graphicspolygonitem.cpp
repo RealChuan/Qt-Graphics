@@ -38,10 +38,10 @@ inline bool checkPolygon(const QPolygonF &ply, const double margin)
 
 void GraphicsPolygonItem::setPolygon(const QPolygonF &ply)
 {
-    prepareGeometryChange();
     if (!checkPolygon(ply, margin())) {
         return;
     }
+    prepareGeometryChange();
     d_ptr->polygon = ply;
     setCache(ply);
 }

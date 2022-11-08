@@ -42,6 +42,7 @@ void GraphicsRectItem::setRect(const QRectF &rect)
     if (!checkRect(rect, margin())) {
         return;
     }
+    prepareGeometryChange();
     d_ptr->rect = rect;
     QPolygonF cache;
     cache << rect.topLeft() << rect.bottomRight();
@@ -134,11 +135,8 @@ void GraphicsRectItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             int index = hoveredDotIndex();
             pts_tmp.replace(index, point);
         } break;
-        case All:
-            pts_tmp.translate(dp);
-            break;
-        default:
-            return;
+        case All: pts_tmp.translate(dp); break;
+        default: return;
         }
     }
     pointsChanged(pts_tmp);
@@ -198,9 +196,7 @@ void GraphicsRectItem::pointsChanged(const QPolygonF &ply)
         return;
     }
     switch (ply.size()) {
-    case 1:
-        setCache(ply);
-        break;
+    case 1: setCache(ply); break;
     case 2: {
         QRectF rect_(ply[0], ply[1]);
         if (checkRect(rect_, margin())) {
@@ -209,8 +205,7 @@ void GraphicsRectItem::pointsChanged(const QPolygonF &ply)
             return;
         }
     } break;
-    default:
-        return;
+    default: return;
     }
     update();
 }

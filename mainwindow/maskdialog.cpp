@@ -90,17 +90,10 @@ void MaskDialog::onButtonClicked(int id)
     }
     GraphicsPixmapItem::Mode mode = GraphicsPixmapItem::Normal;
     switch (id) {
-    case 1:
-        mode = GraphicsPixmapItem::MaskDraw;
-        break;
-    case 2:
-        mode = GraphicsPixmapItem::MaskErase;
-        break;
-    case 3:
-        pixmapItem->clearMask();
-        break;
-    default:
-        break;
+    case 1: mode = GraphicsPixmapItem::MaskDraw; break;
+    case 2: mode = GraphicsPixmapItem::MaskErase; break;
+    case 3: pixmapItem->clearMask(); break;
+    default: break;
     }
     pixmapItem->setPaintMode(mode);
 }
@@ -149,11 +142,9 @@ void MaskDialog::onSave()
     time = "~" + time;
     QString name = d_ptr->name;
     int index = name.lastIndexOf('.');
-    QString format = "PNG";
     if (index <= 0) {
         name = name + time + ".png";
     } else {
-        format = name.mid(index + 1);
         name.insert(index, time);
     }
     path = path + "/" + name;
@@ -170,7 +161,7 @@ void MaskDialog::onSave()
     painter.drawImage(pixmap.rect(), mask);
     painter.end();
     pixmap = pixmap.scaled(params.size, params.mode, Qt::SmoothTransformation);
-    qDebug() << pixmap.save(filename, format.toStdString().c_str(), 100);
+    qDebug() << pixmap.save(filename, nullptr, params.quality);
 }
 
 QPushButton *newFlatBlueButton(const QString &text, QWidget *parent)

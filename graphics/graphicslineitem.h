@@ -7,6 +7,7 @@ namespace Graphics {
 
 class GRAPHICS_EXPORT GraphicsLineItem : public BasicGraphicsItem
 {
+    Q_OBJECT
 public:
     explicit GraphicsLineItem(QGraphicsItem *parent = nullptr);
     explicit GraphicsLineItem(const QLineF &line, QGraphicsItem *parent = nullptr);
@@ -17,6 +18,9 @@ public:
 
     bool isValid() const override;
     int type() const override;
+
+signals:
+    void lineChnaged(const QLineF &line);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;

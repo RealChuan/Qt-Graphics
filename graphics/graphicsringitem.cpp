@@ -1,9 +1,9 @@
 #include "graphicsringitem.h"
-#include "graphicscircleitem.h"
 #include "graphics.h"
+#include "graphicscircleitem.h"
 
-#include <QGraphicsSceneHoverEvent>
 #include <QGraphicsScene>
+#include <QGraphicsSceneHoverEvent>
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
 #include <QtMath>
@@ -14,18 +14,20 @@ namespace Graphics {
 
 QRectF Ring::boundingRect() const
 {
-    if(!isVaild())
+    if (!isVaild()) {
         return QRectF();
+    }
     QPointF point = QPointF(maxRadius, maxRadius);
-    return  QRectF(center - point, center + point);
+    return QRectF(center - point, center + point);
 }
 
 QRectF Ring::minBoundingRect() const
 {
-    if(!isVaild())
+    if (!isVaild()) {
         return QRectF();
+    }
     QPointF point = QPointF(minRadius, minRadius);
-    return  QRectF(center - point, center + point);
+    return QRectF(center - point, center + point);
 }
 
 bool Ring::isVaild() const
@@ -45,8 +47,7 @@ struct GraphicsRingItem::GraphicsRingItemPrivate
 GraphicsRingItem::GraphicsRingItem(QGraphicsItem *parent)
     : BasicGraphicsItem(parent)
     , d_ptr(new GraphicsRingItemPrivate)
-{   
-}
+{}
 
 GraphicsRingItem::GraphicsRingItem(const Ring &ring, QGraphicsItem *parent)
     : BasicGraphicsItem(parent)
@@ -55,28 +56,25 @@ GraphicsRingItem::GraphicsRingItem(const Ring &ring, QGraphicsItem *parent)
     setRing(ring);
 }
 
-GraphicsRingItem::~GraphicsRingItem()
-{
-}
+GraphicsRingItem::~GraphicsRingItem() {}
 
 inline bool checkRing(const Ring &ring, const double margin)
 {
-    return ring.minRadius > margin
-            && ring.maxRadius - ring.minRadius > margin;
+    return ring.minRadius > margin && ring.maxRadius - ring.minRadius > margin;
 }
 
-inline void computeCache(const Ring& ring, QPolygonF& pts)
+inline void computeCache(const Ring &ring, QPolygonF &pts)
 {
     pts.clear();
-    for(int i = 0; i <= 270; i += 90){
-        double x = ring.maxRadius * qCos( i * M_PI * 1.0 / 180.0) + ring.center.x();
-        double y = ring.maxRadius * qSin( i * M_PI * 1.0 / 180.0) + ring.center.y();
+    for (int i = 0; i <= 270; i += 90) {
+        double x = ring.maxRadius * qCos(i * M_PI * 1.0 / 180.0) + ring.center.x();
+        double y = ring.maxRadius * qSin(i * M_PI * 1.0 / 180.0) + ring.center.y();
         pts.append(QPointF(x, y));
     }
 
-    for(int i = 45; i <= 315; i += 90){
-        double x = ring.minRadius * qCos( i * M_PI * 1.0 / 180.0) + ring.center.x();
-        double y = ring.minRadius * qSin( i * M_PI * 1.0 / 180.0) + ring.center.y();
+    for (int i = 45; i <= 315; i += 90) {
+        double x = ring.minRadius * qCos(i * M_PI * 1.0 / 180.0) + ring.center.x();
+        double y = ring.minRadius * qSin(i * M_PI * 1.0 / 180.0) + ring.center.y();
         pts.append(QPointF(x, y));
     }
 }
@@ -86,6 +84,8 @@ void GraphicsRingItem::setRing(const Ring &ring)
     if (!checkRing(ring, margin())) {
         return;
     }
+    prepareGeometryChange();
+
     d_ptr->ring = ring;
     QPolygonF pts;
     computeCache(d_ptr->ring, pts);
@@ -160,7 +160,8 @@ void GraphicsRingItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         case 6: ring.minRadius -= dp.x(); break;
         case 7: ring.minRadius -= dp.y(); break;
         default: break;
-        } break;
+        }
+        break;
     case BasicGraphicsItem::All: ring.center += dp; break;
     case BasicGraphicsItem::None:
         switch (d_ptr->mouseRegion) {
@@ -173,12 +174,12 @@ void GraphicsRingItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             ring.maxRadius = Graphics::distance(ring.center, point);
             break;
         default: break;
-        } break;
+        }
+        break;
     default: break;
     }
 
-    if(scene()->sceneRect().contains(ring.boundingRect())
-            && checkRing(ring, margin())){
+    if (scene()->sceneRect().contains(ring.boundingRect()) && checkRing(ring, margin())) {
         setRing(ring);
         update();
     }
@@ -189,26 +190,27 @@ void GraphicsRingItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     QPointF point = event->scenePos();
     QPolygonF pts_tmp = cache();
     int size = pts_tmp.size();
-    if(size == 2 || size == 3){
+    if (size == 2 || size == 3) {
         pts_tmp.append(point);
         showHoverRing(pts_tmp);
     }
-    if(!isValid())
+    if (!isValid()) {
         return;
-
+    }
     BasicGraphicsItem::hoverMoveEvent(event);
     if (mouseRegion() == DotRegion) {
         return;
     }
     setMouseRegion(BasicGraphicsItem::None);
 
-    if(qAbs(Graphics::distance(point, d_ptr->ring.center) - d_ptr->ring.minRadius) < margin() / 3) {
+    if (qAbs(Graphics::distance(point, d_ptr->ring.center) - d_ptr->ring.minRadius) < margin() / 3) {
         d_ptr->mouseRegion = InEdge0;
         setMyCursor(d_ptr->ring.center, point);
-    } else if(qAbs(Graphics::distance(point, d_ptr->ring.center) - d_ptr->ring.maxRadius) < margin() / 3) {
+    } else if (qAbs(Graphics::distance(point, d_ptr->ring.center) - d_ptr->ring.maxRadius)
+               < margin() / 3) {
         d_ptr->mouseRegion = InEdge1;
         setMyCursor(d_ptr->ring.center, point);
-    }else if(shape().contains(point)){
+    } else if (shape().contains(point)) {
         setMouseRegion(BasicGraphicsItem::All);
         setCursor(Qt::SizeAllCursor);
     } else {
@@ -216,23 +218,19 @@ void GraphicsRingItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     }
 }
 
-void GraphicsRingItem::paint(QPainter *painter,
-                             const QStyleOptionGraphicsItem *option,
-                             QWidget*)
+void GraphicsRingItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
     painter->setRenderHint(QPainter::Antialiasing);
     double linew = 2 * pen().widthF() / painter->transform().m11();
     painter->setPen(QPen(LineColor, linew));
     setMargin(painter->transform().m11());
 
-    if(isValid()){
+    if (isValid()) {
         painter->drawEllipse(d_ptr->ring.boundingRect());
         painter->drawEllipse(d_ptr->ring.minBoundingRect());
-    }else{
+    } else {
         switch (cache().size()) {
-        case 2:
-            painter->drawEllipse(d_ptr->maxCircle.boundingRect());
-            break;
+        case 2: painter->drawEllipse(d_ptr->maxCircle.boundingRect()); break;
         case 3:
             painter->drawEllipse(d_ptr->tempRing.boundingRect());
             painter->drawEllipse(d_ptr->tempRing.minBoundingRect());
@@ -254,10 +252,8 @@ void GraphicsRingItem::pointsChanged(const QPolygonF &ply)
     }
     switch (ply.size()) {
     case 1:
-    case 2:
-        setCache(ply);
-        break;
-    case 3:{ //外圈
+    case 2: setCache(ply); break;
+    case 3: { //外圈
         Graphics::calculateCircle(ply, d_ptr->maxCircle.center, d_ptr->maxCircle.radius);
         if (rect.contains(d_ptr->maxCircle.boundingRect())
             && GraphicsCircleItem::checkCircle(d_ptr->maxCircle, margin())) {
@@ -266,7 +262,7 @@ void GraphicsRingItem::pointsChanged(const QPolygonF &ply)
             return;
         }
     } break;
-    case 4:{
+    case 4: {
         double minRadius = Graphics::distance(d_ptr->maxCircle.center, ply[3]);
         Ring ring{d_ptr->maxCircle.center, minRadius, d_ptr->maxCircle.radius};
         if (checkRing(ring, margin())) {
@@ -283,10 +279,8 @@ void GraphicsRingItem::pointsChanged(const QPolygonF &ply)
 void GraphicsRingItem::showHoverRing(const QPolygonF &ply)
 {
     switch (ply.size()) {
-    case 3:
-        Graphics::calculateCircle(ply, d_ptr->maxCircle.center, d_ptr->maxCircle.radius);
-        break;
-    case 4:{
+    case 3: Graphics::calculateCircle(ply, d_ptr->maxCircle.center, d_ptr->maxCircle.radius); break;
+    case 4: {
         double minRadius = Graphics::distance(d_ptr->maxCircle.center, ply[3]);
         if (minRadius >= d_ptr->maxCircle.radius) {
             return;
@@ -298,4 +292,4 @@ void GraphicsRingItem::showHoverRing(const QPolygonF &ply)
     update();
 }
 
-}
+} // namespace Graphics

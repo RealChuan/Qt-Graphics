@@ -1,12 +1,12 @@
 #include "graphicsarcitem.h"
 #include "graphics.h"
 
-#include <QGraphicsSceneHoverEvent>
+#include <QDebug>
 #include <QGraphicsScene>
+#include <QGraphicsSceneHoverEvent>
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
 #include <QtMath>
-#include <QDebug>
 
 namespace Graphics {
 
@@ -21,9 +21,10 @@ bool Arc::isValid() const
 
 bool inTop(const QPointF linePt0, const QPointF linePt1, const QPointF pt)
 {
-    if(linePt0.x() - linePt1.x() == 0.0){
-        if(pt.x() > linePt0.x())
+    if (linePt0.x() - linePt1.x() == 0.0) {
+        if (pt.x() > linePt0.x()) {
             return false;
+        }
         return true;
     }
 
@@ -32,8 +33,9 @@ bool inTop(const QPointF linePt0, const QPointF linePt1, const QPointF pt)
     double b = 0;
     k = (linePt0.y() - linePt1.y()) / (linePt0.x() - linePt1.x());
     b = linePt0.y() - k * linePt0.x();
-    if((pt.x() * k + b - pt.y()) < 0)
+    if ((pt.x() * k + b - pt.y()) < 0) {
         isInTop = false;
+    }
     return isInTop;
 }
 
@@ -48,9 +50,9 @@ void calculateArc(QPointF center,
                   double &deltaAngle)
 {
     // 先确定起点和终点 当两个点X相等时，起始点无所谓是哪个
-    QPointF startPoint ;
-    QPointF endPoint ;
-    if(p1.x() > p2.x()) {
+    QPointF startPoint;
+    QPointF endPoint;
+    if (p1.x() > p2.x()) {
         startPoint = p1;
         endPoint = p2;
     } else {
@@ -61,10 +63,9 @@ void calculateArc(QPointF center,
     // 计算角度，保证终点角度大于起点角度
     startAngle = QLineF(center, startPoint).angle();
     endAngle = QLineF(center, endPoint).angle();
-
-    if (startAngle > endAngle)
+    if (startAngle > endAngle) {
         endAngle += 360;
-
+    }
     deltaAngle = isInTop ? (endAngle - startAngle) : (endAngle - startAngle - 360);
 
     QRectF rect(QPointF(center.x() - radius, center.y() - radius),
@@ -80,8 +81,9 @@ bool calculateAllArc(const QPolygonF &ply,
                      QPainterPath &shape,
                      const double margin)
 {
-    if(ply.size() != 4)
+    if (ply.size() != 4) {
         return false;
+    }
 
     QPainterPath path_temp;
     QPointF center;
@@ -108,23 +110,22 @@ bool calculateAllArc(const QPolygonF &ply,
                  deltaAngle);
 
     if (deltaAngle <= 0) {
-        if(endAngle < 0){
+        if (endAngle < 0) {
             endAngle += 360;
             startAngle += 360;
         }
         qSwap(startAngle, endAngle);
         deltaAngle = -deltaAngle;
     }
-
     radius1 = Graphics::distance(endPt, center);
 
     double radiusIn = qMin(radius0, radius1);
     double radiusOut = qMax(radius0, radius1);
     double num = margin * qSqrt(2) / 2;
 
-    if ((radiusIn < num) || ((radiusOut - radiusIn) < num))
+    if ((radiusIn < num) || ((radiusOut - radiusIn) < num)) {
         return false;
-
+    }
     QRectF rect0(center.x() - radiusIn, center.y() - radiusIn, radiusIn * 2, radiusIn * 2);
     QRectF rect1(center.x() - radiusOut, center.y() - radiusOut, radiusOut * 2, radiusOut * 2);
 
@@ -171,8 +172,7 @@ struct GraphicsArcItem::GraphicsArcItemPrivate
 GraphicsArcItem::GraphicsArcItem(QGraphicsItem *parent)
     : BasicGraphicsItem(parent)
     , d_ptr(new GraphicsArcItemPrivate)
-{
-}
+{}
 
 GraphicsArcItem::GraphicsArcItem(const Arc &arc, QGraphicsItem *parent)
     : BasicGraphicsItem(parent)
@@ -182,7 +182,7 @@ GraphicsArcItem::GraphicsArcItem(const Arc &arc, QGraphicsItem *parent)
     calculateAllArc(cache(), d_ptr->arcPath, d_ptr->shape, margin());
 }
 
-GraphicsArcItem::~GraphicsArcItem(){}
+GraphicsArcItem::~GraphicsArcItem() {}
 
 inline QPointF findAnotherPtOfLine(const QPointF basePt, const double r, const double angle)
 {
@@ -197,7 +197,8 @@ inline QPolygonF calculateCache(const Arc &arch)
 {
     QPointF pt00 = findAnotherPtOfLine(arch.center, arch.minRadius, arch.startAngle);
     QPointF pt01 = findAnotherPtOfLine(arch.center, arch.minRadius, arch.endAngle);
-    QPointF pt10 = findAnotherPtOfLine(arch.center, arch.minRadius,
+    QPointF pt10 = findAnotherPtOfLine(arch.center,
+                                       arch.minRadius,
                                        (arch.startAngle + arch.endAngle) / 2.0);
     QPointF pt11 = findAnotherPtOfLine(arch.center,
                                        arch.maxRadius,
@@ -222,7 +223,7 @@ void GraphicsArcItem::setArc(const Arc &arc)
     if (!checkArc(arc, margin())) {
         return;
     }
-
+    prepareGeometryChange();
     d_ptr->arch = arc;
     QPolygonF pts = calculateCache(d_ptr->arch);
     setCache(pts);
@@ -271,7 +272,6 @@ void GraphicsArcItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
 
     setClickedPos(event->scenePos());
-
     if (isValid()) {
         return;
     }
@@ -316,12 +316,12 @@ void GraphicsArcItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             pts_tmp[3] = lineSetLength(d_ptr->arch.center, pts_tmp[3], distance);
             break;
         case InEdgeH:
-        case InEdgeL:{
+        case InEdgeL: {
             Arc arch = d_ptr->arch;
-            if(d_ptr->mouseRegion == InEdgeL){
+            if (d_ptr->mouseRegion == InEdgeL) {
                 arch.startAngle = QLineF(arch.center, event->scenePos()).angle();
                 setCursor(Graphics::curorFromAngle(arch.startAngle));
-            }else{
+            } else {
                 arch.endAngle = QLineF(arch.center, event->scenePos()).angle();
                 setCursor(Graphics::curorFromAngle(arch.endAngle));
             }
@@ -334,11 +334,10 @@ void GraphicsArcItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             pts_tmp = calculateCache(arch);
         } break;
         default: return;
-        }break;
-    }
-    case BasicGraphicsItem::DotRegion:
-        pts_tmp[hoveredDotIndex()] += dp;
+        }
         break;
+    }
+    case BasicGraphicsItem::DotRegion: pts_tmp[hoveredDotIndex()] += dp; break;
     default: return;
     }
 
@@ -357,8 +356,9 @@ void GraphicsArcItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         return;
     }
     BasicGraphicsItem::hoverMoveEvent(event);
-    if(mouseRegion() == DotRegion)
+    if (mouseRegion() == DotRegion){
         return;
+    }
     setMouseRegion(BasicGraphicsItem::None);
 
     QPointF p1 = findAnotherPtOfLine(d_ptr->arch.center,
@@ -390,9 +390,7 @@ void GraphicsArcItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     }
 }
 
-void GraphicsArcItem::paint(QPainter *painter,
-                            const QStyleOptionGraphicsItem *option,
-                            QWidget*)
+void GraphicsArcItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
     painter->setRenderHint(QPainter::Antialiasing);
     double linew = 2 * pen().widthF() / painter->transform().m11();
@@ -429,7 +427,7 @@ inline bool calculateHalfArc(const QPolygonF &ply, QPainterPath &path)
     return true;
 }
 
-inline Arc calucateFinnalArch(const QPolygonF& ply)
+inline Arc calucateFinnalArch(const QPolygonF &ply)
 {
     double startAngle_ = 0;
     double endAngle_ = 0;
@@ -452,7 +450,7 @@ inline Arc calucateFinnalArch(const QPolygonF& ply)
     radius1 = Graphics::distance(endPt, center);
 
     endAngle = startAngle + deltaAngle;
-    if(deltaAngle > 0) {
+    if (deltaAngle > 0) {
         startAngle_ = startAngle;
         endAngle_ = endAngle;
     } else {
@@ -463,7 +461,7 @@ inline Arc calucateFinnalArch(const QPolygonF& ply)
     return Arc{center, qMin(radius0, radius1), qMax(radius0, radius1), startAngle_, endAngle_};
 }
 
-void GraphicsArcItem::pointsChanged(const QPolygonF& ply)
+void GraphicsArcItem::pointsChanged(const QPolygonF &ply)
 {
     QRectF rect = scene()->sceneRect();
     if (!rect.contains(ply.last())) {
@@ -479,10 +477,8 @@ void GraphicsArcItem::pointsChanged(const QPolygonF& ply)
 
     switch (ply.size()) {
     case 1:
-    case 2:
-        setCache(ply);
-        break;
-    case 3:{
+    case 2: setCache(ply); break;
+    case 3: {
         if (!calculateHalfArc(ply, d_ptr->cachePath)) {
             return;
         }
@@ -492,7 +488,7 @@ void GraphicsArcItem::pointsChanged(const QPolygonF& ply)
         }
         setCache(ply);
     } break;
-    case 4:{
+    case 4: {
         if (!calculateAllArc(ply, d_ptr->arcPath, d_ptr->shape, margin())) {
             return;
         }
@@ -529,4 +525,4 @@ void GraphicsArcItem::showHoverArc(const QPolygonF &ply)
     update();
 }
 
-}
+} // namespace Graphics
