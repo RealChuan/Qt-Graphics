@@ -11,6 +11,7 @@ public:
     {
         QSize size = QSize(0, 0);
         Qt::AspectRatioMode mode = Qt::KeepAspectRatio;
+        int quality = -1;
     };
 
     explicit StretchParamsSettingDailog(QWidget *parent = nullptr);

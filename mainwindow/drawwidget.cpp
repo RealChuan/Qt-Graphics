@@ -22,6 +22,7 @@ public:
         : owner(parent)
     {
         imageView = new ImageView(owner);
+        imageView->setContextMenuPolicy(Qt::NoContextMenu);
         shapeWidget = new QListWidget(owner);
         shapeWidget->setFixedWidth(200);
 

@@ -15,9 +15,14 @@ public:
     explicit SubtitlSplicingWidget(QWidget *parent = nullptr);
     ~SubtitlSplicingWidget();
 
+    void setImage(const QImage &image);
+
 private slots:
     void onOpenImage();
     void onGenerated();
+    void onSave();
+    void onUp(int index);
+    void onDown(int index);
 
 private:
     void setupUI();

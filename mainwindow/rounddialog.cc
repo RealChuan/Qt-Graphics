@@ -147,7 +147,7 @@ void RoundDialog::onSave()
     if (index > 0) {
         name.resize(index);
     }
-    name = name + time + ".png";
+    name = name + time + ".png"; // PNG 才有alpha通道（透明度）
     path = path + "/" + name;
     const QString filename = QFileDialog::getSaveFileName(this,
                                                           tr("Save Image"),
@@ -157,7 +157,7 @@ void RoundDialog::onSave()
         return;
     }
     pixmap = pixmap.scaled(params.size, params.mode, Qt::SmoothTransformation);
-    qDebug() << pixmap.save(filename, "PNG", 100);
+    qDebug() << pixmap.save(filename, "PNG", params.quality);
 }
 
 void RoundDialog::onButtonClicked(int id)
