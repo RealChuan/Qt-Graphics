@@ -80,6 +80,11 @@ void SectionalSubtitlesView::setIndex(int index, bool showUpButton, bool showDow
     d_ptr->downButton->setVisible(showDownButton);
 }
 
+int SectionalSubtitlesView::index() const
+{
+    return d_ptr->index;
+}
+
 void SectionalSubtitlesView::setImagePath(const QString &path)
 {
     QThreadPool::globalInstance()->start(new LoadImageTask(path, this));
@@ -133,14 +138,34 @@ QImage SectionalSubtitlesView::clipImage() const
 
 StitchingImageInfo SectionalSubtitlesView::info() const
 {
-    auto y1 = d_ptr->lineitem1Ptr->line().y1();
-    auto y2 = d_ptr->lineitem2Ptr->line().y1();
-    auto showSize = pixmap().size();
-    y1 = y1 * 1.0 / showSize.height() * d_ptr->imageSize.height();
-    y2 = y2 * 1.0 / showSize.height() * d_ptr->imageSize.height();
+    auto y1 = line1RatioOfHeight() * d_ptr->imageSize.height();
+    auto y2 = line2RatioOfHeight() * d_ptr->imageSize.height();
     auto rect = QRect(QPoint(0, y1), QPoint(d_ptr->imageSize.width(), y2));
-
     return {d_ptr->path, rect};
+}
+
+double SectionalSubtitlesView::line1RatioOfHeight() const
+{
+    return (d_ptr->lineitem1Ptr->line().y1() / pixmap().size().height());
+}
+
+void SectionalSubtitlesView::setLine1RatioOfHeight(double value)
+{
+    auto line = d_ptr->lineitem1Ptr->line();
+    setLineHeightORatio(line, value);
+    d_ptr->lineitem1Ptr->setLine(line);
+}
+
+double SectionalSubtitlesView::line2RatioOfHeight() const
+{
+    return (d_ptr->lineitem2Ptr->line().y1() / pixmap().size().height());
+}
+
+void SectionalSubtitlesView::setLine2RatioOfHeight(double value)
+{
+    auto line = d_ptr->lineitem2Ptr->line();
+    setLineHeightORatio(line, value);
+    d_ptr->lineitem2Ptr->setLine(line);
 }
 
 void SectionalSubtitlesView::resizeEvent(QResizeEvent *event)
@@ -168,4 +193,25 @@ void SectionalSubtitlesView::buildConnect()
 {
     connect(d_ptr->upButton, &QPushButton::clicked, this, [this] { emit up(d_ptr->index); });
     connect(d_ptr->downButton, &QPushButton::clicked, this, [this] { emit down(d_ptr->index); });
+
+    connect(d_ptr->lineitem1Ptr.data(),
+            &Graphics::GraphicsLineItem::lineChnaged,
+            this,
+            &SectionalSubtitlesView::line1Changed);
+    connect(d_ptr->lineitem2Ptr.data(),
+            &Graphics::GraphicsLineItem::lineChnaged,
+            this,
+            &SectionalSubtitlesView::line2Changed);
+}
+
+void SectionalSubtitlesView::setLineHeightORatio(QLineF &line, double radio)
+{
+    Q_ASSERT(radio >= 0 && radio <= 1);
+    auto y = pixmap().size().height() * radio;
+
+    auto p1 = line.p1();
+    auto p2 = line.p2();
+    p1.setY(y);
+    p2.setY(y);
+    line = QLineF(p1, p2);
 }

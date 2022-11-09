@@ -8,6 +8,8 @@
 #include <QtGui/QWidget>
 #endif
 
+class SectionalSubtitlesView;
+
 class SubtitlSplicingWidget : public QWidget
 {
     Q_OBJECT
@@ -23,9 +25,12 @@ private slots:
     void onSave();
     void onUp(int index);
     void onDown(int index);
+    void onLine1Changed();
+    void onLine2Changed();
 
 private:
     void setupUI();
+    void buildViewConnnect(SectionalSubtitlesView *view);
 
     class SubtitlSplicingWidgetPrivate;
     QScopedPointer<SubtitlSplicingWidgetPrivate> d_ptr;

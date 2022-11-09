@@ -17,6 +17,7 @@ public:
     ~SectionalSubtitlesView();
 
     void setIndex(int index, bool showUpButton, bool showDownButton);
+    int index() const;
     void setImagePath(const QString &path);
     QString imagePath() const;
 
@@ -27,9 +28,17 @@ public:
 
     StitchingImageInfo info() const;
 
+    double line1RatioOfHeight() const;
+    void setLine1RatioOfHeight(double value);
+
+    double line2RatioOfHeight() const;
+    void setLine2RatioOfHeight(double value);
+
 signals:
     void up(int index);
     void down(int index);
+    void line1Changed();
+    void line2Changed();
 
 protected:
     void resizeEvent(QResizeEvent *event);
@@ -37,6 +46,7 @@ protected:
 private:
     void setupUI();
     void buildConnect();
+    void setLineHeightORatio(QLineF &line, double radio);
 
     class SectionalSubtitlesViewPrivate;
     QScopedPointer<SectionalSubtitlesViewPrivate> d_ptr;

@@ -43,6 +43,7 @@ void GraphicsLineItem::setLine(const QLineF &line)
     QPolygonF cache;
     cache << line.p1() << line.p2();
     setCache(cache);
+    emit lineChnaged(line);
 }
 
 QLineF GraphicsLineItem::line() const

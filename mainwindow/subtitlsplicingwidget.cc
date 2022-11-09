@@ -110,8 +110,7 @@ void SubtitlSplicingWidget::onOpenImage()
 
         auto index = d_ptr->listWidget->indexFromItem(item).row();
         view->setIndex(index, index != 0, index != (paths.size() - 1));
-        connect(view, &SectionalSubtitlesView::up, this, &SubtitlSplicingWidget::onUp);
-        connect(view, &SectionalSubtitlesView::down, this, &SubtitlSplicingWidget::onDown);
+        buildViewConnnect(view);
     }
 }
 
@@ -200,8 +199,7 @@ void SubtitlSplicingWidget::onUp(int index)
     view->setImagePath(imagePath);
     view->setIndex(index - 1, (index - 1) != 0, (index - 1) != (size - 1));
     d_ptr->listWidget->setItemWidget(item, view);
-    connect(view, &SectionalSubtitlesView::up, this, &SubtitlSplicingWidget::onUp);
-    connect(view, &SectionalSubtitlesView::down, this, &SubtitlSplicingWidget::onDown);
+    buildViewConnnect(view);
 
     // 更新交换Item的索引
     item = d_ptr->listWidget->item(index);
@@ -212,6 +210,42 @@ void SubtitlSplicingWidget::onUp(int index)
 void SubtitlSplicingWidget::onDown(int index)
 {
     onUp(index + 1);
+}
+
+void SubtitlSplicingWidget::onLine1Changed()
+{
+    auto view = qobject_cast<SectionalSubtitlesView *>(sender());
+    if (!view) {
+        return;
+    }
+    if (view->index() != 0) {
+        return;
+    }
+
+    auto radoi = view->line1RatioOfHeight();
+    for (int i = 1; i < d_ptr->listWidget->count(); i++) {
+        auto item = d_ptr->listWidget->item(i);
+        auto view = qobject_cast<SectionalSubtitlesView *>(d_ptr->listWidget->itemWidget(item));
+        view->setLine1RatioOfHeight(radoi);
+    }
+}
+
+void SubtitlSplicingWidget::onLine2Changed()
+{
+    auto view = qobject_cast<SectionalSubtitlesView *>(sender());
+    if (!view) {
+        return;
+    }
+    if (view->index() != 0) {
+        return;
+    }
+
+    auto radoi = view->line2RatioOfHeight();
+    for (int i = 1; i < d_ptr->listWidget->count(); i++) {
+        auto item = d_ptr->listWidget->item(i);
+        auto view = qobject_cast<SectionalSubtitlesView *>(d_ptr->listWidget->itemWidget(item));
+        view->setLine2RatioOfHeight(radoi);
+    }
 }
 
 void SubtitlSplicingWidget::setupUI()
@@ -231,4 +265,18 @@ void SubtitlSplicingWidget::setupUI()
     layout->addWidget(d_ptr->listWidget);
     layout->addLayout(buttonLayout);
     layout->addWidget(d_ptr->imageView);
+}
+
+void SubtitlSplicingWidget::buildViewConnnect(SectionalSubtitlesView *view)
+{
+    connect(view, &SectionalSubtitlesView::up, this, &SubtitlSplicingWidget::onUp);
+    connect(view, &SectionalSubtitlesView::down, this, &SubtitlSplicingWidget::onDown);
+    connect(view,
+            &SectionalSubtitlesView::line1Changed,
+            this,
+            &SubtitlSplicingWidget::onLine1Changed);
+    connect(view,
+            &SectionalSubtitlesView::line2Changed,
+            this,
+            &SubtitlSplicingWidget::onLine2Changed);
 }
