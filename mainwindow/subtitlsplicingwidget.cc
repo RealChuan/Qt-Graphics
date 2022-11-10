@@ -21,7 +21,8 @@ public:
         for (const auto &info : qAsConst(m_infos)) {
             auto i = QImage(info.imagePath);
             if (image.isNull()) {
-                image = i;
+                auto clipRect = QRect(QPoint(0, 0), info.imageRect.bottomRight());
+                image = i.copy(clipRect);
             } else {
                 auto clipImage = i.copy(info.imageRect);
                 QImage tmpImage(image.width(),

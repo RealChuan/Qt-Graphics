@@ -125,14 +125,13 @@ QImage SectionalSubtitlesView::image() const
 
 QImage SectionalSubtitlesView::clipImage() const
 {
-    auto y1 = d_ptr->lineitem1Ptr->line().y1();
-    auto y2 = d_ptr->lineitem2Ptr->line().y1();
+    auto y1 = line1RatioOfHeight() * d_ptr->imageSize.height();
+    auto y2 = line2RatioOfHeight() * d_ptr->imageSize.height();
+    if (y1 > y2) {
+        std::swap(y1, y2);
+    }
     auto image = this->image();
-    auto realSize = image.size();
-    auto showSize = pixmap().size();
-    y1 = y1 * 1.0 / showSize.height() * realSize.height();
-    y2 = y2 * 1.0 / showSize.height() * realSize.height();
-    image = image.copy(QRect(QPoint(0, y1), QPoint(realSize.width(), y2)));
+    image = image.copy(QRect(QPoint(0, y1), QPoint(d_ptr->imageSize.width(), y2)));
     return image;
 }
 
@@ -140,6 +139,9 @@ StitchingImageInfo SectionalSubtitlesView::info() const
 {
     auto y1 = line1RatioOfHeight() * d_ptr->imageSize.height();
     auto y2 = line2RatioOfHeight() * d_ptr->imageSize.height();
+    if (y1 > y2) {
+        std::swap(y1, y2);
+    }
     auto rect = QRect(QPoint(0, y1), QPoint(d_ptr->imageSize.width(), y2));
     return {d_ptr->path, rect};
 }
