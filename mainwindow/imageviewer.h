@@ -11,6 +11,8 @@ public:
     explicit ImageViewer(QWidget *parent = nullptr);
     ~ImageViewer();
 
+    bool setImage(const QFileInfo &info, const QImage &image, const qint64 taskCount);
+
 signals:
     void imageReady(const QImage &);
     void imageLoadReady(const QFileInfo &fileInfo, const QImage &);
@@ -31,8 +33,6 @@ private slots:
 
 private:
     void startImageLoadThread(const QString &url);
-    void destroyImageLoadThread();
-    void imageLoad(const QString &fileUrl);
     void clearThumbnail();
     void setupUI();
     QWidget *toolWidget();

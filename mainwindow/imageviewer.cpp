@@ -11,6 +11,46 @@
 
 using namespace Graphics;
 
+class ImageLoadTask : public QRunnable
+{
+public:
+    ImageLoadTask(const QString &fileUrl, ImageViewer *view, qint64 taskCount)
+        : m_viewPtr(view)
+        , m_fileUrl(fileUrl)
+        , m_taskCount(taskCount)
+    {
+        setAutoDelete(true);
+    }
+
+protected:
+    void run() override
+    {
+        const QFileInfo file(m_fileUrl);
+        const QFileInfoList list = file.absoluteDir().entryInfoList(QDir::Files
+                                                                    | QDir::NoDotAndDotDot);
+        for (const QFileInfo &info : qAsConst(list)) {
+            QImage image(info.absoluteFilePath());
+            if (image.isNull()) {
+                continue;
+            }
+            if (image.width() > WIDTH || image.height() > WIDTH) {
+                image = image.scaled(WIDTH, WIDTH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            }
+            if (m_viewPtr.isNull()) {
+                return;
+            }
+            if (!m_viewPtr->setImage(info, image, m_taskCount)) {
+                return;
+            }
+        }
+    }
+
+private:
+    QPointer<ImageViewer> m_viewPtr;
+    QString m_fileUrl;
+    qint64 m_taskCount;
+};
+
 class ImageViewer::ImageViewerPrivate
 {
 public:
@@ -51,8 +91,8 @@ public:
 
     QComboBox *formatBox;
     QComboBox *colorBox;
-    bool runing = true;
-    QFuture<void> watcher;
+
+    QAtomicInteger<qint64> taskCount = 0;
 };
 
 ImageViewer::ImageViewer(QWidget *parent)
@@ -65,15 +105,24 @@ ImageViewer::ImageViewer(QWidget *parent)
 
 ImageViewer::~ImageViewer()
 {
-    destroyImageLoadThread();
     clearThumbnail();
+}
+
+bool ImageViewer::setImage(const QFileInfo &info, const QImage &image, const qint64 taskCount)
+{
+    if (taskCount != d_ptr->taskCount.loadRelaxed()) {
+        return false;
+    }
+    QMetaObject::invokeMethod(
+        this, [=] { emit imageLoadReady(info, image); }, Qt::QueuedConnection);
+    return true;
 }
 
 void ImageViewer::onOpenImage()
 {
     QString imageFilters(tr("Images (*.bmp *.gif *.jpg *.jpeg *.png *.svg *.tiff *.webp *.icns "
                             "*.bitmap *.graymap *.pixmap *.tga *.xbitmap *.xpixmap)"));
-    qDebug() << imageFilters;
+    //qDebug() << imageFilters;
     const QString path = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation)
                              .value(0, QDir::homePath());
     const QString filename = QFileDialog::getOpenFileName(this,
@@ -135,7 +184,6 @@ void ImageViewer::onImageChanged(const QString &url)
             return;
         }
     }
-    destroyImageLoadThread();
     clearThumbnail();
     startImageLoadThread(url);
 }
@@ -178,36 +226,9 @@ void ImageViewer::onFormatChanged(const QString &)
 
 void ImageViewer::startImageLoadThread(const QString &url)
 {
-    d_ptr->runing = true;
-    d_ptr->watcher = QtConcurrent::run(&ImageViewer::imageLoad, this, url);
-}
-
-void ImageViewer::destroyImageLoadThread()
-{
-    if (d_ptr->watcher.isRunning()) {
-        d_ptr->runing = false;
-        d_ptr->watcher.waitForFinished();
-    }
-}
-
-void ImageViewer::imageLoad(const QString &fileUrl)
-{
-    const QFileInfo file(fileUrl);
-    const QFileInfoList list = file.absoluteDir().entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
-
-    for (const QFileInfo &info : qAsConst(list)) {
-        if (!d_ptr->runing) {
-            break;
-        }
-        QImage image(info.absoluteFilePath());
-        if (image.isNull()) {
-            continue;
-        }
-        if (image.width() > WIDTH || image.height() > WIDTH) {
-            image = image.scaled(WIDTH, WIDTH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        }
-        emit imageLoadReady(info, image);
-    }
+    d_ptr->taskCount.ref();
+    QThreadPool::globalInstance()->start(
+        new ImageLoadTask(url, this, d_ptr->taskCount.loadAcquire()));
 }
 
 void ImageViewer::clearThumbnail()
