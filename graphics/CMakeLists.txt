@@ -10,6 +10,7 @@ set(PROJECT_SOURCES
         graphicsrectitem.cpp graphicsrectitem.h
         graphicsringitem.cpp graphicsringitem.h
         graphicsrotatedrectitem.cpp graphicsrotatedrectitem.h
+        graphicstextitem.cc graphicstextitem.hpp
         imageview.cpp imageview.h)
 
 if (CMAKE_HOST_WIN32)

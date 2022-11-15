@@ -34,6 +34,7 @@ public:
         radiusSpinBox = new QSpinBox(owner);
         radiusSpinBox->setKeyboardTracking(false);
     }
+    ~RoundDialogPrivate() {}
 
     QWidget *owner;
 
