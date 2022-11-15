@@ -16,7 +16,6 @@ class BasicGraphicsItem::BasicGraphicsItemPrivate
 public:
     BasicGraphicsItemPrivate(QObject *parent)
         : owner(parent)
-        , menu(new QMenu)
     {}
 
     QObject *owner;
@@ -26,7 +25,6 @@ public:
     QPointF clickedPos;
     QPolygonF cache;
     double margin = 10;
-    QScopedPointer<QMenu> menu;
 };
 
 BasicGraphicsItem::BasicGraphicsItem(QGraphicsItem *parent)
@@ -38,7 +36,6 @@ BasicGraphicsItem::BasicGraphicsItem(QGraphicsItem *parent)
     setFlags(flags() | ItemIsSelectable | ItemIsMovable | ItemSendsGeometryChanges
              | ItemIsFocusable);
     setAcceptHoverEvents(true);
-    createPopMenu();
 }
 
 BasicGraphicsItem::~BasicGraphicsItem() {}
@@ -139,22 +136,6 @@ void BasicGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
     QAbstractGraphicsShapeItem::hoverLeaveEvent(event);
 }
 
-void BasicGraphicsItem::keyPressEvent(QKeyEvent *event)
-{
-    if (!isSelected()) {
-        return;
-    }
-    switch (event->key()) {
-    case Qt::Key_Delete: emit deleteMyself(); break;
-    default: break;
-    }
-}
-
-void BasicGraphicsItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
-{
-    d_ptr->menu->exec(event->screenPos());
-}
-
 void BasicGraphicsItem::setCache(const QPolygonF &cache)
 {
     d_ptr->cache = cache;
@@ -210,11 +191,6 @@ void BasicGraphicsItem::setMyCursor(const QPointF &center, const QPointF &pos)
 {
     double angle = QLineF(center, pos).angle();
     setCursor(Graphics::curorFromAngle(Graphics::ConvertTo360(angle - 90)));
-}
-
-void BasicGraphicsItem::createPopMenu()
-{
-    d_ptr->menu->addAction(tr("Delete"), this, &BasicGraphicsItem::deleteMyself);
 }
 
 } // namespace Graphics

@@ -16,6 +16,7 @@ SOURCES += \
     graphicsrectitem.cpp \
     graphicsringitem.cpp \
     graphicsrotatedrectitem.cpp \
+    graphicstextitem.cc \
     imageview.cpp
 
 HEADERS += \
@@ -30,6 +31,7 @@ HEADERS += \
     graphicsrectitem.h \
     graphicsringitem.h \
     graphicsrotatedrectitem.h \
+    graphicstextitem.hpp \
     imageview.h
 
 RESOURCES +=

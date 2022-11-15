@@ -1,30 +1,7 @@
 #include "stretchparamssettingdailog.hpp"
+#include "validator.hpp"
 
 #include <QtWidgets>
-
-class IntValidator : public QIntValidator
-{
-public:
-    using QIntValidator::QIntValidator;
-
-    State validate(QString &input, int &pos) const override
-    {
-        const State originalRes = QIntValidator::validate(input, pos);
-        if (originalRes != Intermediate || input.isEmpty()) {
-            return originalRes;
-        }
-
-        const auto extracted = locale().toLongLong(input);
-        if (extracted > 0) {
-            if (extracted > top() && -extracted < bottom()) {
-                return Invalid;
-            }
-        } else if (extracted < bottom()) {
-            return Invalid;
-        }
-        return originalRes;
-    }
-};
 
 class StretchParamsSettingDailog::StretchParamsSettingDailogPrivate
 {

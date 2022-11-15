@@ -13,6 +13,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     customlineitem.cc \
+    drawscene.cc \
     drawwidget.cpp \
     imagelistmodel.cpp \
     imageviewer.cpp \
@@ -21,10 +22,12 @@ SOURCES += \
     rounddialog.cc \
     sectionalsubtitlesview.cc \
     stretchparamssettingdailog.cc \
-    subtitlsplicingwidget.cc
+    subtitlsplicingwidget.cc \
+    validator.cc
 
 HEADERS += \
     customlineitem.hpp \
+    drawscene.hpp \
     drawwidget.h \
     imagelistmodel.h \
     imageviewer.h \
@@ -34,4 +37,5 @@ HEADERS += \
     rounddialog.hpp \
     sectionalsubtitlesview.hpp \
     stretchparamssettingdailog.hpp \
-    subtitlsplicingwidget.hpp
+    subtitlsplicingwidget.hpp \
+    validator.hpp

@@ -15,28 +15,28 @@ public:
         pixmapItem = new GraphicsPixmapItem;
 
         // background item
-        backgroundItemPtr.reset(new QGraphicsRectItem);
-        backgroundItemPtr->setBrush(Qt::white);
-        backgroundItemPtr->setPen(Qt::NoPen);
-        backgroundItemPtr->setVisible(showBackground);
-        backgroundItemPtr->setZValue(-1);
+        backgroundItem = new QGraphicsRectItem;
+        backgroundItem->setBrush(Qt::white);
+        backgroundItem->setPen(Qt::NoPen);
+        backgroundItem->setVisible(showBackground);
+        backgroundItem->setZValue(-1);
 
         // outline
-        outlineItemPtr.reset(new QGraphicsRectItem);
+        outlineItem = new QGraphicsRectItem;
         QPen outline(Qt::black, 1, Qt::DashLine);
         outline.setCosmetic(true);
-        outlineItemPtr->setPen(outline);
-        outlineItemPtr->setBrush(Qt::NoBrush);
-        outlineItemPtr->setVisible(showOutline);
-        outlineItemPtr->setZValue(1);
+        outlineItem->setPen(outline);
+        outlineItem->setBrush(Qt::NoBrush);
+        outlineItem->setVisible(showOutline);
+        outlineItem->setZValue(1);
     }
 
     ~ImageViewPrivate() {}
 
     QWidget *owner;
     GraphicsPixmapItem *pixmapItem;
-    QScopedPointer<QGraphicsRectItem> backgroundItemPtr;
-    QScopedPointer<QGraphicsRectItem> outlineItemPtr;
+    QGraphicsRectItem *backgroundItem;
+    QGraphicsRectItem *outlineItem;
     bool showBackground = false;
     bool showOutline = false;
     bool showCrossLine = false;
@@ -54,6 +54,23 @@ ImageView::ImageView(QWidget *parent)
     , d_ptr(new ImageViewPrivate(this))
 {
     setScene(new QGraphicsScene(this));
+    setTransformationAnchor(AnchorUnderMouse);
+    //setDragMode(ScrollHandDrag);
+    setViewportUpdateMode(SmartViewportUpdate);
+    setFrameShape(QFrame::NoFrame);
+    setRenderHint(QPainter::SmoothPixmapTransform);
+    setCursor(Qt::CrossCursor);
+    setMouseTracking(true);
+    setAcceptDrops(true);
+    initScene();
+    createPopMenu();
+}
+
+ImageView::ImageView(QGraphicsScene *scene, QWidget *parent)
+    : QGraphicsView(parent)
+    , d_ptr(new ImageViewPrivate(this))
+{
+    setScene(scene);
     setTransformationAnchor(AnchorUnderMouse);
     //setDragMode(ScrollHandDrag);
     setViewportUpdateMode(SmartViewportUpdate);
@@ -102,8 +119,8 @@ void ImageView::setPixmap(const QPixmap &pixmap)
 
     d_ptr->pixmapItem->setCustomPixmap(pixmap);
     QRectF rectF = d_ptr->pixmapItem->boundingRect();
-    d_ptr->backgroundItemPtr->setRect(rectF);
-    d_ptr->outlineItemPtr->setRect(rectF);
+    d_ptr->backgroundItem->setRect(rectF);
+    d_ptr->outlineItem->setRect(rectF);
 
     scene()->setSceneRect(rectF);
     resetToOriginalSize();
@@ -138,17 +155,13 @@ void ImageView::setImagerReader(QImageReader *imageReader)
 void ImageView::setViewBackground(bool enable)
 {
     d_ptr->showBackground = enable;
-    if (!d_ptr->backgroundItemPtr.isNull()) {
-        d_ptr->backgroundItemPtr->setVisible(enable);
-    }
+    d_ptr->backgroundItem->setVisible(enable);
 }
 
 void ImageView::setViewOutline(bool enable)
 {
     d_ptr->showOutline = enable;
-    if (!d_ptr->outlineItemPtr.isNull()) {
-        d_ptr->outlineItemPtr->setVisible(enable);
-    }
+    d_ptr->outlineItem->setVisible(enable);
 }
 
 void ImageView::setViewCrossLine(bool enable)
@@ -298,9 +311,9 @@ void ImageView::initScene()
 
     setBackgroundBrush(tilePixmap);
 
-    scene()->addItem(d_ptr->backgroundItemPtr.data());
+    scene()->addItem(d_ptr->backgroundItem);
     scene()->addItem(d_ptr->pixmapItem);
-    scene()->addItem(d_ptr->outlineItemPtr.data());
+    scene()->addItem(d_ptr->outlineItem);
 }
 
 void ImageView::createPopMenu()
