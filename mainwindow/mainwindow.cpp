@@ -57,10 +57,10 @@ void MainWindow::initMenuBar()
     menu->addAction(tr("ImageViewer"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->imageViewer);
     });
-    menu->addAction(tr("DrawWidget"), this, [this] {
+    menu->addAction(tr("Draw"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->drawWidget);
     });
-    menu->addAction(tr("Subtitle splicing"), this, [this] {
+    menu->addAction(tr("Subtitle Splicing"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->subtitlSplicingWidget);
     });
     menuBar()->addMenu(menu);

@@ -92,7 +92,7 @@ void SubtitlSplicingWidget::onOpenImage()
 {
     QString imageFilters(tr("Images (*.bmp *.gif *.jpg *.jpeg *.png *.svg *.tiff *.webp *.icns "
                             "*.bitmap *.graymap *.pixmap *.tga *.xbitmap *.xpixmap)"));
-    qDebug() << imageFilters;
+    //qDebug() << imageFilters;
     const QString path = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation)
                              .value(0, QDir::homePath());
     auto paths = QFileDialog::getOpenFileNames(this, tr("Open Image"), path, imageFilters);
