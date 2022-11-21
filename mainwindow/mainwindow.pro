@@ -12,6 +12,7 @@ LIBS += \
 DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
+    capturewidget.cc \
     customlineitem.cc \
     drawscene.cc \
     drawwidget.cpp \
@@ -21,13 +22,16 @@ SOURCES += \
     listiitemview.cc \
     mainwindow.cpp \
     maskdialog.cpp \
+    recordwidget.cc \
     rounddialog.cc \
     sectionalsubtitlesview.cc \
+    selectionwidget.cc \
     stretchparamssettingdailog.cc \
     subtitlsplicingwidget.cc \
     validator.cc
 
 HEADERS += \
+    capturewidget.hpp \
     customlineitem.hpp \
     drawscene.hpp \
     drawwidget.h \
@@ -38,8 +42,10 @@ HEADERS += \
     mainwindow_global.h \
     mainwindow.h \
     maskdialog.h \
+    recordwidget.hpp \
     rounddialog.hpp \
     sectionalsubtitlesview.hpp \
+    selectionwidget.hpp \
     stretchparamssettingdailog.hpp \
     subtitlsplicingwidget.hpp \
     validator.hpp

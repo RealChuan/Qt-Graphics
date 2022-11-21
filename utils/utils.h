@@ -18,6 +18,8 @@ UTILS_EXPORT void loadFonts();
 UTILS_EXPORT void setGlobalThreadPoolMaxSize(int maxSize = -1);
 UTILS_EXPORT void windowCenter(QWidget *child, QWidget *parent);
 UTILS_EXPORT void windowCenter(QWidget *window);
+UTILS_EXPORT QRect desktopGeometry();
+UTILS_EXPORT QPixmap grabFullWindow();
 UTILS_EXPORT void reboot();
 UTILS_EXPORT qint64 fileSize(const QString &localPath);
 UTILS_EXPORT bool generateDirectorys(const QString &directory);
