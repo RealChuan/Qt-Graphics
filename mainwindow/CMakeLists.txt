@@ -1,4 +1,5 @@
 set(PROJECT_SOURCES
+        capturewidget.cc capturewidget.hpp
         customlineitem.cc customlineitem.hpp
         drawscene.cc drawscene.hpp
         drawwidget.cpp drawwidget.h
@@ -9,6 +10,7 @@ set(PROJECT_SOURCES
         mainwindow_global.h
         mainwindow.cpp mainwindow.h
         maskdialog.cpp maskdialog.h
+        recordwidget.cc recordwidget.hpp
         rounddialog.cc rounddialog.hpp
         sectionalsubtitlesview.cc sectionalsubtitlesview.hpp
         stretchparamssettingdailog.cc stretchparamssettingdailog.hpp

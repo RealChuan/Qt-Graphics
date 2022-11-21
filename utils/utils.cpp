@@ -291,3 +291,30 @@ QString Utils::getConfigPath()
     Utils::generateDirectorys(path);
     return path;
 }
+
+QRect Utils::desktopGeometry()
+{
+    QRect geometry;
+    auto screens = QGuiApplication::screens();
+    for (auto *const screen : qAsConst(screens)) {
+        QRect scrRect = screen->geometry();
+        scrRect.moveTo(scrRect.x() / screen->devicePixelRatio(),
+                       scrRect.y() / screen->devicePixelRatio());
+        geometry = geometry.united(scrRect);
+    }
+    return geometry;
+}
+
+QPixmap Utils::grabFullWindow()
+{
+    //auto pixmap = screen()->grabWindow();
+    //auto pixmap = QApplication::primaryScreen()->grabWindow();
+    auto geometry = desktopGeometry();
+    auto pixmap = QApplication::primaryScreen()->grabWindow(0,
+                                                            geometry.x(),
+                                                            geometry.y(),
+                                                            geometry.width(),
+                                                            geometry.height());
+    pixmap.setDevicePixelRatio(QApplication::primaryScreen()->devicePixelRatio());
+    return pixmap;
+}

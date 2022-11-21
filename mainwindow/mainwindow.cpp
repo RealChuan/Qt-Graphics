@@ -1,6 +1,8 @@
 #include "mainwindow.h"
+#include "capturewidget.hpp"
 #include "drawwidget.h"
 #include "imageviewer.h"
+#include "recordwidget.hpp"
 #include "subtitlsplicingwidget.hpp"
 
 #include <utils/utils.h>
@@ -21,10 +23,13 @@ public:
         stackedWidget->addWidget(drawWidget);
         stackedWidget->addWidget(subtitlSplicingWidget);
     }
+    ~MainWindowPrivate() {}
+
     QWidget *owner;
     DrawWidget *drawWidget;
     ImageViewer *imageViewer;
     SubtitlSplicingWidget *subtitlSplicingWidget;
+    QScopedPointer<RecordWidget> recordWidgetPtr;
     QStackedWidget *stackedWidget;
 };
 
@@ -64,4 +69,14 @@ void MainWindow::initMenuBar()
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->subtitlSplicingWidget);
     });
     menuBar()->addMenu(menu);
+    menuBar()->addAction(tr("Screenshots"), this, [this] {
+        showMinimized();
+        auto captureWidget = new CaptureWidget;
+        captureWidget->show();
+    });
+    menuBar()->addAction(tr("Record GIf"), this, [this] {
+        showMinimized();
+        d_ptr->recordWidgetPtr.reset(new RecordWidget);
+        d_ptr->recordWidgetPtr->show();
+    });
 }
