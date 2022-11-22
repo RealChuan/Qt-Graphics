@@ -254,8 +254,8 @@ void GraphicsPixmapItem::paint(QPainter *painter,
                                QWidget *widget)
 {
     Q_UNUSED(option)
-    QStyleOptionGraphicsItem op;
-    op.initFrom(widget);
+    QStyleOptionGraphicsItem op(*option);
+    //op.initFrom(widget);
     op.state = QStyle::State_None;
 
     QGraphicsPixmapItem::paint(painter, &op, widget);

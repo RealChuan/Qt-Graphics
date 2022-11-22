@@ -15,12 +15,17 @@ public:
     explicit CaptureWidget(QWidget *parent = nullptr);
     ~CaptureWidget();
 
+private:
+    void onSelectAll();
+    void onSave();
+
 protected:
     void paintEvent(QPaintEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *event) override;
 
 private:
     void buildConnect();
+    void drawText(QPainter *painter, const QRect &rect);
 
     class CaptureWidgetPrivate;
     QScopedPointer<CaptureWidgetPrivate> d_ptr;

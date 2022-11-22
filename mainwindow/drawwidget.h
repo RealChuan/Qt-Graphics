@@ -17,6 +17,7 @@ public:
 private slots:
     void onAddShape(QListWidgetItem *);
     void onDeleteItem();
+    void onSave();
 
     void handleFontChange();
     void textButtonTriggered();
@@ -26,6 +27,8 @@ private slots:
 private:
     void setupUI();
     void buildConnect();
+    void initNewButton();
+    void clearAll();
 
     QToolBar *cerateToolBar();
     QMenu *createColorMenu(const char *slot, QColor defaultColor);

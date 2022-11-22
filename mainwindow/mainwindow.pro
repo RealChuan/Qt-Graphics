@@ -25,6 +25,7 @@ SOURCES += \
     recordwidget.cc \
     rounddialog.cc \
     sectionalsubtitlesview.cc \
+    selectionwidget.cc \
     stretchparamssettingdailog.cc \
     subtitlsplicingwidget.cc \
     validator.cc
@@ -44,6 +45,7 @@ HEADERS += \
     recordwidget.hpp \
     rounddialog.hpp \
     sectionalsubtitlesview.hpp \
+    selectionwidget.hpp \
     stretchparamssettingdailog.hpp \
     subtitlsplicingwidget.hpp \
     validator.hpp

@@ -13,6 +13,7 @@ set(PROJECT_SOURCES
         recordwidget.cc recordwidget.hpp
         rounddialog.cc rounddialog.hpp
         sectionalsubtitlesview.cc sectionalsubtitlesview.hpp
+        selectionwidget.cc selectionwidget.hpp
         stretchparamssettingdailog.cc stretchparamssettingdailog.hpp
         subtitlsplicingwidget.cc subtitlsplicingwidget.hpp
         validator.cc validator.hpp)

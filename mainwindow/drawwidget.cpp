@@ -30,11 +30,20 @@ public:
         shapeWidget = new QListWidget(owner);
         shapeWidget->setFixedWidth(200);
 
-        QPixmap pixmap(4096, 2160);
-        pixmap.fill(Qt::white);
-        imageView->setPixmap(pixmap);
-        imageView->resetToOriginalSize();
+        newButton = new QToolButton(owner);
+        newButton->setText(tr("New", "DrawWidget"));
 
+        fontCombo = new QFontComboBox(owner);
+        fontSizeCombo = new QComboBox(owner);
+        fontSizeCombo->setEditable(true);
+        for (int i = 8; i < 100; i = i + 2) {
+            fontSizeCombo->addItem(QString().setNum(i));
+        }
+        fontSizeCombo->setValidator(new IntValidator(2, 64, owner));
+
+        fontColorToolButton = new QToolButton(owner);
+        fontColorToolButton->setPopupMode(QToolButton::MenuButtonPopup);
+        fontColorToolButton->setAutoFillBackground(true);
         boldAction = new QAction(tr("Bold", "DrawWidget"), owner);
         boldAction->setCheckable(true);
         boldAction->setShortcut(tr("Ctrl+B"));
@@ -44,18 +53,6 @@ public:
         underlineAction = new QAction(tr("Underline", "DrawWidget"), owner);
         underlineAction->setCheckable(true);
         underlineAction->setShortcut(tr("Ctrl+U"));
-
-        fontCombo = new QFontComboBox(owner);
-        fontSizeCombo = new QComboBox(owner);
-        fontSizeCombo->setEditable(true);
-        for (int i = 8; i < 30; i = i + 2) {
-            fontSizeCombo->addItem(QString().setNum(i));
-        }
-        fontSizeCombo->setValidator(new IntValidator(2, 64, owner));
-
-        fontColorToolButton = new QToolButton(owner);
-        fontColorToolButton->setPopupMode(QToolButton::MenuButtonPopup);
-        fontColorToolButton->setAutoFillBackground(true);
     }
     QWidget *owner;
     DrawScene *drawScene;
@@ -63,14 +60,13 @@ public:
     QListWidget *shapeWidget;
     QVector<BasicGraphicsItem *> graphicsItems;
 
+    QToolButton *newButton;
+    QComboBox *fontSizeCombo;
+    QFontComboBox *fontCombo;
     QAction *boldAction;
     QAction *underlineAction;
     QAction *italicAction;
     QAction *textAction;
-
-    QComboBox *fontSizeCombo;
-    QFontComboBox *fontCombo;
-
     QToolButton *fontColorToolButton;
 };
 
@@ -84,15 +80,17 @@ DrawWidget::DrawWidget(QWidget *parent)
 
 DrawWidget::~DrawWidget()
 {
-    if (d_ptr->graphicsItems.isEmpty()) {
-        return;
-    }
-    qDeleteAll(d_ptr->graphicsItems);
-    d_ptr->graphicsItems.clear();
+    clearAll();
 }
 
 void DrawWidget::onAddShape(QListWidgetItem *item)
 {
+    if (d_ptr->imageView->pixmap().isNull()) {
+        clearAll();
+        QMessageBox::warning(this, tr("WARNING"), tr("Please create a new canvas"));
+        return;
+    }
+
     if (!d_ptr->graphicsItems.isEmpty() && !d_ptr->graphicsItems.last()->isValid()) {
         delete d_ptr->graphicsItems.takeLast();
     }
@@ -133,6 +131,26 @@ void DrawWidget::onDeleteItem()
             }
         }
     }
+}
+
+void DrawWidget::onSave()
+{
+    auto path = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation)
+                    .value(0, QDir::homePath());
+    const auto time = QDateTime::currentDateTime().toString("yyyy-MM-dd HH-mm-ss");
+    path = path + "/" + time + ".jpg";
+    const QString filename = QFileDialog::getSaveFileName(nullptr,
+                                                          tr("Save Image"),
+                                                          path,
+                                                          tr("Images (*.png *.xpm *.jpg)"));
+    if (filename.isEmpty()) {
+        return;
+    }
+    auto size = d_ptr->drawScene->sceneRect().size();
+    QPixmap pixmap(size.width(), size.height());
+    QPainter painter(&pixmap);
+    d_ptr->drawScene->render(&painter);
+    qInfo() << pixmap.save(filename);
 }
 
 void DrawWidget::handleFontChange()
@@ -220,6 +238,52 @@ void DrawWidget::buildConnect()
             item->setSelected(true);
         }
     });
+    initNewButton();
+}
+
+void DrawWidget::initNewButton()
+{
+    auto *menu = new QMenu(this);
+    menu->addAction(tr("Create a New Canvas 4096 x 2160"), this, [this] {
+        QPixmap pixmap(4096, 2160);
+        pixmap.fill(Qt::white);
+        d_ptr->imageView->setPixmap(pixmap);
+        d_ptr->imageView->resetToOriginalSize();
+    });
+    menu->addAction(tr("Load an image"), this, [this] {
+        QString imageFilters(tr("Images (*.bmp *.gif *.jpg *.jpeg *.png *.svg *.tiff *.webp *.icns "
+                                "*.bitmap *.graymap *.pixmap *.tga *.xbitmap *.xpixmap)"));
+        //qDebug() << imageFilters;
+        const QString path = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation)
+                                 .value(0, QDir::homePath());
+        const QString filename = QFileDialog::getOpenFileName(this,
+                                                              tr("Open Image"),
+                                                              path,
+                                                              imageFilters);
+        if (filename.isEmpty()) {
+            return;
+        }
+        QPixmap pixmap(filename);
+        if (pixmap.isNull()) {
+            QMessageBox::warning(this,
+                                 tr("WARNING"),
+                                 tr("Picture failed to open, Url: %1!").arg(filename));
+            return;
+        }
+        d_ptr->imageView->setPixmap(pixmap);
+        d_ptr->imageView->resetToOriginalSize();
+    });
+    d_ptr->newButton->setMenu(menu);
+    d_ptr->newButton->setPopupMode(QToolButton::InstantPopup);
+}
+
+void DrawWidget::clearAll()
+{
+    if (d_ptr->graphicsItems.isEmpty()) {
+        return;
+    }
+    qDeleteAll(d_ptr->graphicsItems);
+    d_ptr->graphicsItems.clear();
 }
 
 QToolBar *DrawWidget::cerateToolBar()
@@ -246,6 +310,8 @@ QToolBar *DrawWidget::cerateToolBar()
             &DrawWidget::textButtonTriggered);
 
     auto textToolBar = new QToolBar(tr("Font"), this);
+    textToolBar->addWidget(d_ptr->newButton);
+    textToolBar->addAction(tr("Save As"), this, &DrawWidget::onSave);
     textToolBar->addWidget(d_ptr->fontCombo);
     textToolBar->addWidget(d_ptr->fontSizeCombo);
     textToolBar->addAction(d_ptr->boldAction);

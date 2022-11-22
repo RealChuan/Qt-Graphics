@@ -47,24 +47,25 @@ bool Graphics::calculateCircle(const QPolygonF &pts, QPointF &center, double &ra
 
 QCursor Graphics::curorFromAngle(double angle)
 {
-    if(angle >= 0 && angle < 15)
+    if (angle >= 0 && angle < 15) {
         return Qt::SizeVerCursor;
-    else if(angle >= 15 && angle < 75)
+    } else if (angle >= 15 && angle < 75) {
         return Qt::SizeFDiagCursor;
-    else if(angle >= 75 &&angle < 105)
+    } else if (angle >= 75 && angle < 105) {
         return Qt::SizeHorCursor;
-    else if(angle >= 105 && angle < 165)
+    } else if (angle >= 105 && angle < 165) {
         return Qt::SizeBDiagCursor;
-    else if(angle >= 165 && angle < 195)
+    } else if (angle >= 165 && angle < 195) {
         return Qt::SizeVerCursor;
-    else if(angle >= 195 && angle < 255)
+    } else if (angle >= 195 && angle < 255) {
         return Qt::SizeFDiagCursor;
-    else if(angle >= 255 && angle < 285)
+    } else if (angle >= 255 && angle < 285) {
         return Qt::SizeHorCursor;
-    else if(angle >= 285 && angle < 345)
+    } else if (angle >= 285 && angle < 345) {
         return Qt::SizeBDiagCursor;
-    else
+    } else {
         return Qt::SizeVerCursor;
+    }
 }
 
 QPolygonF Graphics::boundingFromLine(const QLineF &line, double margin)
