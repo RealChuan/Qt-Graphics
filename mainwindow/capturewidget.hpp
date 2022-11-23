@@ -20,6 +20,7 @@ private:
     void onSave();
 
 protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *event) override;
 

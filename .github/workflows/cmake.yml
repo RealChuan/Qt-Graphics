@@ -52,7 +52,7 @@ jobs:
           choco install ninja
           ninja --version
           cmake --version
-          vcpkg install breakpad --triplet x64-windows
+          vcpkg install breakpad giflib --triplet x64-windows
       - name: Install dependencies on macos
         if: startsWith(matrix.os, 'macos')
         run: |
@@ -60,7 +60,7 @@ jobs:
           ninja --version
           cmake --version
           clang --version
-          vcpkg install breakpad --triplet x64-osx
+          vcpkg install breakpad giflib --triplet x64-osx
       - name: Install dependencies on ubuntu
         if: startsWith(matrix.os, 'ubuntu')
         run: |
@@ -68,7 +68,7 @@ jobs:
           ninja --version
           cmake --version
           gcc --version
-          vcpkg install breakpad --triplet x64-linux
+          vcpkg install breakpad giflib --triplet x64-linux
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v3

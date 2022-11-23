@@ -44,16 +44,16 @@ signals:
     void geometryChanged();
 
 protected:
-    bool eventFilter(QObject *, QEvent *) override;
-    void parentMousePressEvent(QMouseEvent *e);
-    void parentMouseReleaseEvent(QMouseEvent *e);
-    void parentMouseMoveEvent(QMouseEvent *e);
-
+    bool eventFilter(QObject *obj, QEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void moveEvent(QMoveEvent *event) override;
 
 private:
+    void parentMousePressEvent(QMouseEvent *event);
+    void parentMouseReleaseEvent(QMouseEvent *event);
+    void parentMouseMoveEvent(QMouseEvent *event);
+
     void updateAreas();
     void updateCursor();
 

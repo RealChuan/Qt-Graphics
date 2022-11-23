@@ -1,4 +1,5 @@
 include(../libs.pri)
+include(../3rdparty/3rdparty.pri)
 
 QT += widgets concurrent
 
@@ -7,6 +8,7 @@ TARGET = $$replaceLibName(mainwindow)
 
 LIBS += \
     -l$$replaceLibName(utils) \
+    -l$$replaceLibName(thirdparty) \
     -l$$replaceLibName(graphics)
 
 DEFINES += QT_DEPRECATED_WARNINGS
@@ -22,6 +24,7 @@ SOURCES += \
     listiitemview.cc \
     mainwindow.cpp \
     maskdialog.cpp \
+    recordgifthread.cc \
     recordwidget.cc \
     rounddialog.cc \
     sectionalsubtitlesview.cc \
@@ -42,6 +45,7 @@ HEADERS += \
     mainwindow_global.h \
     mainwindow.h \
     maskdialog.h \
+    recordgifthread.hpp \
     recordwidget.hpp \
     rounddialog.hpp \
     sectionalsubtitlesview.hpp \

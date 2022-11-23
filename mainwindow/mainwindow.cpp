@@ -29,7 +29,6 @@ public:
     DrawWidget *drawWidget;
     ImageViewer *imageViewer;
     SubtitlSplicingWidget *subtitlSplicingWidget;
-    QScopedPointer<RecordWidget> recordWidgetPtr;
     QStackedWidget *stackedWidget;
 };
 
@@ -76,7 +75,7 @@ void MainWindow::initMenuBar()
     });
     menuBar()->addAction(tr("Record GIf"), this, [this] {
         showMinimized();
-        d_ptr->recordWidgetPtr.reset(new RecordWidget);
-        d_ptr->recordWidgetPtr->show();
+        auto recordWidget = new RecordWidget;
+        recordWidget->show();
     });
 }

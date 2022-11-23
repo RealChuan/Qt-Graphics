@@ -1,8 +1,8 @@
 #include "recordwidget.hpp"
+#include "recordgifthread.hpp"
 
 #include <utils/utils.h>
 
-#include <QPalette>
 #include <QtWidgets>
 
 class RecordWidget::RecordWidgetPrivate
@@ -13,6 +13,7 @@ public:
     {
         frameRateSpinBox = new QSpinBox(owner);
         frameRateSpinBox->setRange(1, 60);
+        frameRateSpinBox->setValue(10);
         frameRateSpinBox->setKeyboardTracking(false);
         widthSpinBox = new QSpinBox(owner);
         widthSpinBox->setKeyboardTracking(false);
@@ -25,6 +26,7 @@ public:
         screenshotsWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         //screenshotsWidget->setStyleSheet("QWidget{background:transparent;}");
     }
+    ~RecordWidgetPrivate() {}
 
     QWidget *owner;
 
@@ -40,6 +42,8 @@ public:
     QColor backgroundColor = QColor(231, 231, 239);
     //记录鼠标位置
     QPoint lastPoint;
+
+    QScopedPointer<RecordGifThread> recordGifThreadPtr;
 };
 
 RecordWidget::RecordWidget(QWidget *parent)
@@ -48,6 +52,7 @@ RecordWidget::RecordWidget(QWidget *parent)
 {
     setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     setAttribute(Qt::WA_TranslucentBackground);
+    setAttribute(Qt::WA_DeleteOnClose);
     setupUI();
     buildConnect();
     resize(1000, 618);
@@ -75,27 +80,18 @@ void RecordWidget::onResizeGifWidget()
     resize(width, height);
 }
 
-void RecordWidget::onSaveGrab()
+void RecordWidget::onStart()
 {
-    auto path = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation)
-                    .value(0, QDir::homePath());
-    const auto time = QDateTime::currentDateTime().toString("yyyy-MM-dd HH-mm-ss");
-    path = path + "/" + time + ".jpeg";
-    const QString filename = QFileDialog::getSaveFileName(this,
-                                                          tr("Save Image"),
-                                                          path,
-                                                          tr("Images (*.png *.xpm *.jpg)"));
-    if (filename.isEmpty()) {
-        return;
+    d_ptr->startButton->setEnabled(false);
+    auto text = d_ptr->startButton->text();
+    if (text == tr("Start")) {
+        start();
+        d_ptr->startButton->setText(tr("Stop"));
+    } else {
+        finish();
+        d_ptr->startButton->setText(tr("Start"));
     }
-
-    auto pos = mapToGlobal(d_ptr->screenshotsWidget->pos());
-    auto rect = QRect(pos, d_ptr->screenshotsWidget->size());
-    rect.adjust(d_ptr->borderWidth, 0, -d_ptr->borderWidth, -d_ptr->borderWidth);
-    // 直接grab副屏幕有问题
-    auto pixmap = Utils::grabFullWindow();
-    pixmap = pixmap.copy(rect);
-    qInfo() << rect << pixmap.save(filename);
+    d_ptr->startButton->setEnabled(true);
 }
 
 void RecordWidget::mousePressEvent(QMouseEvent *event)
@@ -137,6 +133,7 @@ void RecordWidget::resizeEvent(QResizeEvent *event)
 
 void RecordWidget::paintEvent(QPaintEvent *event)
 {
+    Q_UNUSED(event)
     auto rectGif = QRect(d_ptr->screenshotsWidget->pos(), d_ptr->screenshotsWidget->size());
     rectGif.adjust(d_ptr->borderWidth, 0, -d_ptr->borderWidth, -d_ptr->borderWidth);
 
@@ -181,5 +178,41 @@ void RecordWidget::buildConnect()
     connect(d_ptr->widthSpinBox, &QSpinBox::valueChanged, this, &RecordWidget::onResizeGifWidget);
     connect(d_ptr->heightSpinBox, &QSpinBox::valueChanged, this, &RecordWidget::onResizeGifWidget);
 
-    connect(d_ptr->startButton, &QToolButton::clicked, this, &RecordWidget::onSaveGrab);
+    connect(d_ptr->startButton, &QToolButton::clicked, this, &RecordWidget::onStart);
+}
+
+QRect RecordWidget::recordRect()
+{
+    auto pos = mapToGlobal(d_ptr->screenshotsWidget->pos());
+    auto devicePixelRatio = d_ptr->screenshotsWidget->screen()->devicePixelRatio();
+    auto rect = QRect(pos * devicePixelRatio, d_ptr->screenshotsWidget->size() * devicePixelRatio);
+    auto borderWidth = d_ptr->borderWidth * devicePixelRatio;
+    rect.adjust(borderWidth, 0, -borderWidth, -borderWidth);
+    return rect;
+}
+
+void RecordWidget::start()
+{
+    auto delay = 1000.0 / d_ptr->frameRateSpinBox->value();
+
+    d_ptr->recordGifThreadPtr.reset(new RecordGifThread);
+    d_ptr->recordGifThreadPtr->startCapture(this, delay);
+}
+
+void RecordWidget::finish()
+{
+    if (!d_ptr->recordGifThreadPtr.isNull()) {
+        d_ptr->recordGifThreadPtr->stopCapture();
+    }
+    auto path = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation)
+                    .value(0, QDir::homePath());
+    const auto time = QDateTime::currentDateTime().toString("yyyy-MM-dd HH-mm-ss");
+    path = path + "/" + time + ".gif";
+    const QString filename = QFileDialog::getSaveFileName(this,
+                                                          tr("Save Image"),
+                                                          path,
+                                                          tr("Images (*.gif)"));
+    if (!d_ptr->recordGifThreadPtr.isNull()) {
+        d_ptr->recordGifThreadPtr->stop(filename);
+    }
 }

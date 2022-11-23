@@ -135,6 +135,9 @@ void DrawWidget::onDeleteItem()
 
 void DrawWidget::onSave()
 {
+    if (d_ptr->imageView->pixmap().isNull()) {
+        return;
+    }
     auto path = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation)
                     .value(0, QDir::homePath());
     const auto time = QDateTime::currentDateTime().toString("yyyy-MM-dd HH-mm-ss");

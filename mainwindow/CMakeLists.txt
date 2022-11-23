@@ -10,6 +10,7 @@ set(PROJECT_SOURCES
         mainwindow_global.h
         mainwindow.cpp mainwindow.h
         maskdialog.cpp maskdialog.h
+        recordgifthread.cc recordgifthread.hpp
         recordwidget.cc recordwidget.hpp
         rounddialog.cc rounddialog.hpp
         sectionalsubtitlesview.cc sectionalsubtitlesview.hpp
@@ -23,7 +24,7 @@ if (CMAKE_HOST_WIN32)
 else ()
   add_library(mainwindow ${PROJECT_SOURCES} ${SOURCES})
 endif ()
-target_link_libraries(mainwindow PRIVATE Qt6::Widgets Qt6::Concurrent utils graphics)
+target_link_libraries(mainwindow PRIVATE Qt6::Widgets Qt6::Concurrent utils graphics egif)
 
 if (CMAKE_HOST_WIN32)
   target_compile_definitions(mainwindow PRIVATE "MAINWINDOW_LIBRARY")
