@@ -43,6 +43,7 @@ CaptureWidget::CaptureWidget(QWidget *parent)
     setAttribute(Qt::WA_DeleteOnClose);
     setAttribute(Qt::WA_Hover);
     setMouseTracking(true);
+    installEventFilter(this);
 
     move(d_ptr->desktopGeometry.topLeft());
     resize(d_ptr->screenshot.size());
@@ -78,6 +79,29 @@ void CaptureWidget::onSave()
     pixmap = pixmap.copy(rect);
     qInfo() << rect << pixmap.save(filename);
     close();
+}
+
+bool CaptureWidget::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::HoverMove && d_ptr->selectionWidget->isVisible()) {
+        auto hoverEvent = static_cast<QHoverEvent *>(event);
+        auto rect = d_ptr->selectionWidget->geometry().normalized();
+        auto pos = hoverEvent->position().toPoint();
+        if (rect.contains(pos)) {
+            auto color = d_ptr->screenshot.toImage().pixelColor(pos);
+            auto rgbInfo = QString("Point( %1, %2 ) | RGBA( %3 %4 %5 %6 )")
+                               .arg(QString::number(pos.x()),
+                                    QString::number(pos.y()),
+                                    QString::number(color.red()),
+                                    QString::number(color.green()),
+                                    QString::number(color.blue()),
+                                    QString::number(color.alpha()));
+            QToolTip::showText(mapToGlobal(pos), rgbInfo, this);
+        } else if (QToolTip::isVisible()) {
+            QToolTip::hideText();
+        }
+    }
+    return false;
 }
 
 void CaptureWidget::paintEvent(QPaintEvent *event)

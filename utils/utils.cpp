@@ -83,8 +83,9 @@ void Utils::printBuildInfo()
 
 void Utils::setHighDpiEnvironmentVariable()
 {
-    if (Utils::HostOsInfo().isMacHost())
+    if (Utils::HostOsInfo().isMacHost()) {
         return;
+    }
 
     if (Utils::HostOsInfo().isWindowsHost() && !qEnvironmentVariableIsSet("QT_OPENGL")) {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -307,14 +308,17 @@ QRect Utils::desktopGeometry()
 
 QPixmap Utils::grabFullWindow()
 {
-    //auto pixmap = screen()->grabWindow();
-    //auto pixmap = QApplication::primaryScreen()->grabWindow();
+    // auto pixmap = screen()->grabWindow();
+    // auto pixmap = QApplication::primaryScreen()->grabWindow();
+    // fix me
+    // same code in Qt5高分屏没问题，
+    // Qt6图片大小是缩放倍数，多余部分是黑色的
     auto geometry = desktopGeometry();
     auto pixmap = QApplication::primaryScreen()->grabWindow(0,
                                                             geometry.x(),
                                                             geometry.y(),
                                                             geometry.width(),
                                                             geometry.height());
-    pixmap.setDevicePixelRatio(QApplication::primaryScreen()->devicePixelRatio());
+    //pixmap.setDevicePixelRatio(QApplication::primaryScreen()->devicePixelRatio());
     return pixmap;
 }

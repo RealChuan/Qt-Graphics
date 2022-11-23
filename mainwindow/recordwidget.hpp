@@ -18,7 +18,8 @@ public:
 private slots:
     void onChangeSize();
     void onResizeGifWidget();
-    void onSaveGrab();
+    void onStart();
+    void onCapture();
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -30,6 +31,9 @@ protected:
 private:
     void setupUI();
     void buildConnect();
+    QRect recordRect();
+    void start();
+    void finish();
 
     class RecordWidgetPrivate;
     QScopedPointer<RecordWidgetPrivate> d_ptr;

@@ -1,4 +1,5 @@
 include(../libs.pri)
+include(../3rdparty/3rdparty.pri)
 
 QT += widgets concurrent
 
@@ -7,6 +8,7 @@ TARGET = $$replaceLibName(mainwindow)
 
 LIBS += \
     -l$$replaceLibName(utils) \
+    -l$$replaceLibName(thirdparty) \
     -l$$replaceLibName(graphics)
 
 DEFINES += QT_DEPRECATED_WARNINGS

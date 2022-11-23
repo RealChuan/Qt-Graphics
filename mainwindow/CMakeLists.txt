@@ -23,7 +23,7 @@ if (CMAKE_HOST_WIN32)
 else ()
   add_library(mainwindow ${PROJECT_SOURCES} ${SOURCES})
 endif ()
-target_link_libraries(mainwindow PRIVATE Qt6::Widgets Qt6::Concurrent utils graphics)
+target_link_libraries(mainwindow PRIVATE Qt6::Widgets Qt6::Concurrent utils graphics qtgifimage)
 
 if (CMAKE_HOST_WIN32)
   target_compile_definitions(mainwindow PRIVATE "MAINWINDOW_LIBRARY")

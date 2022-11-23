@@ -120,20 +120,20 @@ bool SelectionWidget::eventFilter(QObject *obj, QEvent *event)
     return false;
 }
 
-void SelectionWidget::parentMousePressEvent(QMouseEvent *e)
+void SelectionWidget::parentMousePressEvent(QMouseEvent *event)
 {
-    if (e->button() != Qt::LeftButton) {
+    if (event->button() != Qt::LeftButton) {
         return;
     }
 
-    m_dragStartPos = e->pos();
-    m_activeSide = getMouseSide(e->pos());
+    m_dragStartPos = event->pos();
+    m_activeSide = getMouseSide(event->pos());
 }
 
-void SelectionWidget::parentMouseReleaseEvent(QMouseEvent *e)
+void SelectionWidget::parentMouseReleaseEvent(QMouseEvent *event)
 {
     // released outside of the selection area
-    if (!getMouseSide(e->pos())) {
+    if (!getMouseSide(event->pos())) {
         hide();
     }
 
@@ -141,17 +141,17 @@ void SelectionWidget::parentMouseReleaseEvent(QMouseEvent *e)
     updateCursor();
 }
 
-void SelectionWidget::parentMouseMoveEvent(QMouseEvent *e)
+void SelectionWidget::parentMouseMoveEvent(QMouseEvent *event)
 {
     updateCursor();
 
-    if (e->buttons() != Qt::LeftButton) {
+    if (event->buttons() != Qt::LeftButton) {
         return;
     }
 
     SideType mouseSide = m_activeSide;
     if (!m_activeSide) {
-        mouseSide = getMouseSide(e->pos());
+        mouseSide = getMouseSide(event->pos());
     }
 
     QPoint pos;
@@ -162,7 +162,7 @@ void SelectionWidget::parentMouseMoveEvent(QMouseEvent *e)
         pos = m_dragStartPos;
         setGeometry({pos, pos});
     } else {
-        pos = e->pos();
+        pos = event->pos();
     }
 
     auto geom = geometry();
@@ -298,7 +298,7 @@ void SelectionWidget::parentMouseMoveEvent(QMouseEvent *e)
         setGeometry(geom.normalized());
         m_activeSide = getProperSide(m_activeSide, geom);
     }
-    m_dragStartPos = e->pos();
+    m_dragStartPos = event->pos();
 }
 
 void SelectionWidget::paintEvent(QPaintEvent *event)

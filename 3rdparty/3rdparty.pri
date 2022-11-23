@@ -27,4 +27,6 @@ CONFIG(debug, debug|release) {
             -llibbreakpad
 }
 
+LIBS += -lgif
+
 INCLUDEPATH += $$vcpkg_path/installed/$$arch/include
