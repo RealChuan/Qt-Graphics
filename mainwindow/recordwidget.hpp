@@ -15,11 +15,12 @@ public:
     explicit RecordWidget(QWidget *parent = nullptr);
     ~RecordWidget();
 
+    QRect recordRect();
+
 private slots:
     void onChangeSize();
     void onResizeGifWidget();
     void onStart();
-    void onCapture();
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -31,7 +32,6 @@ protected:
 private:
     void setupUI();
     void buildConnect();
-    QRect recordRect();
     void start();
     void finish();
 

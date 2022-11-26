@@ -1,6 +1,6 @@
 #include "recordwidget.hpp"
+#include "recordgifthread.hpp"
 
-#include <3rdparty/qtgifimage/qgifimage.h>
 #include <utils/utils.h>
 
 #include <QtWidgets>
@@ -25,7 +25,6 @@ public:
         screenshotsWidget = new QWidget(owner);
         screenshotsWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         //screenshotsWidget->setStyleSheet("QWidget{background:transparent;}");
-        timer = new QTimer(owner);
     }
     ~RecordWidgetPrivate() {}
 
@@ -44,8 +43,7 @@ public:
     //记录鼠标位置
     QPoint lastPoint;
 
-    QScopedPointer<QGifImage> gifImagePtr;
-    QTimer *timer;
+    QScopedPointer<RecordGifThread> recordGifThreadPtr;
 };
 
 RecordWidget::RecordWidget(QWidget *parent)
@@ -84,6 +82,7 @@ void RecordWidget::onResizeGifWidget()
 
 void RecordWidget::onStart()
 {
+    d_ptr->startButton->setEnabled(false);
     auto text = d_ptr->startButton->text();
     if (text == tr("Start")) {
         start();
@@ -92,13 +91,7 @@ void RecordWidget::onStart()
         finish();
         d_ptr->startButton->setText(tr("Start"));
     }
-}
-
-void RecordWidget::onCapture()
-{
-    auto pixmap = Utils::grabFullWindow();
-    pixmap = pixmap.copy(recordRect());
-    d_ptr->gifImagePtr->addFrame(pixmap.toImage());
+    d_ptr->startButton->setEnabled(true);
 }
 
 void RecordWidget::mousePressEvent(QMouseEvent *event)
@@ -140,6 +133,7 @@ void RecordWidget::resizeEvent(QResizeEvent *event)
 
 void RecordWidget::paintEvent(QPaintEvent *event)
 {
+    Q_UNUSED(event)
     auto rectGif = QRect(d_ptr->screenshotsWidget->pos(), d_ptr->screenshotsWidget->size());
     rectGif.adjust(d_ptr->borderWidth, 0, -d_ptr->borderWidth, -d_ptr->borderWidth);
 
@@ -185,7 +179,6 @@ void RecordWidget::buildConnect()
     connect(d_ptr->heightSpinBox, &QSpinBox::valueChanged, this, &RecordWidget::onResizeGifWidget);
 
     connect(d_ptr->startButton, &QToolButton::clicked, this, &RecordWidget::onStart);
-    connect(d_ptr->timer, &QTimer::timeout, this, &RecordWidget::onCapture);
 }
 
 QRect RecordWidget::recordRect()
@@ -202,25 +195,15 @@ void RecordWidget::start()
 {
     auto delay = 1000.0 / d_ptr->frameRateSpinBox->value();
 
-    d_ptr->gifImagePtr.reset(new QGifImage(recordRect().size()));
-
-    //    QVector<QRgb> ctable;
-    //    ctable << qRgb(255, 255, 255) << qRgb(0, 0, 0) << qRgb(255, 0, 0) << qRgb(0, 255, 0)
-    //           << qRgb(0, 0, 255) << qRgb(255, 255, 0) << qRgb(0, 255, 255) << qRgb(255, 0, 255);
-
-    //    d_ptr->gifImagePtr->setGlobalColorTable(ctable, Qt::white);
-    // d_ptr->gifImagePtr->setDefaultTransparentColor(Qt::white);
-    d_ptr->gifImagePtr->setDefaultDelay(delay);
-
-    d_ptr->timer->start(delay);
+    d_ptr->recordGifThreadPtr.reset(new RecordGifThread);
+    d_ptr->recordGifThreadPtr->startCapture(this, delay);
 }
 
 void RecordWidget::finish()
 {
-    d_ptr->timer->stop();
-
-    auto clean = qScopeGuard([this] { d_ptr->gifImagePtr.reset(); });
-
+    if (!d_ptr->recordGifThreadPtr.isNull()) {
+        d_ptr->recordGifThreadPtr->stopCapture();
+    }
     auto path = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation)
                     .value(0, QDir::homePath());
     const auto time = QDateTime::currentDateTime().toString("yyyy-MM-dd HH-mm-ss");
@@ -229,9 +212,7 @@ void RecordWidget::finish()
                                                           tr("Save Image"),
                                                           path,
                                                           tr("Images (*.gif)"));
-    if (filename.isEmpty()) {
-        return;
+    if (!d_ptr->recordGifThreadPtr.isNull()) {
+        d_ptr->recordGifThreadPtr->stop(filename);
     }
-
-    d_ptr->gifImagePtr->save(filename);
 }

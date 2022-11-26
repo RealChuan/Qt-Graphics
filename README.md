@@ -23,10 +23,7 @@
    3. 虽然第一眼看起来模糊，但是实际生成的时候都是重新载入左侧原图剪切生成，保存后可用其他图片查看工具验证，或者按照上一点（2）查看；
 
    <div align=center><img src="docs/FilmSubTiltleSplicing.png"></div>
-6. GIF录制和截图功能：
+6. GIF录制（egif和gif-h库）和截图功能：
    1. 以下为用GIF录制功能，录制截图功能使用；
    2. 截屏之后可以使用（4）绘制图形；
-   3. 不想传太大的GIF到仓库，所以帧率设置为2（视觉上有点卡顿），录屏大小为400x200；
-   4. 问题：
-      1. QImage格式转换为QImage::Format_Indexed8会产生噪点，如何解决？
    <div align=center><img src="docs/Record_Screenshot.gif"></div>

@@ -24,6 +24,7 @@ SOURCES += \
     listiitemview.cc \
     mainwindow.cpp \
     maskdialog.cpp \
+    recordgifthread.cc \
     recordwidget.cc \
     rounddialog.cc \
     sectionalsubtitlesview.cc \
@@ -44,6 +45,7 @@ HEADERS += \
     mainwindow_global.h \
     mainwindow.h \
     maskdialog.h \
+    recordgifthread.hpp \
     recordwidget.hpp \
     rounddialog.hpp \
     sectionalsubtitlesview.hpp \
