@@ -38,6 +38,9 @@ private:
     void encode1(const QVector<QImage> &images);
     void encode2(const QVector<QImage> &images);
 
+    void encode1();
+    void encode2();
+
     struct RecordGifThreadPrivate;
     QScopedPointer<RecordGifThreadPrivate> d_ptr;
 };
