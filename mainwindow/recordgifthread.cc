@@ -79,44 +79,9 @@ void RecordGifThread::stop(const QString &savePath)
 
 void RecordGifThread::run()
 {
-    auto f = qScopeGuard([] { qDebug() << "finished"; });
-    /// [1]
-    QScopedPointer<GifEncoder> gifEncoderPtr(createGifEncoder());
-    QScopedPointer<GifWriter> gifWriterPtr(createGifWriter());
-
-    QElapsedTimer timer;
-    timer.start();
-    while (d_ptr->runing) {
-        auto delay = d_ptr->interval - timer.elapsed();
-        if (delay > 0) { // use QTimer better
-            QMutexLocker locker(&d_ptr->mutex);
-            d_ptr->waitCondition.wait(&d_ptr->mutex, d_ptr->interval);
-        }
-        timer.restart();
-        if (!d_ptr->capture) {
-            continue;
-        }
-        auto pixmap = Utils::grabFullWindow();
-        if (d_ptr->recordWidgetPtr.isNull()) {
-            return;
-        }
-        pixmap = pixmap.copy(d_ptr->recordWidgetPtr->recordRect());
-        auto image = pixmap.toImage();
-        ///[2]
-        push(gifEncoderPtr.data(), image);
-        push(gifWriterPtr.data(), image);
-    }
-    ///[3]
-    finish(gifEncoderPtr.data());
-    finish(gifWriterPtr.data());
-
-    if (d_ptr->savePath.isEmpty()) {
-        return;
-    }
-
-    ///[4]
-    moveFile1();
-    moveFile2();
+    //encode1();
+    encode2(); // 高帧率 先截图保存，后合成--较慢
+    qDebug() << "finished";
 }
 
 GifEncoder *RecordGifThread::createGifEncoder()
@@ -125,7 +90,7 @@ GifEncoder *RecordGifThread::createGifEncoder()
 
     int w = d_ptr->size.width();
     int h = d_ptr->size.height();
-    int quality = 10;
+    int quality = 10; // 1 速度太慢了，10可以接受
     bool useGlobalColorMap = true;
     int loop = 0;
     int preAllocSize = useGlobalColorMap ? w * h * 3 * 3 : w * h * 3;
@@ -210,55 +175,114 @@ void RecordGifThread::moveFile2()
 
 void RecordGifThread::encode1(const QVector<QImage> &images)
 {
-    auto savePath = d_ptr->savePath;
-    savePath = savePath.replace(".gif", "_egif.gif");
-
-    int w = d_ptr->size.width();
-    int h = d_ptr->size.height();
-    int quality = 10;
-    bool useGlobalColorMap = true;
-    int loop = 0;
-    int preAllocSize = useGlobalColorMap ? w * h * 3 * 3 : w * h * 3;
-    QScopedPointer<GifEncoder> gifEncoderPtr(new GifEncoder);
-    if (!gifEncoderPtr
-             ->open(savePath.toStdString(), w, h, quality, useGlobalColorMap, loop, preAllocSize)) {
-        return;
+    /// [1]
+    QScopedPointer<GifEncoder> gifEncoderPtr(createGifEncoder());
+    for (const auto &image : qAsConst(images)) {
+        ///[2]
+        push(gifEncoderPtr.data(), image);
     }
-    auto pixelFormat = GifEncoder::PixelFormat::PIXEL_FORMAT_UNKNOWN;
-    for (auto image : qAsConst(images)) {
-        switch (image.format()) {
-        case QImage::Format_RGBA8888:
-            pixelFormat = GifEncoder::PixelFormat::PIXEL_FORMAT_RGBA;
-            break;
-        case QImage::Format_BGR888: pixelFormat = GifEncoder::PixelFormat::PIXEL_FORMAT_BGR; break;
-        case QImage::Format_RGB888:
-        default:
-            image = image.convertedTo(QImage::Format_RGB888);
-            pixelFormat = GifEncoder::PixelFormat::PIXEL_FORMAT_RGB;
-            break;
-        }
-        gifEncoderPtr->push(pixelFormat, image.constBits(), w, h, d_ptr->interval * 1.0 / 1000);
-    }
-    qInfo() << gifEncoderPtr->close();
+    ///[3]
+    finish(gifEncoderPtr.data());
+    ///[4]
+    moveFile1();
 }
 
 void RecordGifThread::encode2(const QVector<QImage> &images)
 {
-    auto savePath = d_ptr->savePath;
-    savePath = savePath.replace(".gif", "_gif-h.gif");
-
-    int w = d_ptr->size.width();
-    int h = d_ptr->size.height();
-    auto delay = d_ptr->interval * 1.0 / 10;
-
-    QScopedPointer<GifWriter> gifWriterPtr(new GifWriter);
-    GifBegin(gifWriterPtr.data(), savePath.toStdString().c_str(), w, h, delay);
-    for (auto image : qAsConst(images)) {
-        switch (image.format()) {
-        case QImage::Format_RGBA8888: break;
-        default: image = image.convertedTo(QImage::Format_RGBA8888); break;
-        }
-        GifWriteFrame(gifWriterPtr.data(), image.constBits(), w, h, delay);
+    /// [1]
+    QScopedPointer<GifWriter> gifWriterPtr(createGifWriter());
+    for (const auto &image : qAsConst(images)) {
+        ///[2]
+        push(gifWriterPtr.data(), image);
     }
-    GifEnd(gifWriterPtr.data());
+    ///[3]
+    finish(gifWriterPtr.data());
+    ///[4]
+    moveFile2();
+}
+
+void RecordGifThread::encode1()
+{
+    /// [1]
+    QScopedPointer<GifEncoder> gifEncoderPtr(createGifEncoder());
+    QScopedPointer<GifWriter> gifWriterPtr(createGifWriter());
+
+    QElapsedTimer timer;
+    timer.start();
+    while (d_ptr->runing) {
+        auto delay = d_ptr->interval - timer.elapsed();
+        if (delay > 0) { // use QTimer better
+            QMutexLocker locker(&d_ptr->mutex);
+            d_ptr->waitCondition.wait(&d_ptr->mutex, d_ptr->interval);
+        }
+        timer.restart();
+        if (!d_ptr->capture) {
+            continue;
+        }
+        auto pixmap = Utils::grabFullWindow();
+        if (d_ptr->recordWidgetPtr.isNull()) {
+            return;
+        }
+        pixmap = pixmap.copy(d_ptr->recordWidgetPtr->recordRect());
+        auto image = pixmap.toImage();
+        ///[2]
+        push(gifEncoderPtr.data(), image);
+        push(gifWriterPtr.data(), image);
+    }
+    ///[3]
+    finish(gifEncoderPtr.data());
+    finish(gifWriterPtr.data());
+
+    if (d_ptr->savePath.isEmpty()) {
+        return;
+    }
+
+    ///[4]
+    moveFile1();
+    moveFile2();
+}
+
+void RecordGifThread::encode2()
+{
+    QStringList imagePaths;
+    QScopedPointer<QTimer> timer(new QTimer);
+    connect(timer.data(), &QTimer::timeout, timer.data(), [&] {
+        if (!d_ptr->capture) {
+            return;
+        }
+        auto pixmap = Utils::grabFullWindow();
+        if (d_ptr->recordWidgetPtr.isNull()) {
+            return;
+        }
+        pixmap = pixmap.copy(d_ptr->recordWidgetPtr->recordRect());
+        auto path = QString("%1/%2.png").arg(QDir::tempPath(), QString::number(imagePaths.size()));
+        imagePaths.append(path);
+        pixmap.save(path);
+    });
+    timer->start(d_ptr->interval);
+
+    exec();
+
+    if (d_ptr->savePath.isEmpty()) {
+        return;
+    }
+
+    /// [1]
+    QScopedPointer<GifEncoder> gifEncoderPtr(createGifEncoder());
+    QScopedPointer<GifWriter> gifWriterPtr(createGifWriter());
+    for (const auto &path : qAsConst(imagePaths)) {
+        QImage image(path);
+        if (image.isNull()) {
+            continue;
+        }
+        ///[2]
+        push(gifEncoderPtr.data(), image);
+        push(gifWriterPtr.data(), image);
+    }
+    ///[3]
+    finish(gifEncoderPtr.data());
+    finish(gifWriterPtr.data());
+    ///[4]
+    moveFile1();
+    moveFile2();
 }
