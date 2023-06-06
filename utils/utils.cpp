@@ -86,7 +86,6 @@ void Utils::setHighDpiEnvironmentVariable()
     if (Utils::HostOsInfo().isMacHost()) {
         return;
     }
-
     if (Utils::HostOsInfo().isWindowsHost() && !qEnvironmentVariableIsSet("QT_OPENGL")) {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
@@ -103,6 +102,11 @@ void Utils::setHighDpiEnvironmentVariable()
         QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
     }
+
+#if defined(Q_OS_WIN) && (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
+        Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+#endif
 }
 
 void Utils::reboot()
@@ -117,12 +121,16 @@ qint64 calculateDir(const QString &localPath)
 {
     qint64 size = 0;
     QDir dir(localPath);
-    if (!dir.exists())
+    if (!dir.exists()) {
         return size;
-    const QFileInfoList entries = dir.entryInfoList(QDir::AllEntries | QDir::Hidden);
-    for (const QFileInfo &fi : qAsConst(entries)) {
-        if (fi.isSymLink() || fi.isFile()) {
-            size += fi.size();
+    }
+    QFileInfoList list = dir.entryInfoList(QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot);
+    for (int i = 0; i < list.count(); i++) {
+        QFileInfo info = list.at(i);
+        if (info.isDir()) {
+            size += calculateDir(info.filePath());
+        } else {
+            size += info.size();
         }
     }
     return size;
@@ -130,35 +138,31 @@ qint64 calculateDir(const QString &localPath)
 
 qint64 Utils::fileSize(const QString &localPath)
 {
-    qint64 size = 0;
-    if (localPath.isEmpty())
-        return size;
-
-    QDirIterator it(localPath,
-                    QDir::NoDotAndDotDot | QDir::Dirs | QDir::NoSymLinks | QDir::Hidden,
-                    QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        size += calculateDir(it.next());
+    QFileInfo info(localPath);
+    if (info.isDir()) {
+        return calculateDir(localPath);
+    } else {
+        return info.size();
     }
-    size += calculateDir(localPath);
-    return size;
 }
 
 bool Utils::generateDirectorys(const QString &directory)
 {
     QDir sourceDir(directory);
-    if (sourceDir.exists())
+    if (sourceDir.exists()) {
         return true;
+    }
 
     QString tempDir;
-    QStringList directorys = directory.split("/");
+    auto directorys = directory.split("/");
     for (int i = 0; i < directorys.count(); i++) {
-        QString path = directorys[i];
+        auto path = directorys[i];
         tempDir += path + "/";
 
         QDir dir(tempDir);
-        if (!dir.exists() && !dir.mkdir(tempDir))
+        if (!dir.exists() && !dir.mkdir(tempDir)) {
             return false;
+        }
     }
 
     return true;
@@ -167,8 +171,9 @@ bool Utils::generateDirectorys(const QString &directory)
 void removeFiles(const QString &path)
 {
     QDir dir(path);
-    if (!dir.exists())
+    if (!dir.exists()) {
         return;
+    }
     const QFileInfoList entries = dir.entryInfoList(QDir::AllEntries | QDir::Hidden);
     for (const QFileInfo &fi : qAsConst(entries)) {
         if (fi.isSymLink() || fi.isFile()) {
@@ -197,8 +202,9 @@ static QString errnoToQString(int error)
 
 void Utils::removeDirectory(const QString &path)
 {
-    if (path.isEmpty()) // QDir("") points to the working directory! We never want to remove that one.
+    if (path.isEmpty()) { // QDir("") points to the working directory! We never want to remove that one.
         return;
+    }
 
     QStringList dirs;
     QDirIterator it(path,
@@ -223,23 +229,17 @@ void Utils::removeDirectory(const QString &path)
     }
 }
 
-QString Utils::bytesToString(qint64 bytes)
+QString Utils::convertBytesToString(qint64 bytes)
 {
-    const double KB = 1024 * 1.0;
-    const double MB = KB * 1024;
-    const double GB = MB * 1024;
-    const double TB = GB * 1024;
-
-    if (bytes / TB >= 1)
-        return QString("%1TB").arg(QString::number(bytes / TB, 'f', 2));
-    else if (bytes / GB >= 1)
-        return QString("%1GB").arg(QString::number(bytes / GB, 'f', 2));
-    else if (bytes / MB >= 1)
-        return QString("%1MB").arg(QString::number(bytes / MB, 'f', 2));
-    else if (bytes / KB >= 1)
-        return QString("%1KB").arg(qint64(bytes / KB));
-    else
-        return QString("%1B").arg(bytes);
+    const QStringList list = {"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+    const int unit = 1024;
+    int index = 0;
+    double size = bytes;
+    while (size >= unit) {
+        size /= unit;
+        index++;
+    }
+    return QString("%1 %2").arg(QString::number(size, 'f', 2)).arg(list.at(index));
 }
 
 QJsonObject Utils::jsonFromFile(const QString &filePath)
@@ -257,7 +257,7 @@ QJsonObject Utils::jsonFromFile(const QString &filePath)
 QJsonObject Utils::jsonFromBytes(const QByteArray &bytes)
 {
     QJsonParseError jsonParseError;
-    QJsonDocument jsonDocument = QJsonDocument::fromJson(bytes, &jsonParseError);
+    auto jsonDocument = QJsonDocument::fromJson(bytes, &jsonParseError);
     if (QJsonParseError::NoError != jsonParseError.error) {
         qWarning() << QObject::tr("%1\nOffset: %2")
                           .arg(jsonParseError.errorString(), jsonParseError.offset);
@@ -268,7 +268,7 @@ QJsonObject Utils::jsonFromBytes(const QByteArray &bytes)
 
 void Utils::setGlobalThreadPoolMaxSize(int maxSize)
 {
-    QThreadPool *instance = QThreadPool::globalInstance();
+    auto instance = QThreadPool::globalInstance();
     if (maxSize > 0) {
         instance->setMaxThreadCount(maxSize);
         return;

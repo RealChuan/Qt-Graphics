@@ -2,6 +2,7 @@
 #include "capturewidget.hpp"
 #include "drawwidget.h"
 #include "imageviewer.h"
+#include "openglviewer.hpp"
 #include "recordwidget.hpp"
 #include "subtitlsplicingwidget.hpp"
 
@@ -17,17 +18,20 @@ public:
     {
         drawWidget = new DrawWidget(owner);
         imageViewer = new ImageViewer(owner);
+        openglViewer = new OpenglViewer(owner);
         subtitlSplicingWidget = new SubtitlSplicingWidget(owner);
         stackedWidget = new QStackedWidget(owner);
         stackedWidget->addWidget(imageViewer);
         stackedWidget->addWidget(drawWidget);
         stackedWidget->addWidget(subtitlSplicingWidget);
+        stackedWidget->addWidget(openglViewer);
     }
     ~MainWindowPrivate() {}
 
     QWidget *owner;
     DrawWidget *drawWidget;
     ImageViewer *imageViewer;
+    OpenglViewer *openglViewer;
     SubtitlSplicingWidget *subtitlSplicingWidget;
     QStackedWidget *stackedWidget;
 };
@@ -66,6 +70,9 @@ void MainWindow::initMenuBar()
     });
     menu->addAction(tr("Subtitle Splicing"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->subtitlSplicingWidget);
+    });
+    menu->addAction(tr("OpenglViewer"), this, [this] {
+        d_ptr->stackedWidget->setCurrentWidget(d_ptr->openglViewer);
     });
     menuBar()->addMenu(menu);
     menuBar()->addAction(tr("Screenshots"), this, [this] {

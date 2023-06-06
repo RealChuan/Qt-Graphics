@@ -26,10 +26,6 @@ int main(int argc, char *argv[])
 #else
     qputenv("QSG_RHI_BACKEND", "opengl");
 #endif
-#if defined(Q_OS_WIN) && (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
-    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
-        Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
-#endif
     Utils::setHighDpiEnvironmentVariable();
     SharedTools::QtSingleApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     SharedTools::QtSingleApplication app("PictrueTools", argc, argv);

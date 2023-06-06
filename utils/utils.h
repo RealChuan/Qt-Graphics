@@ -24,7 +24,7 @@ UTILS_EXPORT void reboot();
 UTILS_EXPORT qint64 fileSize(const QString &localPath);
 UTILS_EXPORT bool generateDirectorys(const QString &directory);
 UTILS_EXPORT void removeDirectory(const QString &path);
-UTILS_EXPORT QString bytesToString(qint64 bytes);
+UTILS_EXPORT QString convertBytesToString(qint64 bytes);
 UTILS_EXPORT QJsonObject jsonFromFile(const QString &filePath);
 UTILS_EXPORT QJsonObject jsonFromBytes(const QByteArray &bytes);
 UTILS_EXPORT QString getConfigPath();
