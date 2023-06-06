@@ -1,6 +1,6 @@
 include(../Common.pri)
 
-QT       += core gui network
+QT       += core gui network openglwidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -14,6 +14,7 @@ LIBS += -L$$APP_OUTPUT_PATH/../libs
 
 LIBS += \
     -l$$replaceLibName(mainwindow) \
+    -l$$replaceLibName(openglgraphics) \
     -l$$replaceLibName(graphics) \
     -l$$replaceLibName(crashhandler) \
     -l$$replaceLibName(thirdparty) \

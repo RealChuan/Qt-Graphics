@@ -1,7 +1,7 @@
 include(../libs.pri)
 include(../3rdparty/3rdparty.pri)
 
-QT += widgets concurrent
+QT += widgets concurrent openglwidgets
 
 DEFINES += MAINWINDOW_LIBRARY
 TARGET = $$replaceLibName(mainwindow)
@@ -9,7 +9,8 @@ TARGET = $$replaceLibName(mainwindow)
 LIBS += \
     -l$$replaceLibName(utils) \
     -l$$replaceLibName(thirdparty) \
-    -l$$replaceLibName(graphics)
+    -l$$replaceLibName(graphics) \
+    -l$$replaceLibName(openglgraphics)
 
 DEFINES += QT_DEPRECATED_WARNINGS
 
@@ -24,6 +25,7 @@ SOURCES += \
     listiitemview.cc \
     mainwindow.cpp \
     maskdialog.cpp \
+    openglviewer.cc \
     recordgifthread.cc \
     recordwidget.cc \
     rounddialog.cc \
@@ -31,7 +33,8 @@ SOURCES += \
     selectionwidget.cc \
     stretchparamssettingdailog.cc \
     subtitlsplicingwidget.cc \
-    validator.cc
+    validator.cc \
+    viewer.cc
 
 HEADERS += \
     capturewidget.hpp \
@@ -45,6 +48,7 @@ HEADERS += \
     mainwindow_global.h \
     mainwindow.h \
     maskdialog.h \
+    openglviewer.hpp \
     recordgifthread.hpp \
     recordwidget.hpp \
     rounddialog.hpp \
@@ -52,4 +56,5 @@ HEADERS += \
     selectionwidget.hpp \
     stretchparamssettingdailog.hpp \
     subtitlsplicingwidget.hpp \
-    validator.hpp
+    validator.hpp \
+    viewer.hpp

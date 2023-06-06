@@ -6,6 +6,7 @@ SUBDIRS += \
     3rdparty \
     crashhandler \
     graphics \
+    openglgraphics \
     mainwindow \
     app
 

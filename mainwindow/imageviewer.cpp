@@ -6,50 +6,9 @@
 #include <graphics/imageview.h>
 #include <utils/utils.h>
 
-#include <QtConcurrent>
 #include <QtWidgets>
 
 using namespace Graphics;
-
-class ImageLoadTask : public QRunnable
-{
-public:
-    ImageLoadTask(const QString &fileUrl, ImageViewer *view, qint64 taskCount)
-        : m_viewPtr(view)
-        , m_fileUrl(fileUrl)
-        , m_taskCount(taskCount)
-    {
-        setAutoDelete(true);
-    }
-
-protected:
-    void run() override
-    {
-        const QFileInfo file(m_fileUrl);
-        const QFileInfoList list = file.absoluteDir().entryInfoList(QDir::Files
-                                                                    | QDir::NoDotAndDotDot);
-        for (const QFileInfo &info : qAsConst(list)) {
-            QImage image(info.absoluteFilePath());
-            if (image.isNull()) {
-                continue;
-            }
-            if (image.width() > WIDTH || image.height() > WIDTH) {
-                image = image.scaled(WIDTH, WIDTH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-            }
-            if (m_viewPtr.isNull()) {
-                return;
-            }
-            if (!m_viewPtr->setImage(info, image, m_taskCount)) {
-                return;
-            }
-        }
-    }
-
-private:
-    QPointer<ImageViewer> m_viewPtr;
-    QString m_fileUrl;
-    qint64 m_taskCount;
-};
 
 class ImageViewer::ImageViewerPrivate
 {
@@ -96,7 +55,7 @@ public:
 };
 
 ImageViewer::ImageViewer(QWidget *parent)
-    : QWidget(parent)
+    : Viewer(parent)
     , d_ptr(new ImageViewerPrivate(this))
 {
     setupUI();
@@ -114,7 +73,7 @@ bool ImageViewer::setImage(const QFileInfo &info, const QImage &image, const qin
         return false;
     }
     QMetaObject::invokeMethod(
-        this, [=] { emit imageLoadReady(info, image); }, Qt::QueuedConnection);
+        this, [=] { onImageLoaded(info, image); }, Qt::QueuedConnection);
     return true;
 }
 
@@ -177,7 +136,7 @@ void ImageViewer::onImageSizeChanged(const QSize &size)
 void ImageViewer::onImageChanged(const QString &url)
 {
     d_ptr->urlLabel->setText(url);
-    d_ptr->fileSizeLabel->setText(Utils::bytesToString(QFile(url).size()));
+    d_ptr->fileSizeLabel->setText(Utils::convertBytesToString(QFile(url).size()));
 
     for (const ImageInfo &image : qAsConst(d_ptr->imageInfoList)) {
         if (image.fileInfo().absoluteFilePath() == url) {
@@ -228,7 +187,7 @@ void ImageViewer::startImageLoadThread(const QString &url)
 {
     d_ptr->taskCount.ref();
     QThreadPool::globalInstance()->start(
-        new ImageLoadTask(url, this, d_ptr->taskCount.loadAcquire()));
+        new ImageLoadRunnable(url, this, d_ptr->taskCount.loadAcquire()));
 }
 
 void ImageViewer::clearThumbnail()
@@ -314,5 +273,4 @@ void ImageViewer::buildConnect()
     connect(d_ptr->imageListView, &ImageListView::changeItem, this, &ImageViewer::onChangedImage);
     connect(d_ptr->formatBox, &QComboBox::currentTextChanged, this, &ImageViewer::onFormatChanged);
     connect(d_ptr->colorBox, &QComboBox::currentTextChanged, this, &ImageViewer::onFormatChanged);
-    connect(this, &ImageViewer::imageLoadReady, this, &ImageViewer::onImageLoaded);
 }
