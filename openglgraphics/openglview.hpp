@@ -37,7 +37,6 @@ protected:
 
     void wheelEvent(QWheelEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
-    void resizeEvent(QResizeEvent *event) override;
 
     void contextMenuEvent(QContextMenuEvent *event) override;
 
@@ -46,6 +45,7 @@ private:
     void initTexture();
     void clear();
     void createPopMenu();
+    void emitScaleFactor();
 
     class OpenglViewPrivate;
     QScopedPointer<OpenglViewPrivate> d_ptr;

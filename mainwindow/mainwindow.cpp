@@ -65,14 +65,14 @@ void MainWindow::initMenuBar()
     menu->addAction(tr("ImageViewer"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->imageViewer);
     });
+    menu->addAction(tr("OpenglViewer"), this, [this] {
+        d_ptr->stackedWidget->setCurrentWidget(d_ptr->openglViewer);
+    });
     menu->addAction(tr("Draw"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->drawWidget);
     });
     menu->addAction(tr("Subtitle Splicing"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->subtitlSplicingWidget);
-    });
-    menu->addAction(tr("OpenglViewer"), this, [this] {
-        d_ptr->stackedWidget->setCurrentWidget(d_ptr->openglViewer);
     });
     menuBar()->addMenu(menu);
     menuBar()->addAction(tr("Screenshots"), this, [this] {

@@ -81,7 +81,8 @@ void OpenglViewer::onOpenImage()
 
 void OpenglViewer::onScaleFactorChanged(qreal factor)
 {
-    d_ptr->scaleLabel->setText(QString::number(factor, 'f', 2));
+    const QString info = QString::number(factor * 100, 'f', 2) + QLatin1Char('%');
+    d_ptr->scaleLabel->setText(info);
 }
 
 void OpenglViewer::onImageSizeChanged(const QSize &size)
@@ -184,11 +185,14 @@ QWidget *OpenglViewer::toolWidget()
 
 void OpenglViewer::buildConnect()
 {
-    // connect(d_ptr->imageView,
-    //         &ImageView::scaleFactorChanged,
-    //         this,
-    //         &ImageViewer::onScaleFactorChanged);
-    // connect(d_ptr->imageView, &ImageView::imageSizeChanged, this, &OpenglViewer::onImageSizeChanged);
+    connect(d_ptr->openglView,
+            &OpenglGraphics::OpenglView::scaleFactorChanged,
+            this,
+            &OpenglViewer::onScaleFactorChanged);
+    connect(d_ptr->openglView,
+            &OpenglGraphics::OpenglView::imageSizeChanged,
+            this,
+            &OpenglViewer::onImageSizeChanged);
     connect(d_ptr->openglView,
             &OpenglGraphics::OpenglView::imageUrlChanged,
             this,

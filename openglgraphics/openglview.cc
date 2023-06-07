@@ -26,7 +26,7 @@ public:
 
     QImage image;
     bool isImageChanged = false;
-    QColor backgroundColor = QColor(220, 220, 220);
+    QColor backgroundColor = Qt::white;
 
     QMatrix4x4 transform;
     const qreal scaleFactor = 1.2;
@@ -75,6 +75,7 @@ void OpenglView::setImageUrl(const QString &imageUrl)
     }
 
     emit imageUrlChanged(imageUrl);
+    emit imageSizeChanged(size);
 }
 
 void OpenglView::resetToOriginalSize()
@@ -88,6 +89,7 @@ void OpenglView::resetToOriginalSize()
     auto factor_h = qreal(size.height()) / height();
     d_ptr->transform.setToIdentity();
     d_ptr->transform.scale(factor_w, factor_h, 1.0);
+    emit emitScaleFactor();
 
     QMetaObject::invokeMethod(this, "update", Qt::QueuedConnection);
 }
@@ -104,6 +106,7 @@ void OpenglView::fitToScreen()
     auto factor = qMin(factor_w, factor_h);
     d_ptr->transform.setToIdentity();
     d_ptr->transform.scale(factor / factor_w, factor / factor_h, 1.0);
+    emit emitScaleFactor();
 
     QMetaObject::invokeMethod(this, "update", Qt::QueuedConnection);
 }
@@ -129,6 +132,8 @@ void OpenglView::initializeGL()
     clear();
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     d_ptr->programPtr.reset(new QOpenGLShaderProgram(this));
     d_ptr->programPtr->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shader/texture.vs");
@@ -152,6 +157,7 @@ void OpenglView::resizeGL(int w, int h)
         auto factor_h = d_ptr->windowSize.height() / qreal(h);
         d_ptr->transform.scale(factor_w, factor_h, 1.0);
         //qDebug() << "resizeGL" << factor_w << factor_h;
+        emit emitScaleFactor();
     }
     d_ptr->windowSize = QSize(w, h);
 
@@ -168,6 +174,7 @@ void OpenglView::paintGL()
 
     d_ptr->programPtr->bind();
 
+    glActiveTexture(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, d_ptr->texture);
     if (d_ptr->isImageChanged) {
         d_ptr->isImageChanged = false;
@@ -180,6 +187,7 @@ void OpenglView::paintGL()
                      GL_RGBA,
                      GL_UNSIGNED_BYTE,
                      d_ptr->image.bits());
+        glGenerateMipmap(GL_TEXTURE_2D);
     }
 
     d_ptr->programPtr->setUniformValue("transform", d_ptr->transform);
@@ -197,6 +205,7 @@ void OpenglView::wheelEvent(QWheelEvent *event)
 
     qreal factor = qPow(d_ptr->scaleFactor, event->angleDelta().y() / 240.0);
     d_ptr->transform.scale(factor, factor, 1.0);
+    emit emitScaleFactor();
 
     QMetaObject::invokeMethod(this, "update", Qt::QueuedConnection);
 }
@@ -205,13 +214,6 @@ void OpenglView::mouseDoubleClickEvent(QMouseEvent *event)
 {
     QOpenGLWidget::mouseDoubleClickEvent(event);
     fitToScreen();
-}
-
-void OpenglView::resizeEvent(QResizeEvent *event)
-{
-    QOpenGLWidget::resizeEvent(event);
-
-    //fitToScreen();
 }
 
 void OpenglView::contextMenuEvent(QContextMenuEvent *event)
@@ -274,6 +276,13 @@ void OpenglView::createPopMenu()
     d_ptr->menu->addAction(tr("Fit to screen"), this, &OpenglView::fitToScreen);
     d_ptr->menu->addAction(tr("Rotate 90"), this, &OpenglView::rotateNinetieth);
     d_ptr->menu->addAction(tr("Anti rotate 90"), this, &OpenglView::anti_rotateNinetieth);
+}
+
+void OpenglView::emitScaleFactor()
+{
+    auto factor = d_ptr->transform.toTransform().m11() * d_ptr->windowSize.width()
+                  / d_ptr->image.width();
+    emit scaleFactorChanged(factor);
 }
 
 } // namespace OpenglGraphics
