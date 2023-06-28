@@ -5,23 +5,23 @@
 
 ## Effect picture update will not be timely
 
-## 1. Viewing interface:
+## Look at the picture interface:
 
 <div align=center><img src="doc/ImageView.png"></div>
 
-## 2. Opengl view interface:
+## Opengl view interface:
 
 1.  The performance is much better than that of using the QGraphicsView interface, which is very smooth and takes up very little CPU resources;
 
-### 问题
+### question
 
 1.  Opengl viewing interface, when rotating at any angle, the aspect ratio of the texture will change, resulting in abnormal display, this problem has not been resolved;
 
-## 3. Mosaic drawing interface (eraser effect):
+## Mosaic drawing interface (eraser effect):
 
 <div align=center><img src="doc/MaskEdit.png"></div>
 
-## 4. Round corner editing window (can also be edited into a round icon):
+## Round corner editing window (can also be edited into a round icon):
 
 1.  Be sure to save it as PNG, otherwise the rounded corners will turn black;
 
@@ -29,11 +29,11 @@
 <div align=center><img src="doc/RoundEdit_2.png"></div> 
 <div align=center><img src="doc/RoundEdit_3.png"></div>
 
-## 5. Simple graphic drawing interface:
+## Simple graphic drawing interface:
 
 <div align=center><img src="doc/DrawScene.png"></div>
 
-## 6. Movie subtitle splicing interface:
+## Movie subtitle splicing interface:
 
 1.  The picture on the left is a picture that is quickly zoomed after loading, and the display is not clear, mainly to save memory;
 2.  The picture on the right is the original picture displayed. Since the scaling of QImageView is not clear, you can adjust it to the size of the original picture (double-click on the left side), and it looks very comfortable;
@@ -41,9 +41,9 @@
 
 <div align=center><img src="doc/FilmSubTiltleSplicing.png"></div>
 
-## 7. GIF recording (egif and gif-h library) and screenshot function:
+## GIF recording (egif and gif-h libraries) and screenshot functions:
 
-1.  以下为用GIF录制功能，录制截图功能使用；
+1.  The following is the use of GIF recording function and recording screenshot function;
 2.  After taking a screenshot, you can use (4) to draw graphics;
-    <div align=center><img src="doc/Record_Screenshot.gif"></div>
-       
+
+<div align=center><img src="doc/Record_Screenshot.gif"></div>
