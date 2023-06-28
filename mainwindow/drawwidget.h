@@ -12,7 +12,7 @@ class DrawWidget : public QWidget
     Q_OBJECT
 public:
     explicit DrawWidget(QWidget *parent = nullptr);
-    ~DrawWidget();
+    ~DrawWidget() override;
 
 private slots:
     void onAddShape(QListWidgetItem *);
@@ -30,10 +30,10 @@ private:
     void initNewButton();
     void clearAll();
 
-    QToolBar *cerateToolBar();
-    QMenu *createColorMenu(const char *slot, QColor defaultColor);
-    QIcon createColorToolButtonIcon(QColor color);
-    QIcon createColorIcon(QColor color);
+    auto cerateToolBar() -> QToolBar *;
+    auto createColorMenu(const char *slot, QColor defaultColor) -> QMenu *;
+    auto createColorToolButtonIcon(QColor color) -> QIcon;
+    auto createColorIcon(QColor color) -> QIcon;
 
     class DrawWidgetPrivate;
     QScopedPointer<DrawWidgetPrivate> d_ptr;

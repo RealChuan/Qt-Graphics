@@ -37,7 +37,7 @@ namespace SharedTools {
 
 static const int instancesSize = 1024;
 
-static QString instancesLockFilename(const QString &appSessionId)
+static auto instancesLockFilename(const QString &appSessionId) -> QString
 {
     const QChar slash(QLatin1Char('/'));
     QString res = QDir::tempPath();
@@ -115,7 +115,7 @@ QtSingleApplication::~QtSingleApplication()
     lockfile.unlock();
 }
 
-bool QtSingleApplication::event(QEvent *event)
+auto QtSingleApplication::event(QEvent *event) -> bool
 {
     if (event->type() == QEvent::FileOpen) {
         QFileOpenEvent *foe = static_cast<QFileOpenEvent*>(event);
@@ -125,7 +125,7 @@ bool QtSingleApplication::event(QEvent *event)
     return QApplication::event(event);
 }
 
-bool QtSingleApplication::isRunning(qint64 pid)
+auto QtSingleApplication::isRunning(qint64 pid) -> bool
 {
     if (pid == -1) {
         pid = firstPeer;
@@ -137,7 +137,7 @@ bool QtSingleApplication::isRunning(qint64 pid)
     return peer.isClient();
 }
 
-bool QtSingleApplication::sendMessage(const QString &message, int timeout, qint64 pid)
+auto QtSingleApplication::sendMessage(const QString &message, int timeout, qint64 pid) -> bool
 {
     if (pid == -1) {
         pid = firstPeer;
@@ -149,7 +149,7 @@ bool QtSingleApplication::sendMessage(const QString &message, int timeout, qint6
     return peer.sendMessage(message, timeout, block);
 }
 
-QString QtSingleApplication::applicationId() const
+auto QtSingleApplication::applicationId() const -> QString
 {
     return appId;
 }
@@ -171,7 +171,7 @@ void QtSingleApplication::setActivationWindow(QWidget *aw, bool activateOnMessag
 }
 
 
-QWidget* QtSingleApplication::activationWindow() const
+auto QtSingleApplication::activationWindow() const -> QWidget*
 {
     return actWin;
 }

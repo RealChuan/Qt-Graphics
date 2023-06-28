@@ -15,7 +15,7 @@ public:
 
     GraphicsTextItem(QGraphicsItem *parent = nullptr);
 
-    int type() const override { return Type; }
+    [[nodiscard]] auto type() const -> int override { return Type; }
 
 signals:
     void lostFocus(Graphics::GraphicsTextItem *item);
@@ -24,7 +24,7 @@ signals:
 protected:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
 
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
+    auto itemChange(GraphicsItemChange change, const QVariant &value) -> QVariant override;
 
     void focusOutEvent(QFocusEvent *event) override;
 };

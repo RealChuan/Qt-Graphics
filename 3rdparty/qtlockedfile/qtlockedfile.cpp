@@ -98,7 +98,7 @@ QtLockedFile::QtLockedFile(const QString &name)
 
     \sa lockMode()
 */
-bool QtLockedFile::isLocked() const
+auto QtLockedFile::isLocked() const -> bool
 {
     return m_lock_mode != NoLock;
 }
@@ -108,7 +108,7 @@ bool QtLockedFile::isLocked() const
 
     \sa isLocked()
 */
-QtLockedFile::LockMode QtLockedFile::lockMode() const
+auto QtLockedFile::lockMode() const -> QtLockedFile::LockMode
 {
     return m_lock_mode;
 }

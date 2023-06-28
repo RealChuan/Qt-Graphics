@@ -18,7 +18,7 @@ void setAppInfo()
     qApp->setOrganizationName(QObject::tr("Youth"));
 }
 
-int main(int argc, char *argv[])
+auto main(int argc, char *argv[]) -> int
 {
 #if defined(Q_OS_WIN) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (!qEnvironmentVariableIsSet("QT_OPENGL"))

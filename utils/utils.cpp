@@ -58,7 +58,7 @@ void Utils::windowCenter(QWidget *window)
     window->move(x, y);
 }
 
-QString compilerString()
+auto compilerString() -> QString
 {
 #if defined(__apple_build_version__) // Apple clang has other version numbers
     QString isAppleString = QLatin1String(" (Apple)");
@@ -117,7 +117,7 @@ void Utils::reboot()
     QApplication::exit();
 }
 
-qint64 calculateDir(const QString &localPath)
+auto calculateDir(const QString &localPath) -> qint64
 {
     qint64 size = 0;
     QDir dir(localPath);
@@ -136,7 +136,7 @@ qint64 calculateDir(const QString &localPath)
     return size;
 }
 
-qint64 Utils::fileSize(const QString &localPath)
+auto Utils::fileSize(const QString &localPath) -> qint64
 {
     QFileInfo info(localPath);
     if (info.isDir()) {
@@ -146,7 +146,7 @@ qint64 Utils::fileSize(const QString &localPath)
     }
 }
 
-bool Utils::generateDirectorys(const QString &directory)
+auto Utils::generateDirectorys(const QString &directory) -> bool
 {
     QDir sourceDir(directory);
     if (sourceDir.exists()) {
@@ -188,7 +188,7 @@ void removeFiles(const QString &path)
     }
 }
 
-static QString errnoToQString(int error)
+static auto errnoToQString(int error) -> QString
 {
 #if defined(Q_OS_WIN) && !defined(Q_CC_MINGW)
     char msg[128];
@@ -229,7 +229,7 @@ void Utils::removeDirectory(const QString &path)
     }
 }
 
-QString Utils::convertBytesToString(qint64 bytes)
+auto Utils::convertBytesToString(qint64 bytes) -> QString
 {
     const QStringList list = {"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
     const int unit = 1024;
@@ -276,7 +276,7 @@ void Utils::setGlobalThreadPoolMaxSize(int maxSize)
     instance->setMaxThreadCount(qMax(4, 2 * instance->maxThreadCount()));
 }
 
-QString Utils::getConfigPath()
+auto Utils::getConfigPath() -> QString
 {
     static QString path;
     if (path.isEmpty()) {
@@ -293,7 +293,7 @@ QString Utils::getConfigPath()
     return path;
 }
 
-QRect Utils::desktopGeometry()
+auto Utils::desktopGeometry() -> QRect
 {
     QRect geometry;
     auto screens = QGuiApplication::screens();
@@ -306,7 +306,7 @@ QRect Utils::desktopGeometry()
     return geometry;
 }
 
-QPixmap Utils::grabFullWindow()
+auto Utils::grabFullWindow() -> QPixmap
 {
     // auto pixmap = screen()->grabWindow();
     // auto pixmap = QApplication::primaryScreen()->grabWindow();

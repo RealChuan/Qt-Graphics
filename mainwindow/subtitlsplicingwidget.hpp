@@ -15,7 +15,7 @@ class SubtitlSplicingWidget : public QWidget
     Q_OBJECT
 public:
     explicit SubtitlSplicingWidget(QWidget *parent = nullptr);
-    ~SubtitlSplicingWidget();
+    ~SubtitlSplicingWidget() override;
 
     void setImage(const QImage &image);
 

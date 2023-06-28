@@ -40,7 +40,7 @@ BasicGraphicsItem::BasicGraphicsItem(QGraphicsItem *parent)
 
 BasicGraphicsItem::~BasicGraphicsItem() {}
 
-QRectF BasicGraphicsItem::boundingRect() const
+auto BasicGraphicsItem::boundingRect() const -> QRectF
 {
     if (!isValid()) {
         return scene()->sceneRect();
@@ -57,7 +57,7 @@ void BasicGraphicsItem::setName(const QString &name)
     d_ptr->name = name;
 }
 
-QString BasicGraphicsItem::name() const
+auto BasicGraphicsItem::name() const -> QString
 {
     return d_ptr->name;
 }
@@ -74,7 +74,7 @@ void BasicGraphicsItem::setMargin(double m11)
     }
 }
 
-double BasicGraphicsItem::margin() const
+auto BasicGraphicsItem::margin() const -> double
 {
     return d_ptr->margin;
 }
@@ -141,7 +141,7 @@ void BasicGraphicsItem::setCache(const QPolygonF &cache)
     d_ptr->cache = cache;
 }
 
-QPolygonF BasicGraphicsItem::cache() const
+auto BasicGraphicsItem::cache() const -> QPolygonF
 {
     return d_ptr->cache;
 }
@@ -151,12 +151,12 @@ void BasicGraphicsItem::setClickedPos(const QPointF &pointF)
     d_ptr->clickedPos = pointF;
 }
 
-QPointF BasicGraphicsItem::clickedPos() const
+auto BasicGraphicsItem::clickedPos() const -> QPointF
 {
     return d_ptr->clickedPos;
 }
 
-BasicGraphicsItem::MouseRegion BasicGraphicsItem::mouseRegion() const
+auto BasicGraphicsItem::mouseRegion() const -> BasicGraphicsItem::MouseRegion
 {
     return d_ptr->mouseRegin;
 }
@@ -166,7 +166,7 @@ void BasicGraphicsItem::setMouseRegion(const BasicGraphicsItem::MouseRegion mous
     d_ptr->mouseRegin = mouseRegin;
 }
 
-int BasicGraphicsItem::hoveredDotIndex() const
+auto BasicGraphicsItem::hoveredDotIndex() const -> int
 {
     return d_ptr->hoveredDotIndex;
 }

@@ -49,6 +49,14 @@ MainWindow::MainWindow(QWidget *parent)
                    .arg(QImageReader::allocationLimit());
     //QImageReader::setAllocationLimit();
 #endif
+    // fix QOpenGLWidget initialize
+    QMetaObject::invokeMethod(
+        this,
+        [this] {
+            d_ptr->stackedWidget->setCurrentWidget(d_ptr->openglViewer);
+            d_ptr->stackedWidget->setCurrentWidget(d_ptr->imageViewer);
+        },
+        Qt::QueuedConnection);
 }
 
 MainWindow::~MainWindow() {}

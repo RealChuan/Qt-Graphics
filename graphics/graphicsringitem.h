@@ -6,9 +6,9 @@
 namespace Graphics {
 
 struct GRAPHICS_EXPORT Ring{
-    QRectF boundingRect() const;
-    QRectF minBoundingRect() const;
-    bool isVaild() const;
+    [[nodiscard]] auto boundingRect() const -> QRectF;
+    [[nodiscard]] auto minBoundingRect() const -> QRectF;
+    [[nodiscard]] auto isVaild() const -> bool;
 
     QPointF center;
     double minRadius = 0;
@@ -28,11 +28,11 @@ public:
     ~GraphicsRingItem() override;
 
     void setRing(const Ring&);
-    Ring ring() const;
+    [[nodiscard]] auto ring() const -> Ring;
 
-    bool isValid() const override;
-    int type() const override;
-    QPainterPath shape() const override;
+    [[nodiscard]] auto isValid() const -> bool override;
+    [[nodiscard]] auto type() const -> int override;
+    [[nodiscard]] auto shape() const -> QPainterPath override;
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;

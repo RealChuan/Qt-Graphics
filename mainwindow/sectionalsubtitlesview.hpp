@@ -14,18 +14,18 @@ class SectionalSubtitlesView : public ListItemView
     Q_OBJECT
 public:
     explicit SectionalSubtitlesView(QWidget *parent = nullptr);
-    ~SectionalSubtitlesView();
+    ~SectionalSubtitlesView() override;
 
     void setImageAfter() override;
 
-    QImage clipImage() const;
+    [[nodiscard]] auto clipImage() const -> QImage;
 
-    StitchingImageInfo info() const;
+    [[nodiscard]] auto info() const -> StitchingImageInfo;
 
-    double line1RatioOfHeight() const;
+    [[nodiscard]] auto line1RatioOfHeight() const -> double;
     void setLine1RatioOfHeight(double value);
 
-    double line2RatioOfHeight() const;
+    [[nodiscard]] auto line2RatioOfHeight() const -> double;
     void setLine2RatioOfHeight(double value);
 
 signals:

@@ -85,12 +85,12 @@ ImageView::ImageView(QGraphicsScene *scene, QWidget *parent)
 
 ImageView::~ImageView() {}
 
-QPixmap ImageView::pixmap() const
+auto ImageView::pixmap() const -> QPixmap
 {
     return d_ptr->pixmapItem->pixmap();
 }
 
-GraphicsPixmapItem *ImageView::pixmapItem()
+auto ImageView::pixmapItem() -> GraphicsPixmapItem *
 {
     return d_ptr->pixmapItem;
 }
@@ -338,7 +338,7 @@ void ImageView::createPopMenu()
     d_ptr->menu->addAction(showCrossLineAction);
 }
 
-QRect ImageView::textRect(const Qt::Corner pos, const QFontMetrics &metrics, const QString &text)
+auto ImageView::textRect(const Qt::Corner pos, const QFontMetrics &metrics, const QString &text) -> QRect
 {
     int startX = 1;
     int startY = 1;

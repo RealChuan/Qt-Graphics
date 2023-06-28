@@ -40,25 +40,26 @@ public:
     {}
 
     void setFileInfo(const QFileInfo &fileInfo) { d_ptr->fileInfo = fileInfo; }
-    QFileInfo fileInfo() const { return d_ptr->fileInfo; }
+    [[nodiscard]] auto fileInfo() const -> QFileInfo { return d_ptr->fileInfo; }
 
     void setImage(const QImage &image) { d_ptr->image = image; }
-    QImage image() const { return d_ptr->image; }
+    [[nodiscard]] auto image() const -> QImage { return d_ptr->image; }
 
 private:
     QExplicitlySharedDataPointer<ImageData> d_ptr;
 };
 
-typedef QList<ImageInfo> ImageInfoList;
+using ImageInfoList = QList<ImageInfo>;
 
 class ImageListModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
     explicit ImageListModel(QObject *parent = nullptr);
-    ~ImageListModel();
-    int rowCount(const QModelIndex & = QModelIndex()) const override;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    ~ImageListModel() override;
+    [[nodiscard]] auto rowCount(const QModelIndex & = QModelIndex()) const -> int override;
+    [[nodiscard]] auto data(const QModelIndex &index, int role = Qt::DisplayRole) const
+        -> QVariant override;
 
     void setImageInfoList(const ImageInfoList &);
 
@@ -72,7 +73,7 @@ class ImageListView : public QListView
     Q_OBJECT
 public:
     explicit ImageListView(QWidget *parent = nullptr);
-    ~ImageListView();
+    ~ImageListView() override;
 
     void setImageInfoList(const ImageInfoList &);
 

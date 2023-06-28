@@ -16,7 +16,7 @@ SelectionWidget::SelectionWidget(QColor c, QWidget *parent)
     setAttribute(Qt::WA_TransparentForMouseEvents);
     parent->installEventFilter(this);
 
-    int sideVal = 30;
+    int sideVal = 16;
     int handleSide = sideVal / 2;
     const QRect areaRect(0, 0, sideVal, sideVal);
 

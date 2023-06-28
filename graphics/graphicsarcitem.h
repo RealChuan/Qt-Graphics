@@ -6,7 +6,7 @@
 namespace Graphics {
 
 struct GRAPHICS_EXPORT Arc{
-    bool isValid() const;
+    [[nodiscard]] auto isValid() const -> bool;
 
     QPointF center;
     double minRadius = 0;
@@ -25,12 +25,12 @@ public:
     ~GraphicsArcItem() override;
 
     void setArc(const Arc &arc);
-    Arc arch() const;
+    [[nodiscard]] auto arch() const -> Arc;
 
-    bool isValid() const override;
-    int type() const override;
-    QRectF boundingRect() const override;
-    QPainterPath shape() const override;
+    [[nodiscard]] auto isValid() const -> bool override;
+    [[nodiscard]] auto type() const -> int override;
+    [[nodiscard]] auto boundingRect() const -> QRectF override;
+    [[nodiscard]] auto shape() const -> QPainterPath override;
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;

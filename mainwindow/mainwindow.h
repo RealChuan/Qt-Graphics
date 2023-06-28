@@ -10,7 +10,7 @@ class MAINWINDOW_EXPORT MainWindow : public QMainWindow
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    ~MainWindow() override;
 
 private:
     void setupUI();

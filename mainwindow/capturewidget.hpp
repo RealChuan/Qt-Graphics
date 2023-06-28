@@ -13,14 +13,14 @@ class CaptureWidget : public QWidget
     Q_OBJECT
 public:
     explicit CaptureWidget(QWidget *parent = nullptr);
-    ~CaptureWidget();
+    ~CaptureWidget() override;
 
 private:
     void onSelectAll();
     void onSave();
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *event) override;
+    auto eventFilter(QObject *obj, QEvent *event) -> bool override;
     void paintEvent(QPaintEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *event) override;
 

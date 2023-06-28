@@ -8,12 +8,12 @@ class MaskDialog : public QDialog
     Q_OBJECT
 public:
     explicit MaskDialog(QWidget *parent = nullptr);
-    ~MaskDialog();
+    ~MaskDialog() override;
 
     void setImageName(const QString &name);
 
     void setPixmap(const QPixmap& pixmap);
-    QImage maskImage();
+    auto maskImage() -> QImage;
     void setMaskImage(const QImage& image);
 
 private slots:

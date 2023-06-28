@@ -38,13 +38,13 @@ public:
      *        If use local color map, preAllocSize = MAX(width * height) * 3
      * @return
      */
-    bool open(const std::string &file,
+    auto open(const std::string &file,
               int width,
               int height,
               int quality,
               bool useGlobalColorMap,
               int16_t loop,
-              int preAllocSize = 0);
+              int preAllocSize = 0) -> bool;
 
     /**
      * add frame
@@ -56,17 +56,17 @@ public:
      * @param delay delay time 0.01s
      * @return
      */
-    bool push(PixelFormat format, const uint8_t *frame, int width, int height, int delay);
+    auto push(PixelFormat format, const uint8_t *frame, int width, int height, int delay) -> bool;
 
     /**
      * close gif file
      *
      * @return
      */
-    bool close();
+    auto close() -> bool;
 
 private:
-    inline bool isFirstFrame() const { return m_frameCount == 0; }
+    [[nodiscard]] inline auto isFirstFrame() const -> bool { return m_frameCount == 0; }
 
     inline void reset()
     {

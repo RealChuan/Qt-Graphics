@@ -7,7 +7,7 @@ namespace Graphics {
 
 struct GRAPHICS_EXPORT RotatedRect
 {
-    bool isValid() const;
+    [[nodiscard]] auto isValid() const -> bool;
 
     QPointF center;
     double width = 0;
@@ -24,10 +24,10 @@ public:
     ~GraphicsRotatedRectItem() override;
 
     void setRotatedRect(const RotatedRect &rotatedRect);
-    RotatedRect rotatedRect() const;
+    [[nodiscard]] auto rotatedRect() const -> RotatedRect;
 
-    bool isValid() const override;
-    int type() const override;
+    [[nodiscard]] auto isValid() const -> bool override;
+    [[nodiscard]] auto type() const -> int override;
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;

@@ -7,9 +7,9 @@ class OpenglViewer : public Viewer
     Q_OBJECT
 public:
     explicit OpenglViewer(QWidget *parent = nullptr);
-    ~OpenglViewer();
+    ~OpenglViewer() override;
 
-    bool setImage(const QFileInfo &info, const QImage &image, const qint64 taskCount);
+    auto setImage(const QFileInfo &info, const QImage &image, const qint64 taskCount) -> bool override;
 
 signals:
     void imageReady(const QImage &);
@@ -27,7 +27,7 @@ private:
     void startImageLoadThread(const QString &url);
     void clearThumbnail();
     void setupUI();
-    QWidget *toolWidget();
+    auto toolWidget() -> QWidget *;
     void buildConnect();
 
     class OpenglViewerPrivate;

@@ -237,7 +237,7 @@ void RoundDialog::onHeightChanged(int value)
     d_ptr->graphicsRectItemPtr->update();
 }
 
-QImage radiusImage(const QPixmap &pixmap, int radius)
+auto radiusImage(const QPixmap &pixmap, int radius) -> QImage
 {
     QImage image(pixmap.size(), QImage::Format_ARGB32);
     image.fill(Qt::transparent);

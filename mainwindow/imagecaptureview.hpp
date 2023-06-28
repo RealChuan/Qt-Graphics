@@ -8,7 +8,7 @@ class ImageCaptureView : public ListItemView
     Q_OBJECT
 public:
     explicit ImageCaptureView(QWidget *parent = nullptr);
-    ~ImageCaptureView();
+    ~ImageCaptureView() override;
 
     void setImageAfter() override;
 

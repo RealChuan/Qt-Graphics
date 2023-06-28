@@ -10,7 +10,7 @@ class Singleton
 {
     Q_DISABLE_COPY_MOVE(Singleton)
 public:
-    static T *getInstance();
+    static auto getInstance() -> T *;
 
 private:
     Singleton() = default;
@@ -22,7 +22,7 @@ private:
 template<typename T>
 QMutex Singleton<T>::m_mutex;
 template<typename T>
-T *Singleton<T>::getInstance()
+auto Singleton<T>::getInstance() -> T *
 {
     QMutexLocker locker(&m_mutex);
     static T t;

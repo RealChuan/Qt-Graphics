@@ -15,10 +15,10 @@ public:
     };
 
     explicit StretchParamsSettingDailog(QWidget *parent = nullptr);
-    ~StretchParamsSettingDailog();
+    ~StretchParamsSettingDailog() override;
 
     void setParams(const StretchParams &params);
-    StretchParams params() const;
+    [[nodiscard]] auto params() const -> StretchParams;
 
 private slots:
     void onReset();

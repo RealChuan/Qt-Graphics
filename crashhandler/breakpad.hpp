@@ -11,7 +11,7 @@ class CRASHHANDLER_EXPORT BreakPad : public QObject
 {
 public:
     explicit BreakPad(QObject *parent = nullptr);
-    ~BreakPad();
+    ~BreakPad() override;
 
 private:
     struct BreakPadPrivate;

@@ -14,10 +14,10 @@ public:
     ~GraphicsRectItem() override;
 
     void setRect(const QRectF &);
-    QRectF rect() const;
+    [[nodiscard]] auto rect() const -> QRectF;
 
-    bool isValid() const override;
-    int type() const override;
+    [[nodiscard]] auto isValid() const -> bool override;
+    [[nodiscard]] auto type() const -> int override;
 
 signals:
     void rectChanged(const QRectF &rectF);

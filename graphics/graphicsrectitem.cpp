@@ -31,7 +31,7 @@ GraphicsRectItem::GraphicsRectItem(const QRectF &rectF, QGraphicsItem *parent)
 
 GraphicsRectItem::~GraphicsRectItem() {}
 
-inline bool checkRect(const QRectF &rect, const double margin)
+inline auto checkRect(const QRectF &rect, const double margin) -> bool
 {
     return rect.isValid() && rect.x() > 0 && rect.y() > 0 && rect.width() > margin
            && rect.height() > margin;
@@ -50,17 +50,17 @@ void GraphicsRectItem::setRect(const QRectF &rect)
     emit rectChanged(d_ptr->rect);
 }
 
-QRectF GraphicsRectItem::rect() const
+auto GraphicsRectItem::rect() const -> QRectF
 {
     return d_ptr->rect;
 }
 
-bool GraphicsRectItem::isValid() const
+auto GraphicsRectItem::isValid() const -> bool
 {
     return checkRect(d_ptr->rect, margin());
 }
 
-int GraphicsRectItem::type() const
+auto GraphicsRectItem::type() const -> int
 {
     return RECT;
 }
@@ -80,7 +80,7 @@ void GraphicsRectItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     pointsChanged(pts_tmp);
 }
 
-QPolygonF polygonFromRect(const QRectF &rect)
+auto polygonFromRect(const QRectF &rect) -> QPolygonF
 {
     QPolygonF ply;
     ply.append(rect.topLeft());

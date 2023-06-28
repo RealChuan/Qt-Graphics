@@ -23,15 +23,15 @@ public:
     explicit BasicGraphicsItem(QGraphicsItem *parent = nullptr);
     ~BasicGraphicsItem() override;
 
-    virtual bool isValid() const = 0;
-    virtual int type() const override = 0;
-    virtual QRectF boundingRect() const override;
+    [[nodiscard]] virtual auto isValid() const -> bool = 0;
+    [[nodiscard]] auto type() const -> int override = 0;
+    [[nodiscard]] auto boundingRect() const -> QRectF override;
 
     void setName(const QString &name);
-    QString name() const;
+    [[nodiscard]] auto name() const -> QString;
 
     void setMargin(double m11);
-    double margin() const;
+    [[nodiscard]] auto margin() const -> double;
 
     void setItemEditable(bool editable);
 
@@ -41,15 +41,15 @@ protected:
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
 
     void setCache(const QPolygonF &);
-    QPolygonF cache() const;
+    [[nodiscard]] auto cache() const -> QPolygonF;
 
     void setClickedPos(const QPointF &p);
-    QPointF clickedPos() const;
+    [[nodiscard]] auto clickedPos() const -> QPointF;
 
-    MouseRegion mouseRegion() const;
+    [[nodiscard]] auto mouseRegion() const -> MouseRegion;
     void setMouseRegion(const MouseRegion);
 
-    int hoveredDotIndex() const;
+    [[nodiscard]] auto hoveredDotIndex() const -> int;
 
     void drawAnchor(QPainter *painter);
 

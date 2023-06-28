@@ -14,12 +14,12 @@ ImageListModel::ImageListModel(QObject *parent)
 
 ImageListModel::~ImageListModel() {}
 
-int ImageListModel::rowCount(const QModelIndex &) const
+auto ImageListModel::rowCount(const QModelIndex &) const -> int
 {
     return d_ptr->imageInfoList.size();
 }
 
-QVariant ImageListModel::data(const QModelIndex &index, int role) const
+auto ImageListModel::data(const QModelIndex &index, int role) const -> QVariant
 {
     if (!index.isValid()) {
         return QVariant();

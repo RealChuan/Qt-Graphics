@@ -10,7 +10,7 @@
 
 namespace Graphics {
 
-bool Arc::isValid() const
+auto Arc::isValid() const -> bool
 {
     return maxRadius > minRadius;
 }
@@ -19,7 +19,7 @@ bool Arc::isValid() const
  *
  */
 
-bool inTop(const QPointF linePt0, const QPointF linePt1, const QPointF pt)
+auto inTop(const QPointF linePt0, const QPointF linePt1, const QPointF pt) -> bool
 {
     if (linePt0.x() - linePt1.x() == 0.0) {
         if (pt.x() > linePt0.x()) {
@@ -76,10 +76,10 @@ void calculateArc(QPointF center,
     path.arcTo(rect, startAngle, deltaAngle);
 }
 
-bool calculateAllArc(const QPolygonF &ply,
+auto calculateAllArc(const QPolygonF &ply,
                      QPainterPath &path,
                      QPainterPath &shape,
-                     const double margin)
+                     const double margin) -> bool
 {
     if (ply.size() != 4) {
         return false;
@@ -184,7 +184,7 @@ GraphicsArcItem::GraphicsArcItem(const Arc &arc, QGraphicsItem *parent)
 
 GraphicsArcItem::~GraphicsArcItem() {}
 
-inline QPointF findAnotherPtOfLine(const QPointF basePt, const double r, const double angle)
+inline auto findAnotherPtOfLine(const QPointF basePt, const double r, const double angle) -> QPointF
 {
     QLineF line;
     line.setP1(basePt);
@@ -193,7 +193,7 @@ inline QPointF findAnotherPtOfLine(const QPointF basePt, const double r, const d
     return line.p2();
 }
 
-inline QPolygonF calculateCache(const Arc &arch)
+inline auto calculateCache(const Arc &arch) -> QPolygonF
 {
     QPointF pt00 = findAnotherPtOfLine(arch.center, arch.minRadius, arch.startAngle);
     QPointF pt01 = findAnotherPtOfLine(arch.center, arch.minRadius, arch.endAngle);
@@ -212,7 +212,7 @@ inline QPolygonF calculateCache(const Arc &arch)
     return pts;
 }
 
-inline bool checkArc(const Arc &arch, const double margin)
+inline auto checkArc(const Arc &arch, const double margin) -> bool
 {
     double minLen = margin * qSqrt(2) / 2;
     return arch.minRadius >= minLen && arch.maxRadius - arch.minRadius >= minLen;
@@ -229,22 +229,22 @@ void GraphicsArcItem::setArc(const Arc &arc)
     setCache(pts);
 }
 
-Arc GraphicsArcItem::arch() const
+auto GraphicsArcItem::arch() const -> Arc
 {
     return d_ptr->arch;
 }
 
-bool GraphicsArcItem::isValid() const
+auto GraphicsArcItem::isValid() const -> bool
 {
     return checkArc(d_ptr->arch, margin());
 }
 
-int GraphicsArcItem::type() const
+auto GraphicsArcItem::type() const -> int
 {
     return ARC;
 }
 
-QRectF GraphicsArcItem::boundingRect() const
+auto GraphicsArcItem::boundingRect() const -> QRectF
 {
     if (!isValid()) {
         return BasicGraphicsItem::boundingRect();
@@ -257,7 +257,7 @@ QRectF GraphicsArcItem::boundingRect() const
     return rectF;
 }
 
-QPainterPath GraphicsArcItem::shape() const
+auto GraphicsArcItem::shape() const -> QPainterPath
 {
     if (isValid()) {
         return d_ptr->shape;
@@ -282,7 +282,7 @@ void GraphicsArcItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     pointsChanged(pts_tmp);
 }
 
-inline QPointF lineSetLength(const QPointF p1, const QPointF p2, const double len)
+inline auto lineSetLength(const QPointF p1, const QPointF p2, const double len) -> QPointF
 {
     QLineF line(p1, p2);
     line.setLength(len);
@@ -407,7 +407,7 @@ void GraphicsArcItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *o
     }
 }
 
-inline bool calculateHalfArc(const QPolygonF &ply, QPainterPath &path)
+inline auto calculateHalfArc(const QPolygonF &ply, QPainterPath &path) -> bool
 {
     if (ply.size() != 3) {
         return false;
@@ -427,7 +427,7 @@ inline bool calculateHalfArc(const QPolygonF &ply, QPainterPath &path)
     return true;
 }
 
-inline Arc calucateFinnalArch(const QPolygonF &ply)
+inline auto calucateFinnalArch(const QPolygonF &ply) -> Arc
 {
     double startAngle_ = 0;
     double endAngle_ = 0;

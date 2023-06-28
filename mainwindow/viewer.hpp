@@ -8,9 +8,9 @@ class Viewer : public QWidget
 {
 public:
     explicit Viewer(QWidget *parent = nullptr);
-    ~Viewer();
+    ~Viewer() override;
 
-    virtual bool setImage(const QFileInfo &info, const QImage &image, const qint64 taskCount) = 0;
+    virtual auto setImage(const QFileInfo &info, const QImage &image, const qint64 taskCount) -> bool = 0;
 };
 
 class ImageLoadRunnable : public QRunnable

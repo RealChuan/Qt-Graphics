@@ -32,7 +32,7 @@
 #if defined(Q_OS_WIN)
 #include <QLibrary>
 #include <qt_windows.h>
-typedef BOOL(WINAPI*PProcessIdToSessionId)(DWORD,DWORD*);
+using PProcessIdToSessionId = BOOL (*)(DWORD, DWORD *);
 static PProcessIdToSessionId pProcessIdToSessionId = 0;
 #endif
 
@@ -45,7 +45,7 @@ namespace SharedTools {
 
 static const char ack[] = "ack";
 
-QString QtLocalPeer::appSessionId(const QString &appId)
+auto QtLocalPeer::appSessionId(const QString &appId) -> QString
 {
     QByteArray idc = appId.toUtf8();
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -89,7 +89,7 @@ QtLocalPeer::QtLocalPeer(QObject *parent, const QString &appId)
     lockFile.open(QIODevice::ReadWrite);
 }
 
-bool QtLocalPeer::isClient()
+auto QtLocalPeer::isClient() -> bool
 {
     if (lockFile.isLocked())
         return false;
@@ -106,7 +106,7 @@ bool QtLocalPeer::isClient()
     return false;
 }
 
-bool QtLocalPeer::sendMessage(const QString &message, int timeout, bool block)
+auto QtLocalPeer::sendMessage(const QString &message, int timeout, bool block) -> bool
 {
     if (!isClient())
         return false;

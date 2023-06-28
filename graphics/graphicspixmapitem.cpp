@@ -78,7 +78,7 @@ void GraphicsPixmapItem::setMaskImage(const QImage &mask)
     update();
 }
 
-QImage GraphicsPixmapItem::maskImage() const
+auto GraphicsPixmapItem::maskImage() const -> QImage
 {
     return d_ptr->mask;
 }
@@ -89,7 +89,7 @@ void GraphicsPixmapItem::setPaintMode(GraphicsPixmapItem::Mode mode)
     setCursorPixmap();
 }
 
-GraphicsPixmapItem::Mode GraphicsPixmapItem::paintMode() const
+auto GraphicsPixmapItem::paintMode() const -> GraphicsPixmapItem::Mode
 {
     return d_ptr->mode;
 }
@@ -101,7 +101,7 @@ void GraphicsPixmapItem::setPenSize(int size)
     update();
 }
 
-int GraphicsPixmapItem::penSize() const
+auto GraphicsPixmapItem::penSize() const -> int
 {
     return d_ptr->penSize;
 }
@@ -112,7 +112,7 @@ void GraphicsPixmapItem::setOpacity(double opacity)
     update();
 }
 
-double GraphicsPixmapItem::opacity()
+auto GraphicsPixmapItem::opacity() -> double
 {
     return d_ptr->opacity;
 }
@@ -122,7 +122,7 @@ void GraphicsPixmapItem::setMaskColor1(const QColor &color)
     d_ptr->color1 = color;
 }
 
-QColor GraphicsPixmapItem::maskColor1()
+auto GraphicsPixmapItem::maskColor1() -> QColor
 {
     return d_ptr->color1;
 }
@@ -132,7 +132,7 @@ void GraphicsPixmapItem::setMaskColor12(const QColor &color)
     d_ptr->color2 = color;
 }
 
-QColor GraphicsPixmapItem::maskColor2()
+auto GraphicsPixmapItem::maskColor2() -> QColor
 {
     return d_ptr->color2;
 }

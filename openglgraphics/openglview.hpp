@@ -14,7 +14,7 @@ class OPENGLGRAPHICS OpenglView : public QOpenGLWidget, protected QOpenGLFunctio
     Q_OBJECT
 public:
     OpenglView(QWidget *parent = nullptr);
-    ~OpenglView();
+    ~OpenglView() override;
 
 public slots:
     void setImageUrl(const QString &imageUrl);

@@ -13,10 +13,10 @@ public:
     ~GraphicsPolygonItem() override;
 
     void setPolygon(const QPolygonF& ply);
-    QPolygonF polygon() const;
+    [[nodiscard]] auto polygon() const -> QPolygonF;
 
-    bool isValid() const override;
-    int type() const override;
+    [[nodiscard]] auto isValid() const -> bool override;
+    [[nodiscard]] auto type() const -> int override;
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
