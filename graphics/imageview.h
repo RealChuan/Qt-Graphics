@@ -16,8 +16,8 @@ public:
     ImageView(QGraphicsScene *scene, QWidget *parent = nullptr);
     ~ImageView() override;
 
-    QPixmap pixmap() const;
-    GraphicsPixmapItem *pixmapItem();
+    [[nodiscard]] auto pixmap() const -> QPixmap;
+    auto pixmapItem() -> GraphicsPixmapItem *;
 
 public slots:
     void createScene(const QString &imageUrlChanged);
@@ -60,7 +60,7 @@ protected:
 private:
     void initScene();
     void createPopMenu();
-    QRect textRect(const Qt::Corner pos, const QFontMetrics &metrics, const QString &text);
+    auto textRect(const Qt::Corner pos, const QFontMetrics &metrics, const QString &text) -> QRect;
     void drawInfo(QPainter *painter);
     void drawCrossLine(QPainter *painter);
     void emitScaleFactor();

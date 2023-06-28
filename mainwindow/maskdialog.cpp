@@ -164,7 +164,7 @@ void MaskDialog::onSave()
     qDebug() << pixmap.save(filename, nullptr, params.quality);
 }
 
-QPushButton *newFlatBlueButton(const QString &text, QWidget *parent)
+auto newFlatBlueButton(const QString &text, QWidget *parent) -> QPushButton *
 {
     QPushButton *button = new QPushButton(text, parent);
     return button;

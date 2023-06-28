@@ -30,7 +30,7 @@ GraphicsPolygonItem::GraphicsPolygonItem(const QPolygonF& polygon,
 
 GraphicsPolygonItem::~GraphicsPolygonItem(){}
 
-inline bool checkPolygon(const QPolygonF &ply, const double margin)
+inline auto checkPolygon(const QPolygonF &ply, const double margin) -> bool
 {
     QRectF rect = ply.boundingRect();
     return ply.size() >= PolygonMinPointSize && rect.width() > margin && rect.height() > margin;
@@ -46,17 +46,17 @@ void GraphicsPolygonItem::setPolygon(const QPolygonF &ply)
     setCache(ply);
 }
 
-QPolygonF GraphicsPolygonItem::polygon() const
+auto GraphicsPolygonItem::polygon() const -> QPolygonF
 {
     return d_ptr->polygon;
 }
 
-bool GraphicsPolygonItem::isValid() const
+auto GraphicsPolygonItem::isValid() const -> bool
 {
     return checkPolygon(d_ptr->polygon, margin());
 }
 
-int GraphicsPolygonItem::type() const
+auto GraphicsPolygonItem::type() const -> int
 {
     return POLYGON;
 }

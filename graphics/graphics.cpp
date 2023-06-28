@@ -2,7 +2,7 @@
 
 #include <QtMath>
 
-bool Graphics::calculateCircle(const QPolygonF &pts, QPointF &center, double &radius)
+auto Graphics::calculateCircle(const QPolygonF &pts, QPointF &center, double &radius) -> bool
 {
     if(pts.size() < 3)
         return false;
@@ -45,7 +45,7 @@ bool Graphics::calculateCircle(const QPolygonF &pts, QPointF &center, double &ra
     return true;
 }
 
-QCursor Graphics::curorFromAngle(double angle)
+auto Graphics::curorFromAngle(double angle) -> QCursor
 {
     if (angle >= 0 && angle < 15) {
         return Qt::SizeVerCursor;
@@ -68,7 +68,7 @@ QCursor Graphics::curorFromAngle(double angle)
     }
 }
 
-QPolygonF Graphics::boundingFromLine(const QLineF &line, double margin)
+auto Graphics::boundingFromLine(const QLineF &line, double margin) -> QPolygonF
 {
     QPolygonF ply;
     QPointF p1 = line.p1();
@@ -83,12 +83,12 @@ QPolygonF Graphics::boundingFromLine(const QLineF &line, double margin)
     return ply;
 }
 
-double Graphics::distance(QPointF pos, QPointF center)
+auto Graphics::distance(QPointF pos, QPointF center) -> double
 {
     return QLineF(center, pos).length();
 }
 
-double Graphics::ConvertTo360(double angle)
+auto Graphics::ConvertTo360(double angle) -> double
 {
     if(angle >= 0 && angle < 360)
         return angle;

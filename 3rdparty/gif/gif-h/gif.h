@@ -62,7 +62,7 @@
 
 const int kGifTransIndex = 0;
 
-typedef struct
+using GifPalette = struct
 {
     int bitDepth;
 
@@ -75,18 +75,18 @@ typedef struct
     // nodes 256-511 are implicitly the leaves, containing a color
     uint8_t treeSplitElt[256];
     uint8_t treeSplit[256];
-} GifPalette;
+};
 
 // max, min, and abs functions
-int GifIMax(int l, int r)
+auto GifIMax(int l, int r) -> int
 {
     return l > r ? l : r;
 }
-int GifIMin(int l, int r)
+auto GifIMin(int l, int r) -> int
 {
     return l < r ? l : r;
 }
-int GifIAbs(int i)
+auto GifIAbs(int i) -> int
 {
     return i < 0 ? -i : i;
 }
@@ -165,7 +165,7 @@ void GifSwapPixels(uint8_t *image, int pixA, int pixB)
 }
 
 // just the partition operation from quicksort
-int GifPartition(uint8_t *image, const int left, const int right, const int elt, int pivotIndex)
+auto GifPartition(uint8_t *image, const int left, const int right, const int elt, int pivotIndex) -> int
 {
     const int pivotValue = image[(pivotIndex) *4 + elt];
     GifSwapPixels(image, pivotIndex, right - 1);
@@ -349,7 +349,7 @@ void GifSplitPalette(uint8_t *image,
 // moves them to the fromt of th buffer.
 // This allows us to build a palette optimized for the colors of the
 // changed pixels only.
-int GifPickChangedPixels(const uint8_t *lastFrame, uint8_t *frame, int numPixels)
+auto GifPickChangedPixels(const uint8_t *lastFrame, uint8_t *frame, int numPixels) -> int
 {
     int numChanged = 0;
     uint8_t *writeIter = frame;
@@ -562,14 +562,14 @@ void GifThresholdImage(const uint8_t *lastFrame,
 
 // Simple structure to write out the LZW-compressed portion of the image
 // one bit at a time
-typedef struct
+using GifBitStatus = struct
 {
     uint8_t bitIndex; // how many bits in the partial byte written so far
     uint8_t byte;     // current partial byte
 
     uint32_t chunkIndex;
     uint8_t chunk[256]; // bytes are written in here until we have 256 of them, then written to the file
-} GifBitStatus;
+};
 
 // insert a single bit
 void GifWriteBit(GifBitStatus *stat, uint32_t bit)
@@ -613,10 +613,10 @@ void GifWriteCode(FILE *f, GifBitStatus *stat, uint32_t code, uint32_t length)
 
 // The LZW dictionary is a 256-ary tree constructed as the file is encoded,
 // this is one node
-typedef struct
+using GifLzwNode = struct
 {
     uint16_t m_next[256];
-} GifLzwNode;
+};
 
 // write a 256-color (8-bit) image palette to the file
 void GifWritePalette(const GifPalette *pPal, FILE *f)
@@ -755,23 +755,23 @@ void GifWriteLzwImage(FILE *f,
     GIF_TEMP_FREE(codetree);
 }
 
-typedef struct GifWriter
+using GifWriter = struct GifWriter
 {
     FILE *f;
     uint8_t *oldImage;
     bool firstFrame;
-} GifWriter;
+};
 
 // Creates a gif file.
 // The input GIFWriter is assumed to be uninitialized.
 // The delay value is the time between frames in hundredths of a second - note that not all viewers pay much attention to this value.
-bool GifBegin(GifWriter *writer,
+auto GifBegin(GifWriter *writer,
               const char *filename,
               uint32_t width,
               uint32_t height,
               uint32_t delay,
               int32_t bitDepth = 8,
-              bool dither = false)
+              bool dither = false) -> bool
 {
     (void) bitDepth;
     (void) dither; // Mute "Unused argument" warnings
@@ -833,13 +833,13 @@ bool GifBegin(GifWriter *writer,
 // The GIFWriter should have been created by GIFBegin.
 // AFAIK, it is legal to use different bit depths for different frames of an image -
 // this may be handy to save bits in animations that don't change much.
-bool GifWriteFrame(GifWriter *writer,
+auto GifWriteFrame(GifWriter *writer,
                    const uint8_t *image,
                    uint32_t width,
                    uint32_t height,
                    uint32_t delay,
                    int bitDepth = 8,
-                   bool dither = false)
+                   bool dither = false) -> bool
 {
     if (!writer->f)
         return false;
@@ -863,7 +863,7 @@ bool GifWriteFrame(GifWriter *writer,
 // Writes the EOF code, closes the file handle, and frees temp memory used by a GIF.
 // Many if not most viewers will still display a GIF properly if the EOF code is missing,
 // but it's still a good idea to write it out.
-bool GifEnd(GifWriter *writer)
+auto GifEnd(GifWriter *writer) -> bool
 {
     if (!writer->f)
         return false;

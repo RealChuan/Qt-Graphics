@@ -43,7 +43,7 @@ Qt::CaseSensitivity HostOsInfo::m_overrideFileNameCaseSensitivity = Qt::CaseSens
 bool HostOsInfo::m_useOverrideFileNameCaseSensitivity = false;
 
 #ifdef Q_OS_WIN
-static WORD hostProcessorArchitecture()
+static auto hostProcessorArchitecture() -> WORD
 {
     SYSTEM_INFO info;
     GetNativeSystemInfo(&info);
@@ -51,7 +51,7 @@ static WORD hostProcessorArchitecture()
 }
 #endif
 
-HostOsInfo::HostArchitecture HostOsInfo::hostArchitecture()
+auto HostOsInfo::hostArchitecture() -> HostOsInfo::HostArchitecture
 {
 #ifdef Q_OS_WIN
     static const WORD processorArchitecture = hostProcessorArchitecture();
@@ -83,7 +83,7 @@ void HostOsInfo::unsetOverrideFileNameCaseSensitivity()
     m_useOverrideFileNameCaseSensitivity = false;
 }
 
-bool HostOsInfo::canCreateOpenGLContext(QString *errorMessage)
+auto HostOsInfo::canCreateOpenGLContext(QString *errorMessage) -> bool
 {
 #if defined(QT_NO_OPENGL) || !defined(QT_GUI_LIB)
     Q_UNUSED(errorMessage)

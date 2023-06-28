@@ -8,7 +8,7 @@ class RoundDialog : public QDialog
     Q_OBJECT
 public:
     explicit RoundDialog(QWidget *parent = nullptr);
-    ~RoundDialog();
+    ~RoundDialog() override;
 
     void setImageName(const QString &name);
 
@@ -29,7 +29,7 @@ private:
     void setupUI();
     void buildConnect();
     void buildConnect2();
-    QWidget *toolWidget();
+    auto toolWidget() -> QWidget *;
 
     class RoundDialogPrivate;
     QScopedPointer<RoundDialogPrivate> d_ptr;

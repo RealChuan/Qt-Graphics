@@ -42,7 +42,7 @@ namespace Utils {
 class UTILS_EXPORT HostOsInfo
 {
 public:
-    static constexpr OsType hostOs()
+    static constexpr auto hostOs() -> OsType
     {
 #if defined(Q_OS_WIN)
         return OsTypeWindows;
@@ -59,12 +59,12 @@ public:
 
     enum HostArchitecture { HostArchitectureX86, HostArchitectureAMD64, HostArchitectureItanium,
                             HostArchitectureArm, HostArchitectureUnknown };
-    static HostArchitecture hostArchitecture();
+    static auto hostArchitecture() -> HostArchitecture;
 
-    static constexpr bool isWindowsHost() { return hostOs() == OsTypeWindows; }
-    static constexpr bool isLinuxHost() { return hostOs() == OsTypeLinux; }
-    static constexpr bool isMacHost() { return hostOs() == OsTypeMac; }
-    static constexpr bool isAnyUnixHost()
+    static constexpr auto isWindowsHost() -> bool { return hostOs() == OsTypeWindows; }
+    static constexpr auto isLinuxHost() -> bool { return hostOs() == OsTypeLinux; }
+    static constexpr auto isMacHost() -> bool { return hostOs() == OsTypeMac; }
+    static constexpr auto isAnyUnixHost() -> bool
     {
 #ifdef Q_OS_UNIX
         return true;
@@ -73,7 +73,7 @@ public:
 #endif
     }
 
-    static QString withExecutableSuffix(const QString &executable)
+    static auto withExecutableSuffix(const QString &executable) -> QString
     {
         return OsSpecificAspects::withExecutableSuffix(hostOs(), executable);
     }
@@ -81,24 +81,24 @@ public:
     static void setOverrideFileNameCaseSensitivity(Qt::CaseSensitivity sensitivity);
     static void unsetOverrideFileNameCaseSensitivity();
 
-    static Qt::CaseSensitivity fileNameCaseSensitivity()
+    static auto fileNameCaseSensitivity() -> Qt::CaseSensitivity
     {
         return m_useOverrideFileNameCaseSensitivity
                 ? m_overrideFileNameCaseSensitivity
                 : OsSpecificAspects::fileNameCaseSensitivity(hostOs());
     }
 
-    static QChar pathListSeparator()
+    static auto pathListSeparator() -> QChar
     {
         return OsSpecificAspects::pathListSeparator(hostOs());
     }
 
-    static Qt::KeyboardModifier controlModifier()
+    static auto controlModifier() -> Qt::KeyboardModifier
     {
         return OsSpecificAspects::controlModifier(hostOs());
     }
 
-    static bool canCreateOpenGLContext(QString *errorMessage);
+    static auto canCreateOpenGLContext(QString *errorMessage) -> bool;
 
 private:
     static Qt::CaseSensitivity m_overrideFileNameCaseSensitivity;

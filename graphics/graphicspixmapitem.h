@@ -13,38 +13,38 @@ public:
     enum Mode { Normal, MaskErase, MaskDraw };
 
     explicit GraphicsPixmapItem(QGraphicsItem *parent = nullptr);
-    ~GraphicsPixmapItem();
+    ~GraphicsPixmapItem() override;
 
     void setCustomPixmap(const QPixmap &pixmap);
 
     void setMaskImage(const QImage &mask);
-    QImage maskImage() const;
+    [[nodiscard]] auto maskImage() const -> QImage;
 
     void setPaintMode(Mode mode);
-    Mode paintMode() const;
+    [[nodiscard]] auto paintMode() const -> Mode;
 
     void setPenSize(int size);
-    int penSize() const;
+    [[nodiscard]] auto penSize() const -> int;
 
     void setOpacity(double opacity);
-    double opacity();
+    auto opacity() -> double;
 
     void setMaskColor1(const QColor &color);
-    QColor maskColor1();
+    auto maskColor1() -> QColor;
 
     void setMaskColor12(const QColor &color);
-    QColor maskColor2();
+    auto maskColor2() -> QColor;
 
     void clearMask();
 
 protected:
     void setCursorPixmap();
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
     void paintImage();
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
 private:
     class GraphicsPixmapItemPrivate;

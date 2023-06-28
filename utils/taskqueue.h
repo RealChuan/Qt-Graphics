@@ -21,7 +21,7 @@ public:
     {}
     ~Queue() {}
 
-    bool enqueue(const T &t)
+    auto enqueue(const T &t) -> bool
     {
         QMutexLocker locker(&m_mutex);
         if (m_T.size() >= m_maxSize)
@@ -30,7 +30,7 @@ public:
         return true;
     }
 
-    bool enqueue(T &&t)
+    auto enqueue(T &&t) -> bool
     {
         QMutexLocker locker(&m_mutex);
         if (m_T.size() >= m_maxSize)
@@ -39,7 +39,7 @@ public:
         return true;
     }
 
-    T dequeue()
+    auto dequeue() -> T
     {
         QMutexLocker locker(&m_mutex);
         if (!m_T.isEmpty())
@@ -47,7 +47,7 @@ public:
         return T();
     }
 
-    bool isEmpty()
+    auto isEmpty() -> bool
     {
         QMutexLocker locker(&m_mutex);
         if (m_T.isEmpty())
@@ -66,7 +66,7 @@ public:
 
     void clear() { m_T.clear(); }
 
-    int size() const
+    [[nodiscard]] auto size() const -> int
     {
         QMutexLocker locker(&m_mutex);
         return m_T.size();

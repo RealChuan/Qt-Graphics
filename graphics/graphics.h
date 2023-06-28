@@ -7,11 +7,11 @@
 
 namespace Graphics {
 
-bool calculateCircle(const QPolygonF& pts, QPointF& center, double& radius);
-QCursor curorFromAngle(double angle);
-QPolygonF boundingFromLine(const QLineF& line, double margin);
-double distance(QPointF pos, QPointF center);
-double ConvertTo360(double angle);
+auto calculateCircle(const QPolygonF& pts, QPointF& center, double& radius) -> bool;
+auto curorFromAngle(double angle) -> QCursor;
+auto boundingFromLine(const QLineF& line, double margin) -> QPolygonF;
+auto distance(QPointF pos, QPointF center) -> double;
+auto ConvertTo360(double angle) -> double;
 
 }
 

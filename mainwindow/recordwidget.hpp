@@ -13,9 +13,9 @@ class RecordWidget : public QWidget
     Q_OBJECT
 public:
     explicit RecordWidget(QWidget *parent = nullptr);
-    ~RecordWidget();
+    ~RecordWidget() override;
 
-    QRect recordRect();
+    auto recordRect() -> QRect;
 
 private slots:
     void onChangeSize();

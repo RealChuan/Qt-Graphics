@@ -8,27 +8,31 @@
 class RecordWidget::RecordWidgetPrivate
 {
 public:
-    RecordWidgetPrivate(QWidget *parent)
-        : owner(parent)
+    RecordWidgetPrivate(QWidget *q)
+        : q_ptr(q)
     {
-        frameRateSpinBox = new QSpinBox(owner);
+        frameRateSpinBox = new QSpinBox(q_ptr);
         frameRateSpinBox->setRange(1, 60);
         frameRateSpinBox->setValue(10);
         frameRateSpinBox->setKeyboardTracking(false);
-        widthSpinBox = new QSpinBox(owner);
+        widthSpinBox = new QSpinBox(q_ptr);
         widthSpinBox->setKeyboardTracking(false);
-        heightSpinBox = new QSpinBox(owner);
+        heightSpinBox = new QSpinBox(q_ptr);
         heightSpinBox->setKeyboardTracking(false);
-        startButton = new QToolButton(owner);
+        startButton = new QToolButton(q_ptr);
         startButton->setText(QObject::tr("Start", "RecordWidget"));
-        titleWidget = new QWidget(owner);
-        screenshotsWidget = new QWidget(owner);
+        titleWidget = new QWidget(q_ptr);
+        screenshotsWidget = new QWidget(q_ptr);
         screenshotsWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         //screenshotsWidget->setStyleSheet("QWidget{background:transparent;}");
+
+        closeButton = new QToolButton(q_ptr);
+        closeButton->setStyleSheet("QToolButton{border: none;}");
+        closeButton->setIcon(q_ptr->style()->standardIcon(QStyle::SP_TitleBarCloseButton));
     }
     ~RecordWidgetPrivate() {}
 
-    QWidget *owner;
+    QWidget *q_ptr;
 
     QSpinBox *frameRateSpinBox;
     QSpinBox *widthSpinBox;
@@ -36,6 +40,7 @@ public:
     QToolButton *startButton;
     QWidget *titleWidget;
     QWidget *screenshotsWidget;
+    QToolButton *closeButton;
 
     int borderWidth = 10;
     //QColor backgroundColor = QColor(39, 205, 237);
@@ -83,6 +88,7 @@ void RecordWidget::onResizeGifWidget()
 void RecordWidget::onStart()
 {
     d_ptr->startButton->setEnabled(false);
+    d_ptr->closeButton->setEnabled(false);
     auto text = d_ptr->startButton->text();
     if (text == tr("Start")) {
         start();
@@ -91,6 +97,7 @@ void RecordWidget::onStart()
         finish();
         d_ptr->startButton->setText(tr("Start"));
     }
+    d_ptr->closeButton->setEnabled(true);
     d_ptr->startButton->setEnabled(true);
 }
 
@@ -149,11 +156,6 @@ void RecordWidget::paintEvent(QPaintEvent *event)
 
 void RecordWidget::setupUI()
 {
-    auto closeButton = new QToolButton(this);
-    closeButton->setStyleSheet("QToolButton{border: none;}");
-    closeButton->setIcon(style()->standardIcon(QStyle::SP_TitleBarCloseButton));
-    connect(closeButton, &QToolButton::clicked, this, &RecordWidget::close);
-
     auto titleLayout = new QHBoxLayout(d_ptr->titleWidget);
     titleLayout->addWidget(new QLabel(tr("Frame rate: "), this));
     titleLayout->addWidget(d_ptr->frameRateSpinBox);
@@ -163,7 +165,7 @@ void RecordWidget::setupUI()
     titleLayout->addWidget(d_ptr->heightSpinBox);
     titleLayout->addWidget(d_ptr->startButton);
     titleLayout->addStretch();
-    titleLayout->addWidget(closeButton);
+    titleLayout->addWidget(d_ptr->closeButton);
 
     auto layout = new QGridLayout(this);
     layout->setContentsMargins(QMargins());
@@ -179,6 +181,8 @@ void RecordWidget::buildConnect()
     connect(d_ptr->heightSpinBox, &QSpinBox::valueChanged, this, &RecordWidget::onResizeGifWidget);
 
     connect(d_ptr->startButton, &QToolButton::clicked, this, &RecordWidget::onStart);
+
+    connect(d_ptr->closeButton, &QToolButton::clicked, this, &RecordWidget::close);
 }
 
 QRect RecordWidget::recordRect()

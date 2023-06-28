@@ -38,7 +38,7 @@
 
 #define minpicturebytes (3 * prime4) /* minimum size for input image */
 
-int getNetwork(int i, int j);
+auto getNetwork(int i, int j) -> int;
 
 /* Initialise network in range (0,0,0) to (255,255,255) and set parameters
    ----------------------------------------------------------------------- */
@@ -60,7 +60,7 @@ void inxbuild();
 
 /* Search for BGR values 0..255 (after net is unbiased) and return colour index
    ---------------------------------------------------------------------------- */
-int inxsearch(int b, int g, int r);
+auto inxsearch(int b, int g, int r) -> int;
 
 /* Main Learning Loop
    ------------------ */

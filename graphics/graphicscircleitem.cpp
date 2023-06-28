@@ -10,12 +10,12 @@
 
 namespace Graphics {
 
-bool Circle::isVaild() const
+auto Circle::isVaild() const -> bool
 {
     return qAbs(radius) > 0;
 }
 
-QRectF Circle::boundingRect() const
+auto Circle::boundingRect() const -> QRectF
 {
     if (!isVaild()) {
         return QRectF();
@@ -48,7 +48,7 @@ GraphicsCircleItem::GraphicsCircleItem(const Circle &cicrle, QGraphicsItem *pare
 
 GraphicsCircleItem::~GraphicsCircleItem() {}
 
-bool GraphicsCircleItem::checkCircle(const Circle &circle, const double margin)
+auto GraphicsCircleItem::checkCircle(const Circle &circle, const double margin) -> bool
 {
     return qAbs(circle.radius) > margin;
 }
@@ -81,22 +81,22 @@ void GraphicsCircleItem::setCircle(const Circle &circle)
     d_ptr->shape.addEllipse(rect);
 }
 
-Circle GraphicsCircleItem::circle() const
+auto GraphicsCircleItem::circle() const -> Circle
 {
     return d_ptr->circle;
 }
 
-bool GraphicsCircleItem::isValid() const
+auto GraphicsCircleItem::isValid() const -> bool
 {
     return checkCircle(d_ptr->circle, margin());
 }
 
-int GraphicsCircleItem::type() const
+auto GraphicsCircleItem::type() const -> int
 {
     return CIRCLE;
 }
 
-QPainterPath GraphicsCircleItem::shape() const
+auto GraphicsCircleItem::shape() const -> QPainterPath
 {
     if (isValid()) {
         return d_ptr->shape;

@@ -9,7 +9,7 @@ GraphicsTextItem::GraphicsTextItem(QGraphicsItem *parent)
              | ItemIsFocusable);
 }
 
-QVariant GraphicsTextItem::itemChange(GraphicsItemChange change, const QVariant &value)
+auto GraphicsTextItem::itemChange(GraphicsItemChange change, const QVariant &value) -> QVariant
 {
     if (change == QGraphicsItem::ItemSelectedHasChanged) {
         emit selectedChange(this);

@@ -6,8 +6,8 @@
 namespace Graphics {
 
 struct GRAPHICS_EXPORT Circle{
-    bool isVaild() const;
-    QRectF boundingRect() const;
+    [[nodiscard]] auto isVaild() const -> bool;
+    [[nodiscard]] auto boundingRect() const -> QRectF;
 
     QPointF center;
     double radius = 0;
@@ -20,14 +20,14 @@ public:
     explicit GraphicsCircleItem(const Circle &, QGraphicsItem *parent = nullptr);
     ~GraphicsCircleItem() override;
 
-    static bool checkCircle(const Circle &circle, const double margin);
+    static auto checkCircle(const Circle &circle, const double margin) -> bool;
 
     void setCircle(const Circle&);
-    Circle circle() const;
+    [[nodiscard]] auto circle() const -> Circle;
 
-    bool isValid() const override;
-    int type() const override;
-    QPainterPath shape() const override;
+    [[nodiscard]] auto isValid() const -> bool override;
+    [[nodiscard]] auto type() const -> int override;
+    [[nodiscard]] auto shape() const -> QPainterPath override;
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;

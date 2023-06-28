@@ -9,7 +9,7 @@
 
 namespace Graphics {
 
-bool RotatedRect::isValid() const
+auto RotatedRect::isValid() const -> bool
 {
     return width > 0 && height > 0;
 }
@@ -40,12 +40,12 @@ GraphicsRotatedRectItem::GraphicsRotatedRectItem(const RotatedRect &rotatedRect,
 
 GraphicsRotatedRectItem::~GraphicsRotatedRectItem() {}
 
-inline bool checkRotatedRect(const RotatedRect &rotatedRect, const double margin)
+inline auto checkRotatedRect(const RotatedRect &rotatedRect, const double margin) -> bool
 {
     return rotatedRect.width > margin && rotatedRect.height > margin;
 }
 
-inline QPointF rotate(const QPointF &p, double angle)
+inline auto rotate(const QPointF &p, double angle) -> QPointF
 {
     double _angle = Graphics::ConvertTo360(angle) * M_PI * 2 / 360.0;
     double cos = std::cos(_angle);
@@ -55,7 +55,7 @@ inline QPointF rotate(const QPointF &p, double angle)
     return QPointF(_x, _y);
 }
 
-inline QPolygonF cacheFromRotated(const RotatedRect &rotated)
+inline auto cacheFromRotated(const RotatedRect &rotated) -> QPolygonF
 {
     QPointF p0 = QPointF(-rotated.width / 2, -rotated.height / 2);
     QPointF p1 = QPointF(rotated.width / 2, -rotated.height / 2);
@@ -82,17 +82,17 @@ void GraphicsRotatedRectItem::setRotatedRect(const RotatedRect &rotatedRect)
     setCache(pts);
 }
 
-RotatedRect GraphicsRotatedRectItem::rotatedRect() const
+auto GraphicsRotatedRectItem::rotatedRect() const -> RotatedRect
 {
     return d_ptr->rotatedRect;
 }
 
-bool GraphicsRotatedRectItem::isValid() const
+auto GraphicsRotatedRectItem::isValid() const -> bool
 {
     return checkRotatedRect(d_ptr->rotatedRect, margin());
 }
 
-int GraphicsRotatedRectItem::type() const
+auto GraphicsRotatedRectItem::type() const -> int
 {
     return ROTATEDRECT;
 }
@@ -236,7 +236,7 @@ void GraphicsRotatedRectItem::paint(QPainter *painter,
     }
 }
 
-inline RotatedRect showRotatedFromCache(const QPolygonF &ply)
+inline auto showRotatedFromCache(const QPolygonF &ply) -> RotatedRect
 {
     if (ply.count() < 3) {
         return RotatedRect{};

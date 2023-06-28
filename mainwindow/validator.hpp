@@ -8,7 +8,7 @@ class IntValidator : public QIntValidator
 public:
     using QIntValidator::QIntValidator;
 
-    State validate(QString &input, int &pos) const override;
+    auto validate(QString &input, int &pos) const -> State override;
 };
 
 #endif // VALIDATOR_HPP

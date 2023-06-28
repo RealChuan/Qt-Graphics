@@ -13,7 +13,7 @@ class RecordGifThread : public QThread
     Q_OBJECT
 public:
     explicit RecordGifThread(QObject *parent = nullptr);
-    ~RecordGifThread();
+    ~RecordGifThread() override;
 
     void startCapture(RecordWidget *recordWidget, int interval);
     void stopCapture();
@@ -24,12 +24,12 @@ protected:
 
 private:
     /// [1]
-    GifEncoder *createGifEncoder();
+    auto createGifEncoder() -> GifEncoder *;
     void push(GifEncoder *encoder, const QImage &image);
     void finish(GifEncoder *encoder);
     void moveFile1();
     ///[2]
-    GifWriter *createGifWriter();
+    auto createGifWriter() -> GifWriter *;
     void push(GifWriter *gifWriter, const QImage &image);
     void finish(GifWriter *gifWriter);
     void moveFile2();

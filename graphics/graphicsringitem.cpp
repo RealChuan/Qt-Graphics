@@ -12,7 +12,7 @@ namespace Graphics {
 
 #define CircleMaxSize 4
 
-QRectF Ring::boundingRect() const
+auto Ring::boundingRect() const -> QRectF
 {
     if (!isVaild()) {
         return QRectF();
@@ -21,7 +21,7 @@ QRectF Ring::boundingRect() const
     return QRectF(center - point, center + point);
 }
 
-QRectF Ring::minBoundingRect() const
+auto Ring::minBoundingRect() const -> QRectF
 {
     if (!isVaild()) {
         return QRectF();
@@ -30,7 +30,7 @@ QRectF Ring::minBoundingRect() const
     return QRectF(center - point, center + point);
 }
 
-bool Ring::isVaild() const
+auto Ring::isVaild() const -> bool
 {
     return minRadius > 0 && maxRadius > minRadius;
 }
@@ -58,7 +58,7 @@ GraphicsRingItem::GraphicsRingItem(const Ring &ring, QGraphicsItem *parent)
 
 GraphicsRingItem::~GraphicsRingItem() {}
 
-inline bool checkRing(const Ring &ring, const double margin)
+inline auto checkRing(const Ring &ring, const double margin) -> bool
 {
     return ring.minRadius > margin && ring.maxRadius - ring.minRadius > margin;
 }
@@ -97,22 +97,22 @@ void GraphicsRingItem::setRing(const Ring &ring)
     d_ptr->shape.addEllipse(rect);
 }
 
-Ring GraphicsRingItem::ring() const
+auto GraphicsRingItem::ring() const -> Ring
 {
     return d_ptr->ring;
 }
 
-bool GraphicsRingItem::isValid() const
+auto GraphicsRingItem::isValid() const -> bool
 {
     return checkRing(d_ptr->ring, margin());
 }
 
-int GraphicsRingItem::type() const
+auto GraphicsRingItem::type() const -> int
 {
     return RING;
 }
 
-QPainterPath GraphicsRingItem::shape() const
+auto GraphicsRingItem::shape() const -> QPainterPath
 {
     if (isValid()) {
         return d_ptr->shape;

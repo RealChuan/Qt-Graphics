@@ -28,7 +28,7 @@ GraphicsLineItem::GraphicsLineItem(const QLineF &line, QGraphicsItem *parent)
 
 GraphicsLineItem::~GraphicsLineItem() {}
 
-inline bool checkLine(const QLineF &line, const double margin)
+inline auto checkLine(const QLineF &line, const double margin) -> bool
 {
     return !line.isNull() && line.length() > margin;
 }
@@ -46,17 +46,17 @@ void GraphicsLineItem::setLine(const QLineF &line)
     emit lineChnaged(line);
 }
 
-QLineF GraphicsLineItem::line() const
+auto GraphicsLineItem::line() const -> QLineF
 {
     return d_ptr->line;
 }
 
-bool GraphicsLineItem::isValid() const
+auto GraphicsLineItem::isValid() const -> bool
 {
     return checkLine(d_ptr->line, margin());
 }
 
-int GraphicsLineItem::type() const
+auto GraphicsLineItem::type() const -> int
 {
     return LINE;
 }

@@ -37,7 +37,7 @@ void SectionalSubtitlesView::setImageAfter()
     scene()->addItem(d_ptr->line2Ptr.data());
 }
 
-QImage SectionalSubtitlesView::clipImage() const
+auto SectionalSubtitlesView::clipImage() const -> QImage
 {
     auto imageSize = realImageSize();
     auto y1 = line1RatioOfHeight() * imageSize.height();
@@ -50,7 +50,7 @@ QImage SectionalSubtitlesView::clipImage() const
     return image;
 }
 
-StitchingImageInfo SectionalSubtitlesView::info() const
+auto SectionalSubtitlesView::info() const -> StitchingImageInfo
 {
     auto imageSize = realImageSize();
     auto y1 = line1RatioOfHeight() * imageSize.height();
@@ -62,7 +62,7 @@ StitchingImageInfo SectionalSubtitlesView::info() const
     return {imagePath(), rect};
 }
 
-double SectionalSubtitlesView::line1RatioOfHeight() const
+auto SectionalSubtitlesView::line1RatioOfHeight() const -> double
 {
     return (d_ptr->line1Ptr->line().y1() / pixmap().size().height());
 }
@@ -74,7 +74,7 @@ void SectionalSubtitlesView::setLine1RatioOfHeight(double value)
     d_ptr->line1Ptr->setLine(line);
 }
 
-double SectionalSubtitlesView::line2RatioOfHeight() const
+auto SectionalSubtitlesView::line2RatioOfHeight() const -> double
 {
     return (d_ptr->line2Ptr->line().y1() / pixmap().size().height());
 }

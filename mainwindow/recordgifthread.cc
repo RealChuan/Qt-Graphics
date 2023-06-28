@@ -7,7 +7,7 @@
 
 #include <QPixmap>
 
-QString tempPath(const QString &name)
+auto tempPath(const QString &name) -> QString
 {
     auto path = QDir::tempPath();
     if (!path.endsWith("/")) {

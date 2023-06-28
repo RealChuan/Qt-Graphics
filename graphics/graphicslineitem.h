@@ -14,10 +14,10 @@ public:
     ~GraphicsLineItem() override;
 
     void setLine(const QLineF &line);
-    QLineF line() const;
+    [[nodiscard]] auto line() const -> QLineF;
 
-    bool isValid() const override;
-    int type() const override;
+    [[nodiscard]] auto isValid() const -> bool override;
+    [[nodiscard]] auto type() const -> int override;
 
 signals:
     void lineChnaged(const QLineF &line);

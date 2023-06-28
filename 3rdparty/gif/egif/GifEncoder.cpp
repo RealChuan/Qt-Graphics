@@ -61,8 +61,8 @@ inline void RGBA2BGR(uint8_t *dst, const uint8_t *src, int width, int height)
     }
 }
 
-static bool convertToBGR(
-    GifEncoder::PixelFormat format, uint8_t *dst, const uint8_t *src, int width, int height)
+static auto convertToBGR(
+    GifEncoder::PixelFormat format, uint8_t *dst, const uint8_t *src, int width, int height) -> bool
 {
     switch (format) {
     case GifEncoder::PIXEL_FORMAT_BGR: memcpy(dst, src, width * height * 3); break;

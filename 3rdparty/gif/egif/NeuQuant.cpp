@@ -72,7 +72,7 @@ static int bias[netsize]; /* bias and freq arrays for learning */
 static int freq[netsize];
 static int radpower[initrad]; /* radpower for precomputation */
 
-int getNetwork(int i, int j)
+auto getNetwork(int i, int j) -> int
 {
     return network[i][j];
 }
@@ -202,7 +202,7 @@ void inxbuild()
 /* Search for BGR values 0..255 (after net is unbiased) and return colour index
    ---------------------------------------------------------------------------- */
 
-int inxsearch(int b, int g, int r)
+auto inxsearch(int b, int g, int r) -> int
 {
     int i, j, dist, a, bestd;
     int *p;
@@ -271,7 +271,7 @@ int inxsearch(int b, int g, int r)
 /* Search for biased BGR values
    ---------------------------- */
 
-int contest(int b, int g, int r)
+auto contest(int b, int g, int r) -> int
 {
     /* finds closest neuron (min dist) and updates freq */
     /* finds best neuron (min dist-bias) and returns position */

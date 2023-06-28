@@ -31,20 +31,20 @@ public:
 
     explicit SelectionWidget(QColor c, QWidget *parent = nullptr);
 
-    SideType getMouseSide(const QPoint &mousePos) const;
+    [[nodiscard]] auto getMouseSide(const QPoint &mousePos) const -> SideType;
     QVector<QRect> handlerAreas();
 
     void setGeometry(const QRect &r);
-    QRect geometry() const;
-    QRect fullGeometry() const;
+    [[nodiscard]] auto geometry() const -> QRect;
+    [[nodiscard]] auto fullGeometry() const -> QRect;
 
-    QRect rect() const;
+    [[nodiscard]] auto rect() const -> QRect;
 
 signals:
     void geometryChanged();
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *event) override;
+    auto eventFilter(QObject *obj, QEvent *event) -> bool override;
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void moveEvent(QMoveEvent *event) override;

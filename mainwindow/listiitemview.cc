@@ -11,7 +11,7 @@ public:
     {
         setAutoDelete(true);
     }
-    ~LoadImageTask() {}
+    ~LoadImageTask() override {}
 
     void run() override
     {
@@ -74,7 +74,7 @@ void ListItemView::setIndex(int index, bool showUpButton, bool showDownButton)
     d_ptr->downButton->setVisible(showDownButton);
 }
 
-int ListItemView::index() const
+auto ListItemView::index() const -> int
 {
     return d_ptr->index;
 }
@@ -85,7 +85,7 @@ void ListItemView::setImagePath(const QString &path)
     d_ptr->path = path;
 }
 
-QString ListItemView::imagePath() const
+auto ListItemView::imagePath() const -> QString
 {
     return d_ptr->path;
 }
@@ -105,12 +105,12 @@ void ListItemView::setImage(const QImage &image, const QSize &size)
 
 void ListItemView::setImageAfter() {}
 
-QImage ListItemView::image() const
+auto ListItemView::image() const -> QImage
 {
     return QImage(d_ptr->path);
 }
 
-QSize ListItemView::realImageSize() const
+auto ListItemView::realImageSize() const -> QSize
 {
     return d_ptr->imageSize;
 }
