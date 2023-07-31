@@ -41,11 +41,7 @@ set(PROJECT_SOURCES
     viewer.cc
     viewer.hpp)
 
-if(CMAKE_HOST_WIN32)
-  add_library(mainwindow SHARED ${PROJECT_SOURCES} ${SOURCES})
-else()
-  add_library(mainwindow ${PROJECT_SOURCES} ${SOURCES})
-endif()
+add_custom_library(mainwindow ${PROJECT_SOURCES})
 target_link_libraries(
   mainwindow
   PRIVATE Qt6::Widgets
