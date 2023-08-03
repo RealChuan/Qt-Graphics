@@ -52,12 +52,12 @@ public:
 
     QtLockedFile();
     QtLockedFile(const QString &name);
-    ~QtLockedFile() override;
+    ~QtLockedFile();
 
-    auto lock(LockMode mode, bool block = true) -> bool;
-    auto unlock() -> bool;
-    [[nodiscard]] auto isLocked() const -> bool;
-    [[nodiscard]] auto lockMode() const -> LockMode;
+    bool lock(LockMode mode, bool block = true);
+    bool unlock();
+    bool isLocked() const;
+    LockMode lockMode() const;
 
 private:
 #ifdef Q_OS_WIN

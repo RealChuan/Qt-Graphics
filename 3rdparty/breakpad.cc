@@ -13,25 +13,40 @@
 #include <client/linux/handler/exception_handler.h>
 #endif
 
+#ifdef Q_OS_WIN
+#define CrashReportName "CrashReport.exe"
+#else
+#define CrashReportName "CrashReport"
+#endif
+
 namespace Utils {
 
-inline QString getCrashPath()
+QString getCrashPath()
 {
     const QString path = Utils::getConfigPath() + "/crashes";
     Utils::generateDirectorys(path);
     return QDir::toNativeSeparators(path);
 }
 
-inline void openCrashDialog()
+void createEnvironment()
 {
-    QDir dir;
-    const QString urlCrash = Utils::getConfigPath() + "/crashes";
-    const QString urlLog = Utils::getConfigPath() + "/log";
-    if (dir.exists(urlCrash)) {
-        QDesktopServices::openUrl(QUrl(urlCrash, QUrl::TolerantMode));
-    }
-    if (dir.exists(urlLog)) {
-        QDesktopServices::openUrl(QUrl(urlLog, QUrl::TolerantMode));
+    const auto strTime = QDateTime::currentDateTime().toString("yyyy-MM-dd-HH-mm-ss-zzz");
+    const auto path = QString("%1/crashes/%2-System Environment.txt")
+                          .arg(Utils::getConfigPath(), strTime);
+
+    QFile file(path);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        auto systemEnviroment = QProcess::systemEnvironment();
+        QString str;
+        for (const QString &info : qAsConst(systemEnviroment)) {
+            str += info;
+            str += '\n';
+        }
+        file.write(str.toUtf8());
+        file.flush();
+        file.close();
+    } else {
+        qWarning() << file.errorString();
     }
 }
 
@@ -47,6 +62,7 @@ bool callback(const wchar_t *dump_path,
     if (succeeded) {
         qInfo() << "Create dump file success:" << QString::fromWCharArray(dump_path)
                 << QString::fromWCharArray(id);
+        emit BreakPad::instance()->crash();
     } else {
         qWarning() << "Create dump file failed";
     }
@@ -57,6 +73,7 @@ bool callback(const char *dump_dir, const char *minidump_id, void *, bool succee
 {
     if (succeeded) {
         qInfo() << "Create dump file success:" << dump_dir << minidump_id;
+        emit BreakPad::instance()->crash();
     } else {
         qWarning() << "Create dump file failed";
     }
@@ -68,6 +85,7 @@ bool callback(const google_breakpad::MinidumpDescriptor &descriptor, void *conte
     Q_UNUSED(context)
     if (succeeded) {
         qInfo() << "Create dump file success:" << QString::fromLocal8Bit(descriptor.path());
+        emit BreakPad::instance()->crash();
     } else {
         qWarning() << "Create dump file failed";
     }
@@ -108,11 +126,36 @@ struct BreakPad::BreakPadPrivate
     QScopedPointer<google_breakpad::ExceptionHandler> exceptionHandlerPtr;
 };
 
+BreakPad *BreakPad::instance()
+{
+    static BreakPad breakPad;
+    return &breakPad;
+}
+
 BreakPad::BreakPad(QObject *parent)
     : QObject{parent}
     , d_ptr(new BreakPadPrivate)
 {}
 
 BreakPad::~BreakPad() {}
+
+void openCrashReporter()
+{
+    createEnvironment();
+
+    const auto reporterPath = qApp->applicationDirPath() + "/" + CrashReportName;
+    QStringList args{Utils::getConfigPath() + "/crashes",
+                     Utils::getConfigPath() + "/log",
+                     qApp->applicationFilePath()};
+    args.append(qApp->arguments());
+    QProcess process;
+    process.startDetached(reporterPath, args);
+}
+
+void crash()
+{
+    int *p;
+    *p = 10;
+}
 
 } // namespace Utils

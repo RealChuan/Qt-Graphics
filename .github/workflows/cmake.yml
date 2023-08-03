@@ -82,21 +82,25 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Configure Windows
+      - name: Enable Developer Command Prompt
         if: startsWith(matrix.os, 'windows')
-        env:
-          CMAKE_PREFIX_PATH: ${{env.Qt6_Dir}}
+        uses: ilammy/msvc-dev-cmd@v1.12.1
+        with:
+          arch: amd64
+      - name: Configure windows
+        if: startsWith(matrix.os, 'windows')
         shell: bash
         run: |
           cmake \
             -S . \
             -B ./build \
-            -A x64 \
+            -DCMAKE_C_COMPILER=cl \
+            -DCMAKE_CXX_COMPILER=cl \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -G "${{ matrix.generators }}" \
             -DCMAKE_INSTALL_PREFIX:PATH=instdir
       - name: Configure macos or ubuntu
         if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu')
-        env:
-          CMAKE_PREFIX_PATH: ${{env.Qt6_Dir}}
         shell: bash
         run: |
           cmake \

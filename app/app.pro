@@ -16,7 +16,6 @@ LIBS += \
     -l$$replaceLibName(mainwindow) \
     -l$$replaceLibName(openglgraphics) \
     -l$$replaceLibName(graphics) \
-    -l$$replaceLibName(crashhandler) \
     -l$$replaceLibName(thirdparty) \
     -l$$replaceLibName(utils)
 

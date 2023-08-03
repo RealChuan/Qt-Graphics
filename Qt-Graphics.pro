@@ -4,7 +4,6 @@ CONFIG += ordered
 SUBDIRS += \
     utils\
     3rdparty \
-    crashhandler \
     graphics \
     openglgraphics \
     mainwindow \

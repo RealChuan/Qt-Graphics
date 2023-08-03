@@ -39,18 +39,18 @@ class THRIDPARTY_EXPORT QtSingleApplication : public QApplication
 
 public:
     QtSingleApplication(const QString &id, int &argc, char **argv);
-    ~QtSingleApplication() override;
+    ~QtSingleApplication();
 
-    auto isRunning(qint64 pid = -1) -> bool;
+    bool isRunning(qint64 pid = -1);
 
     void setActivationWindow(QWidget* aw, bool activateOnMessage = true);
-    [[nodiscard]] auto activationWindow() const -> QWidget*;
-    auto event(QEvent *event) -> bool override;
+    QWidget* activationWindow() const;
+    bool event(QEvent *event) override;
 
-    [[nodiscard]] auto applicationId() const -> QString;
+    QString applicationId() const;
     void setBlock(bool value);
 
-    auto sendMessage(const QString &message, int timeout = 5000, qint64 pid = -1) -> bool;
+    bool sendMessage(const QString &message, int timeout = 5000, qint64 pid = -1);
     void activateWindow();
 
 Q_SIGNALS:
@@ -58,7 +58,7 @@ Q_SIGNALS:
     void fileOpenRequest(const QString &file);
 
 private:
-    auto instancesFileName(const QString &appId) -> QString;
+    QString instancesFileName(const QString &appId);
 
     qint64 firstPeer;
     QSharedMemory *instances;
