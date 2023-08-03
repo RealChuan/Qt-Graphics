@@ -1,19 +1,19 @@
 
 #pragma once
 
-#include "openglgraphics_global.hpp"
+#include "gpugraphics_global.hpp"
 
 #include <QImage>
 #include <QOpenGLFunctions>
 #include <QOpenGLWidget>
 
-namespace OpenglGraphics {
+namespace GpuGraphics {
 
-class OPENGLGRAPHICS OpenglView : public QOpenGLWidget, protected QOpenGLFunctions
+class GPUAPHICS OpenglView : public QOpenGLWidget, protected QOpenGLFunctions
 {
     Q_OBJECT
 public:
-    OpenglView(QWidget *parent = nullptr);
+    explicit OpenglView(QWidget *parent = nullptr);
     ~OpenglView() override;
 
 public slots:
@@ -41,8 +41,8 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
 
 private:
-    void initVbo();
     void initTexture();
+    void uploadTexture();
     void clear();
     void createPopMenu();
     void emitScaleFactor();
@@ -51,4 +51,4 @@ private:
     QScopedPointer<OpenglViewPrivate> d_ptr;
 };
 
-} // namespace OpenglGraphics
+} // namespace GpuGraphics

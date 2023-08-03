@@ -4,14 +4,24 @@ on:
   # push代码时触发workflow
   push:
     paths-ignore: # 下列文件的变更不触发部署，可以自行添加
-        - 'doc'
+        - '.github/workflows/clean_cache.yml'
+        - '.github/workflows/delete_workflow.yml'
+        - '.github/workflows/qmake.yml'
+        - '.github/workflows/readme.yml'
+        - '.github/workflows/toolchain.yml'
+        - 'doc/**'
         - '.clang-format'
         - '.gitignore'
         - 'LICENSE'
         - 'README*'
   pull_request:
     paths-ignore: # 下列文件的变更不触发部署，可以自行添加
-        - 'doc'
+        - '.github/workflows/clean_cache.yml'
+        - '.github/workflows/delete_workflow.yml'
+        - '.github/workflows/qmake.yml'
+        - '.github/workflows/readme.yml'
+        - '.github/workflows/toolchain.yml'
+        - 'doc/**'
         - '.clang-format'
         - '.gitignore'
         - 'LICENSE'
@@ -29,30 +39,35 @@ jobs:
           - macos-latest
           - ubuntu-latest
         qt_ver: 
-          - 6.5.2
+          - 6.6.1
         build_type:
           - "Release"
         generators:
           - "Ninja"
+        libs: 
+          - breakpad giflib
 
     steps:
-      - name: cache vcpkg
-        uses: actions/cache@v3
-        with:
-          path: |
-            C:\vcpkg\installed
-            /usr/local/share/vcpkg/installed
-          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}-
-            ${{ runner.os }}-vcpkg-installed-
+      - name: Restore windows vcpkg
+        if: startsWith(matrix.os, 'windows')
+        uses: actions/cache/restore@v3
+        with: 
+          path: C:\vcpkg\installed
+          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}
+      - name: Restore macos or ubuntu vcpkg
+        if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu')
+        uses: actions/cache/restore@v3
+        with: 
+          path: /usr/local/share/vcpkg/installed
+          key: ${{ runner.os }}-vcpkg-installed-${{ matrix.os }}
+
       - name: Install dependencies on windows
         if: startsWith(matrix.os, 'windows')
         run: |
           choco install ninja
           ninja --version
           cmake --version
-          vcpkg install breakpad giflib --triplet x64-windows
+          vcpkg install ${{ matrix.libs }} --triplet x64-windows
       - name: Install dependencies on macos
         if: startsWith(matrix.os, 'macos')
         run: |
@@ -60,7 +75,7 @@ jobs:
           ninja --version
           cmake --version
           clang --version
-          vcpkg install breakpad giflib --triplet x64-osx
+          vcpkg install ${{ matrix.libs }} --triplet x64-osx
       - name: Install dependencies on ubuntu
         if: startsWith(matrix.os, 'ubuntu')
         run: |
@@ -68,35 +83,39 @@ jobs:
           ninja --version
           cmake --version
           gcc --version
-          vcpkg install breakpad giflib --triplet x64-linux
+          vcpkg install ${{ matrix.libs }} --triplet x64-linux
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
           version: ${{ matrix.qt_ver }}
           install-deps: 'true'
-          modules: 'qt5compat addons.qtnetworkauth addons.qtimageformats'
+          modules: 'qt5compat qtnetworkauth qtimageformats'
           cache: 'true'
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: Configure Windows
+      - name: Enable Developer Command Prompt
         if: startsWith(matrix.os, 'windows')
-        env:
-          CMAKE_PREFIX_PATH: ${{env.Qt6_Dir}}
+        uses: ilammy/msvc-dev-cmd@v1.12.1
+        with:
+          arch: amd64
+      - name: Configure windows
+        if: startsWith(matrix.os, 'windows')
         shell: bash
         run: |
           cmake \
             -S . \
             -B ./build \
-            -A x64 \
+            -DCMAKE_C_COMPILER=cl \
+            -DCMAKE_CXX_COMPILER=cl \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -G "${{ matrix.generators }}" \
             -DCMAKE_INSTALL_PREFIX:PATH=instdir
       - name: Configure macos or ubuntu
         if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu')
-        env:
-          CMAKE_PREFIX_PATH: ${{env.Qt6_Dir}}
         shell: bash
         run: |
           cmake \

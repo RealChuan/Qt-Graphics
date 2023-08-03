@@ -177,7 +177,7 @@ void RecordGifThread::encode1(const QVector<QImage> &images)
 {
     /// [1]
     QScopedPointer<GifEncoder> gifEncoderPtr(createGifEncoder());
-    for (const auto &image : qAsConst(images)) {
+    for (const auto &image : std::as_const(images)) {
         ///[2]
         push(gifEncoderPtr.data(), image);
     }
@@ -191,7 +191,7 @@ void RecordGifThread::encode2(const QVector<QImage> &images)
 {
     /// [1]
     QScopedPointer<GifWriter> gifWriterPtr(createGifWriter());
-    for (const auto &image : qAsConst(images)) {
+    for (const auto &image : std::as_const(images)) {
         ///[2]
         push(gifWriterPtr.data(), image);
     }
@@ -270,7 +270,7 @@ void RecordGifThread::encode2()
     /// [1]
     QScopedPointer<GifEncoder> gifEncoderPtr(createGifEncoder());
     QScopedPointer<GifWriter> gifWriterPtr(createGifWriter());
-    for (const auto &path : qAsConst(imagePaths)) {
+    for (const auto &path : std::as_const(imagePaths)) {
         QImage image(path);
         if (image.isNull()) {
             continue;

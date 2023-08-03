@@ -37,11 +37,11 @@ class QtLocalPeer : public QObject
 
 public:
     explicit QtLocalPeer(QObject *parent = 0, const QString &appId = QString());
-    auto isClient() -> bool;
-    auto sendMessage(const QString &message, int timeout, bool block) -> bool;
-    [[nodiscard]] auto applicationId() const -> QString
+    bool isClient();
+    bool sendMessage(const QString &message, int timeout, bool block);
+    QString applicationId() const
         { return id; }
-    static auto appSessionId(const QString &appId) -> QString;
+    static QString appSessionId(const QString &appId);
 
 Q_SIGNALS:
     void messageReceived(const QString &message, QObject *socket);

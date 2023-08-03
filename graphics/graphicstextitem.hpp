@@ -13,7 +13,7 @@ class GRAPHICS_EXPORT GraphicsTextItem : public QGraphicsTextItem
 public:
     enum { Type = UserType + 3 };
 
-    GraphicsTextItem(QGraphicsItem *parent = nullptr);
+    explicit GraphicsTextItem(QGraphicsItem *parent = nullptr);
 
     [[nodiscard]] auto type() const -> int override { return Type; }
 

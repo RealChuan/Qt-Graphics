@@ -111,7 +111,7 @@ void FileUtil::autoDelFile()
     const QDateTime cur = QDateTime::currentDateTime();
     const QDateTime pre = cur.addDays(-d_ptr->autoDelFileDays);
 
-    for (const QFileInfo &info : qAsConst(list)) {
+    for (const QFileInfo &info : std::as_const(list)) {
         if (info.lastModified() <= pre) {
             dir.remove(info.fileName());
         }

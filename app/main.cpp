@@ -1,5 +1,5 @@
+#include <3rdparty/breakpad.hpp>
 #include <3rdparty/qtsingleapplication/qtsingleapplication.h>
-#include <crashhandler/breakpad.hpp>
 #include <mainwindow/mainwindow.h>
 #include <utils/logasync.h>
 #include <utils/utils.h>
@@ -8,27 +8,31 @@
 #include <QDir>
 #include <QStyle>
 
+#define AppName "QGraphicsTool"
+
 void setAppInfo()
 {
     qApp->setApplicationVersion("0.0.1");
-    qApp->setApplicationDisplayName(QObject::tr("QGraphicsTool"));
-    qApp->setApplicationName(QObject::tr("QGraphicsTool"));
-    qApp->setDesktopFileName(QObject::tr("QGraphicsTool"));
-    qApp->setOrganizationDomain(QObject::tr("Youth"));
-    qApp->setOrganizationName(QObject::tr("Youth"));
+    qApp->setApplicationDisplayName(AppName);
+    qApp->setApplicationName(AppName);
+    qApp->setDesktopFileName(AppName);
+    qApp->setOrganizationDomain("Youth");
+    qApp->setOrganizationName("Youth");
+    qApp->setWindowIcon(QIcon{":/app.ico"});
 }
 
 auto main(int argc, char *argv[]) -> int
 {
 #if defined(Q_OS_WIN) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    if (!qEnvironmentVariableIsSet("QT_OPENGL"))
+    if (!qEnvironmentVariableIsSet("QT_OPENGL")) {
         QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
+    }
 #else
     qputenv("QSG_RHI_BACKEND", "opengl");
 #endif
     Utils::setHighDpiEnvironmentVariable();
     SharedTools::QtSingleApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
-    SharedTools::QtSingleApplication app("PictrueTools", argc, argv);
+    SharedTools::QtSingleApplication app(AppName, argc, argv);
     if (app.isRunning()) {
         qWarning() << "This is already running";
         if (app.sendMessage("raise_window_noop", 5000)) {
@@ -48,7 +52,11 @@ auto main(int argc, char *argv[]) -> int
     app.setAttribute(Qt::AA_DisableWindowContextHelpButton);
 #endif
 
-    Utils::BreakPad breakPad;
+#ifndef Q_OS_WIN
+    Q_INIT_RESOURCE(shader);
+#endif
+
+    Utils::BreakPad::instance();
     QDir::setCurrent(app.applicationDirPath());
 
     // 异步日志
@@ -61,7 +69,6 @@ auto main(int argc, char *argv[]) -> int
     Utils::setGlobalThreadPoolMaxSize();
 
     setAppInfo();
-    app.setWindowIcon(QIcon(":/app.ico"));
 
     MainWindow w;
     app.setActivationWindow(&w);

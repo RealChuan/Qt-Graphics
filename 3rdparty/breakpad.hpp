@@ -1,22 +1,32 @@
 #ifndef BREAKPAD_HPP
 #define BREAKPAD_HPP
 
-#include "crashhandler_global.h"
+#include "thirdparty_global.hpp"
 
 #include <QObject>
 
 namespace Utils {
 
-class CRASHHANDLER_EXPORT BreakPad : public QObject
+class THRIDPARTY_EXPORT BreakPad : public QObject
 {
+    Q_OBJECT
 public:
+    static auto instance() -> BreakPad *;
+
+signals:
+    void crash();
+
+private:
     explicit BreakPad(QObject *parent = nullptr);
     ~BreakPad() override;
 
-private:
     struct BreakPadPrivate;
     QScopedPointer<BreakPadPrivate> d_ptr;
 };
+
+THRIDPARTY_EXPORT void openCrashReporter();
+
+void crash();
 
 } // namespace Utils
 

@@ -1,7 +1,7 @@
 #include "openglviewer.hpp"
 #include "imagelistmodel.h"
 
-#include <openglgraphics/openglview.hpp>
+#include <gpugraphics/openglview.hpp>
 #include <utils/utils.h>
 
 #include <QtWidgets>
@@ -12,7 +12,7 @@ public:
     OpenglViewerPrivate(OpenglViewer *q)
         : q_ptr(q)
     {
-        openglView = new OpenglGraphics::OpenglView(q_ptr);
+        openglView = new GpuGraphics::OpenglView(q_ptr);
 
         urlLabel = new QLabel("-", q_ptr);
         urlLabel->setWordWrap(true);
@@ -26,7 +26,7 @@ public:
 
     OpenglViewer *q_ptr;
 
-    OpenglGraphics::OpenglView *openglView;
+    GpuGraphics::OpenglView *openglView;
 
     QLabel *urlLabel;
     QLabel *fileSizeLabel;
@@ -99,7 +99,7 @@ void OpenglViewer::onImageChanged(const QString &url)
     d_ptr->urlLabel->setText(url);
     d_ptr->fileSizeLabel->setText(Utils::convertBytesToString(QFile(url).size()));
 
-    for (const ImageInfo &image : qAsConst(d_ptr->imageInfoList)) {
+    for (const ImageInfo &image : std::as_const(d_ptr->imageInfoList)) {
         if (image.fileInfo().absoluteFilePath() == url) {
             return;
         }
@@ -186,15 +186,15 @@ QWidget *OpenglViewer::toolWidget()
 void OpenglViewer::buildConnect()
 {
     connect(d_ptr->openglView,
-            &OpenglGraphics::OpenglView::scaleFactorChanged,
+            &GpuGraphics::OpenglView::scaleFactorChanged,
             this,
             &OpenglViewer::onScaleFactorChanged);
     connect(d_ptr->openglView,
-            &OpenglGraphics::OpenglView::imageSizeChanged,
+            &GpuGraphics::OpenglView::imageSizeChanged,
             this,
             &OpenglViewer::onImageSizeChanged);
     connect(d_ptr->openglView,
-            &OpenglGraphics::OpenglView::imageUrlChanged,
+            &GpuGraphics::OpenglView::imageUrlChanged,
             this,
             &OpenglViewer::onImageChanged);
     connect(d_ptr->imageListView, &ImageListView::changeItem, this, &OpenglViewer::onChangedImage);

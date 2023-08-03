@@ -309,7 +309,7 @@ void SelectionWidget::paintEvent(QPaintEvent *event)
     p.setRenderHint(QPainter::Antialiasing);
     p.setBrush(m_color);
     auto areas = handlerAreas();
-    for (const auto &rect : qAsConst(areas)) {
+    for (const auto &rect : std::as_const(areas)) {
         p.drawEllipse(rect);
     }
 }
