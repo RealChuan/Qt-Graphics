@@ -4,8 +4,8 @@ CONFIG += ordered
 SUBDIRS += \
     utils\
     3rdparty \
+    gpugraphics \
     graphics \
-    openglgraphics \
     mainwindow \
     app
 

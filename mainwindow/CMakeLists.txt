@@ -49,7 +49,7 @@ target_link_libraries(
           Qt6::OpenGLWidgets
           utils
           graphics
-          openglgraphics
+          gpugraphics
           egif)
 
 if(CMAKE_HOST_WIN32)

@@ -18,11 +18,11 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(utils)
 
 if(CMAKE_HOST_WIN32)
-  list(APPEND CMAKE_PREFIX_PATH "C:\\Qt\\6.5.2\\msvc2019_64")
+  list(APPEND CMAKE_PREFIX_PATH "C:\\Qt\\6.6.1\\msvc2019_64")
 elseif(CMAKE_HOST_APPLE)
 
 elseif(CMAKE_HOST_UNIX)
-  list(APPEND CMAKE_PREFIX_PATH "/opt/Qt/6.5.2/gcc_64")
+  list(APPEND CMAKE_PREFIX_PATH "/opt/Qt/6.6.1/gcc_64")
 endif()
 
 project(
@@ -87,7 +87,7 @@ endif()
 
 add_subdirectory(utils)
 add_subdirectory(3rdparty)
+add_subdirectory(gpugraphics)
 add_subdirectory(graphics)
-add_subdirectory(openglgraphics)
 add_subdirectory(mainwindow)
 add_subdirectory(app)

@@ -237,7 +237,7 @@ void DrawWidget::buildConnect()
     connect(d_ptr->drawScene, &DrawScene::itemSelected, this, &DrawWidget::itemSelected);
     new QShortcut(QKeySequence::SelectAll, this, this, [this] {
         auto items = d_ptr->drawScene->items();
-        for (auto item : qAsConst(items)) {
+        for (auto item : std::as_const(items)) {
             item->setSelected(true);
         }
     });

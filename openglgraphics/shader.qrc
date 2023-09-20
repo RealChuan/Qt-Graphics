@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>shader/texture.fs</file>
-        <file>shader/texture.vs</file>
-    </qresource>
-</RCC>

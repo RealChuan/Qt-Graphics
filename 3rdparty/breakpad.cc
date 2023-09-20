@@ -38,7 +38,7 @@ void createEnvironment()
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         auto systemEnviroment = QProcess::systemEnvironment();
         QString str;
-        for (const QString &info : qAsConst(systemEnviroment)) {
+        for (const QString &info : std::as_const(systemEnviroment)) {
             str += info;
             str += '\n';
         }

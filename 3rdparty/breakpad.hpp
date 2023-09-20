@@ -11,14 +11,14 @@ class THRIDPARTY_EXPORT BreakPad : public QObject
 {
     Q_OBJECT
 public:
-    static BreakPad *instance();
+    static auto instance() -> BreakPad *;
 
 signals:
     void crash();
 
 private:
     explicit BreakPad(QObject *parent = nullptr);
-    ~BreakPad();
+    ~BreakPad() override;
 
     struct BreakPadPrivate;
     QScopedPointer<BreakPadPrivate> d_ptr;

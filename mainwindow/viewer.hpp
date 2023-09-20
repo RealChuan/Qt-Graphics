@@ -10,7 +10,9 @@ public:
     explicit Viewer(QWidget *parent = nullptr);
     ~Viewer() override;
 
-    virtual auto setImage(const QFileInfo &info, const QImage &image, const qint64 taskCount) -> bool = 0;
+    virtual auto setImage(const QFileInfo &info, const QImage &image, const qint64 taskCount)
+        -> bool
+        = 0;
 };
 
 class ImageLoadRunnable : public QRunnable
@@ -18,6 +20,8 @@ class ImageLoadRunnable : public QRunnable
 public:
     ImageLoadRunnable(const QString &fileUrl, Viewer *view, qint64 taskCount);
     ~ImageLoadRunnable() override;
+
+    static void terminateAll();
 
 protected:
     void run() override;

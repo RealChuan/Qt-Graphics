@@ -13,7 +13,7 @@ class GRAPHICS_EXPORT ImageView : public QGraphicsView
     Q_OBJECT
 public:
     explicit ImageView(QWidget *parent = nullptr);
-    ImageView(QGraphicsScene *scene, QWidget *parent = nullptr);
+    explicit ImageView(QGraphicsScene *scene, QWidget *parent = nullptr);
     ~ImageView() override;
 
     [[nodiscard]] auto pixmap() const -> QPixmap;

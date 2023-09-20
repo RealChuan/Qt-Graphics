@@ -14,7 +14,7 @@ void Utils::setQSS()
     const QJsonObject json(jsonFromFile(qApp->applicationDirPath() + "/config/config.json"));
     const QStringList qssPath(json.value("qss_files").toVariant().toStringList());
     QString qss;
-    for (const QString &path : qAsConst(qssPath)) {
+    for (const QString &path : std::as_const(qssPath)) {
         qDebug() << QObject::tr("Loading QSS file: %1.").arg(path);
         QFile file(path);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -34,7 +34,7 @@ void Utils::loadFonts()
     const QJsonObject json(jsonFromFile(qApp->applicationDirPath() + "/config/config.json"));
     const QStringList fontFiles(json.value("font_files").toVariant().toStringList());
 
-    for (const QString &file : qAsConst(fontFiles)) {
+    for (const QString &file : std::as_const(fontFiles)) {
         qDebug() << QObject::tr("Loading Font file: %1").arg(file);
         QFontDatabase::addApplicationFont(file);
     }
@@ -83,23 +83,17 @@ void Utils::printBuildInfo()
 
 void Utils::setHighDpiEnvironmentVariable()
 {
-    if (Utils::HostOsInfo().isMacHost()) {
+    if (Utils::HostOsInfo::isMacHost()) {
         return;
     }
-    if (Utils::HostOsInfo().isWindowsHost() && !qEnvironmentVariableIsSet("QT_OPENGL")) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
-#endif
-    }
 
-    if (Utils::HostOsInfo().isWindowsHost()
+    if (Utils::HostOsInfo::isWindowsHost()
         && !qEnvironmentVariableIsSet("QT_DEVICE_PIXEL_RATIO") // legacy in 5.6, but still functional
         && !qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR")
         && !qEnvironmentVariableIsSet("QT_SCALE_FACTOR")
         && !qEnvironmentVariableIsSet("QT_SCREEN_SCALE_FACTORS")) {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-        QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
     }
 
@@ -175,7 +169,7 @@ void removeFiles(const QString &path)
         return;
     }
     const QFileInfoList entries = dir.entryInfoList(QDir::AllEntries | QDir::Hidden);
-    for (const QFileInfo &fi : qAsConst(entries)) {
+    for (const QFileInfo &fi : std::as_const(entries)) {
         if (fi.isSymLink() || fi.isFile()) {
             QFile f(fi.filePath());
             if (!f.remove()) {
@@ -218,7 +212,7 @@ void Utils::removeDirectory(const QString &path)
     QDir d;
     dirs.append(path);
     removeFiles(path);
-    for (const QString &dir : qAsConst(dirs)) {
+    for (const QString &dir : std::as_const(dirs)) {
         errno = 0;
         if (d.exists(path) && !d.rmdir(dir)) {
             const QString errorMessage = QObject::tr("Cannot remove directory \"%1\": %2")
@@ -297,7 +291,7 @@ auto Utils::desktopGeometry() -> QRect
 {
     QRect geometry;
     auto screens = QGuiApplication::screens();
-    for (auto *const screen : qAsConst(screens)) {
+    for (auto *const screen : std::as_const(screens)) {
         QRect scrRect = screen->geometry();
         scrRect.moveTo(scrRect.x() / screen->devicePixelRatio(),
                        scrRect.y() / screen->devicePixelRatio());

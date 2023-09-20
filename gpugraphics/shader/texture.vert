@@ -1,10 +1,11 @@
-#version 330 core
+#version 450
+
+uniform mat4 transform;
 
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec2 aTexCord;
-out vec2 TexCord; // 纹理坐标
 
-uniform mat4 transform;
+layout(location = 0) out vec2 TexCord; // 纹理坐标
 
 void main()
 {

@@ -14,7 +14,7 @@ LIBS += -L$$APP_OUTPUT_PATH/../libs
 
 LIBS += \
     -l$$replaceLibName(mainwindow) \
-    -l$$replaceLibName(openglgraphics) \
+    -l$$replaceLibName(gpugraphics) \
     -l$$replaceLibName(graphics) \
     -l$$replaceLibName(thirdparty) \
     -l$$replaceLibName(utils)

@@ -14,7 +14,7 @@ namespace Graphics {
 class BasicGraphicsItem::BasicGraphicsItemPrivate
 {
 public:
-    BasicGraphicsItemPrivate(QObject *parent)
+    explicit BasicGraphicsItemPrivate(QObject *parent)
         : owner(parent)
     {}
 
@@ -117,7 +117,7 @@ void BasicGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         setCursor(Qt::SizeAllCursor);
     }
 
-    for (const QPointF &p : qAsConst(d_ptr->cache)) {
+    for (const QPointF &p : std::as_const(d_ptr->cache)) {
         QPointF m(margin() / 2, margin() / 2);
         QRectF area(p - m, p + m);
         if (area.contains(pos)) {
@@ -178,7 +178,7 @@ void BasicGraphicsItem::drawAnchor(QPainter *painter)
     }
 
     QPolygonF polygonF = cache();
-    for (const QPointF &p : qAsConst(polygonF)) {
+    for (const QPointF &p : std::as_const(polygonF)) {
         painter->fillRect(QRectF(p.x() - d_ptr->margin / 2,
                                  p.y() - d_ptr->margin / 2,
                                  d_ptr->margin,

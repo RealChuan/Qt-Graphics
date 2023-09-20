@@ -18,7 +18,7 @@ public:
     void run() override
     {
         QImage image;
-        for (const auto &info : qAsConst(m_infos)) {
+        for (const auto &info : std::as_const(m_infos)) {
             auto i = QImage(info.imagePath);
             if (image.isNull()) {
                 auto clipRect = QRect(QPoint(0, 0), info.imageRect.bottomRight());
@@ -101,7 +101,7 @@ void SubtitlSplicingWidget::onOpenImage()
     }
 
     d_ptr->listWidget->clear();
-    for (const auto &path : qAsConst(paths)) {
+    for (const auto &path : std::as_const(paths)) {
         auto item = new QListWidgetItem;
         item->setSizeHint(QSize(1, 300));
         auto view = new SectionalSubtitlesView(this);

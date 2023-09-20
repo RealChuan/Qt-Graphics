@@ -10,7 +10,7 @@ LIBS += \
     -l$$replaceLibName(utils) \
     -l$$replaceLibName(thirdparty) \
     -l$$replaceLibName(graphics) \
-    -l$$replaceLibName(openglgraphics)
+    -l$$replaceLibName(gpugraphics)
 
 DEFINES += QT_DEPRECATED_WARNINGS
 

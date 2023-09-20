@@ -138,7 +138,7 @@ void ImageViewer::onImageChanged(const QString &url)
     d_ptr->urlLabel->setText(url);
     d_ptr->fileSizeLabel->setText(Utils::convertBytesToString(QFile(url).size()));
 
-    for (const ImageInfo &image : qAsConst(d_ptr->imageInfoList)) {
+    for (const ImageInfo &image : std::as_const(d_ptr->imageInfoList)) {
         if (image.fileInfo().absoluteFilePath() == url) {
             return;
         }
