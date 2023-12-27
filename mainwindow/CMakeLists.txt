@@ -39,7 +39,9 @@ set(PROJECT_SOURCES
     validator.cc
     validator.hpp
     viewer.cc
-    viewer.hpp)
+    viewer.hpp
+    vulkanviewer.cc
+    vulkanviewer.hpp)
 
 add_custom_library(mainwindow ${PROJECT_SOURCES})
 target_link_libraries(

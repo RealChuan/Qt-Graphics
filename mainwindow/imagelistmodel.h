@@ -57,7 +57,8 @@ class ImageListModel : public QAbstractListModel
 public:
     explicit ImageListModel(QObject *parent = nullptr);
     ~ImageListModel() override;
-    [[nodiscard]] auto rowCount(const QModelIndex & = QModelIndex()) const -> int override;
+    [[nodiscard]] auto rowCount(const QModelIndex & /*parent*/ = QModelIndex()) const
+        -> int override;
     [[nodiscard]] auto data(const QModelIndex &index, int role = Qt::DisplayRole) const
         -> QVariant override;
 

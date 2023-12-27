@@ -26,6 +26,16 @@ jobs:
           - breakpad giflib
 
     steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install Vulkan SDK
+        uses: humbletim/install-vulkan-sdk@v1.1.1
+        with:
+          cache: true
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:

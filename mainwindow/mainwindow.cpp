@@ -5,6 +5,7 @@
 #include "openglviewer.hpp"
 #include "recordwidget.hpp"
 #include "subtitlsplicingwidget.hpp"
+#include "vulkanviewer.hpp"
 
 #include <utils/utils.h>
 
@@ -19,12 +20,14 @@ public:
         drawWidget = new DrawWidget(owner);
         imageViewer = new ImageViewer(owner);
         openglViewer = new OpenglViewer(owner);
+        vulkanViewer = new VulkanViewer(owner);
         subtitlSplicingWidget = new SubtitlSplicingWidget(owner);
         stackedWidget = new QStackedWidget(owner);
         stackedWidget->addWidget(imageViewer);
         stackedWidget->addWidget(drawWidget);
         stackedWidget->addWidget(subtitlSplicingWidget);
         stackedWidget->addWidget(openglViewer);
+        stackedWidget->addWidget(vulkanViewer);
     }
     ~MainWindowPrivate() {}
 
@@ -32,6 +35,7 @@ public:
     DrawWidget *drawWidget;
     ImageViewer *imageViewer;
     OpenglViewer *openglViewer;
+    VulkanViewer *vulkanViewer;
     SubtitlSplicingWidget *subtitlSplicingWidget;
     QStackedWidget *stackedWidget;
 };
@@ -70,11 +74,14 @@ void MainWindow::setupUI()
 void MainWindow::initMenuBar()
 {
     auto menu = new QMenu(tr("Select Widget"), this);
-    menu->addAction(tr("ImageViewer"), this, [this] {
+    menu->addAction(tr("Image Viewer"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->imageViewer);
     });
-    menu->addAction(tr("OpenglViewer"), this, [this] {
+    menu->addAction(tr("Opengl Viewer"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->openglViewer);
+    });
+    menu->addAction(tr("Vulakn Viewer"), this, [this] {
+        d_ptr->stackedWidget->setCurrentWidget(d_ptr->vulkanViewer);
     });
     menu->addAction(tr("Draw"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->drawWidget);

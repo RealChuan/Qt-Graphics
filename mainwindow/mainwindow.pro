@@ -34,7 +34,8 @@ SOURCES += \
     stretchparamssettingdailog.cc \
     subtitlsplicingwidget.cc \
     validator.cc \
-    viewer.cc
+    viewer.cc \
+    vulkanviewer.cc
 
 HEADERS += \
     capturewidget.hpp \
@@ -57,4 +58,5 @@ HEADERS += \
     stretchparamssettingdailog.hpp \
     subtitlsplicingwidget.hpp \
     validator.hpp \
-    viewer.hpp
+    viewer.hpp \
+    vulkanviewer.hpp
