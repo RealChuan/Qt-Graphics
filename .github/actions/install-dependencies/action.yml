@@ -1,0 +1,99 @@
+name: 'Install Dependencies'
+description: 'Install vcpkg libraries and qt environment'
+inputs:
+  os_name:
+    description: 'os name'
+    required: true
+    type: string
+  vcpkg_libs:
+    description: 'vcpkg libraries'
+    required: false
+    default: 'breakpad crashpad giflib'
+    type: string
+  qt_modules:
+    description: 'qt modules'
+    required: false
+    default: 'qt5compat qtnetworkauth qtimageformats'
+    type: string
+  qt_ver:
+    description: 'qt version'
+    required: false
+    default: '6.7.0'
+    type: string
+
+runs:
+  using: 'composite'
+
+  steps:
+    - name: Install Custom VCPKG
+      uses: RealChuan/install-vcpkg@main
+      with:
+        repo: 'https://github.com/RealChuan/vcpkg.git'
+        branch: 'dev'
+        
+    - name: Delete vcpkg.json
+      shell: bash
+      run: |
+        rm vcpkg.json
+
+    - name: Cache windows vcpkg
+      if: startsWith(runner.os, 'Windows')
+      uses: actions/cache@v4
+      with: 
+        path: C:\vcpkg\installed
+        key: ${{ inputs.os_name }}-vcpkg-installed-${{ runner.os }}-${{ github.sha }}
+        restore-keys: |
+          ${{ inputs.os_name }}-vcpkg-installed-${{ runner.os_name }}-
+          ${{ inputs.os_name }}-vcpkg-installed-
+          ${{ inputs.os_name }}-
+        save-always: true
+
+    - name: Cache macos or linux vcpkg
+      if: startsWith(runner.os, 'macOS') || startsWith(runner.os, 'Linux')
+      uses: actions/cache@v4
+      with: 
+        path: /usr/local/share/vcpkg/installed
+        key: ${{ inputs.os_name }}-vcpkg-installed-${{ runner.os }}-${{ github.sha }}
+        restore-keys: |
+          ${{ inputs.os_name }}-vcpkg-installed-${{ runner.os_name }}-
+          ${{ inputs.os_name }}-vcpkg-installed-
+          ${{ inputs.os_name }}-
+        save-always: true
+
+    - name: Install dependencies on windows
+      if: startsWith(runner.os, 'Windows')
+      shell: bash
+      run: |
+        choco install ninja
+        ninja --version
+        cmake --version
+        vcpkg install ${{ inputs.vcpkg_libs }} --triplet x64-windows || (cat C:/vcpkg/installed/vcpkg/issue_body.md && exit 1)
+
+    - name: Install dependencies on macos
+      if: startsWith(runner.os, 'macOS')
+      shell: bash
+      run: |
+        brew install ninja python-setuptools
+        ninja --version
+        cmake --version
+        clang --version
+        vcpkg install ${{ inputs.vcpkg_libs }} --triplet x64-osx || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
+        vcpkg install ${{ inputs.vcpkg_libs }} --triplet arm64-osx || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
+
+    - name: Install dependencies on linux
+      if: startsWith(runner.os, 'Linux')
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install ninja-build build-essential libgl1-mesa-dev clang
+        ninja --version
+        cmake --version
+        gcc --version
+        vcpkg install ${{ inputs.vcpkg_libs }} --triplet x64-linux || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: ${{ inputs.qt_ver }}
+        modules: ${{ inputs.qt_modules }}
+        cache: 'true'

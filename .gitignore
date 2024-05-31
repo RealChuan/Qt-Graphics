@@ -60,3 +60,4 @@ build/
 build*/
 lib-*/
 .cache/
+*.spv

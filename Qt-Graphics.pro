@@ -2,18 +2,11 @@ TEMPLATE = subdirs
 CONFIG += ordered
 
 SUBDIRS += \
-    utils\
-    3rdparty \
-    gpugraphics \
-    graphics \
-    mainwindow \
-    app
-
-TRANSLATIONS += \
-    translations/language.zh_cn.ts \
-    translations/language.zh_en.ts
+    src \
+    examples
 
 DISTFILES += \
-    $$files(docs/*.png)\
+    doc/** \
+    .clang* \
     LICENSE \
-    README.md
+    README*
