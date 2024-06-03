@@ -5,6 +5,21 @@
 
 ## 效果图更新会不太及时
 
+## QVulkanWindow
+
+### 问题
+
+#### 编译
+
+1. [cmake](.github/workflows/cmake.yml)：在MacOS下会找不到QVulkanWindow相关的头文件，编译无法通过；
+2. [qmake](.github/workflows/qmake.yml)：
+    1. 在MacOS下会找不到QVulkanWindowRenderer相关的头文件，编译无法通过；
+    2. 在Ubuntu下会找不到QVulkanInstance相关的头文件，编译无法通过：
+
+#### 旋转
+
+1. 跟OpenGL看图界面类似，在旋转任意角度的时候，纹理的宽高比会变化，导致显示不正常；
+
 ## 看图界面
 
 <div align=center>
