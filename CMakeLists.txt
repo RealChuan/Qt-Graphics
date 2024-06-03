@@ -16,7 +16,7 @@ project(
 
 include(cmake/common.cmake)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Network Core5Compat Concurrent
+find_package(Qt6 REQUIRED COMPONENTS Gui Widgets Network Core5Compat Concurrent
                                      OpenGLWidgets)
 
 qt_standard_project_setup()
@@ -31,6 +31,10 @@ endif()
 find_package(crashpad CONFIG REQUIRED)
 if(crashpad_FOUND)
   message(STATUS "found crashpad")
+endif()
+find_package(Vulkan REQUIRED)
+if(Vulkan_FOUND)
+  message(STATUS "found Vulkan")
 endif()
 
 find_package(GIF REQUIRED)

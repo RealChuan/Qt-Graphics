@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>shader/texture.frag</file>
         <file>shader/texture.vert</file>
+        <file>shader/vulkan.frag</file>
+        <file>shader/vulkan.vert</file>
     </qresource>
 </RCC>
