@@ -97,3 +97,8 @@ runs:
         version: ${{ inputs.qt_ver }}
         modules: ${{ inputs.qt_modules }}
         cache: 'true'
+
+    - name: Install Vulkan SDK
+      uses: humbletim/install-vulkan-sdk@main
+      with:
+        cache: true        

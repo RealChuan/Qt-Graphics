@@ -37,7 +37,9 @@ set(PROJECT_SOURCES
     subtitlsplicingwidget.cc
     subtitlsplicingwidget.hpp
     viewer.cc
-    viewer.hpp)
+    viewer.hpp
+    vulkanviewer.cc
+    vulkanviewer.hpp)
 
 qt_add_executable(Qt-Graphics MANUAL_FINALIZATION ${PROJECT_SOURCES})
 
@@ -48,6 +50,7 @@ target_link_libraries(
           thirdparty
           dump
           utils
+          Qt6::Gui
           Qt6::Widgets
           Qt6::OpenGLWidgets
           Qt6::Network
