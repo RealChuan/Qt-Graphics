@@ -1,10 +1,12 @@
-#version 330 core
+#version 330
+#ifdef GL_ARB_shading_language_420pack
+#extension GL_ARB_shading_language_420pack : require
+#endif
 
-uniform sampler2D tex; // 纹理
+uniform sampler2D tex;
 
-in vec2 TexCord; // 纹理坐标
-
-out vec4 FragColor; // 输出颜色
+layout(location = 0) out vec4 FragColor;
+in vec2 TexCord;
 
 void main()
 {

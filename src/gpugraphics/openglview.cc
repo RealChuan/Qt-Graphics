@@ -87,8 +87,7 @@ void OpenglView::resetToOriginalSize()
     d_ptr->transform.scale(factor_w, factor_h, 1.0);
     emit emitScaleFactor();
 
-    QMetaObject::invokeMethod(
-        this, [this] { update(); }, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
 }
 
 void OpenglView::fitToScreen()
@@ -105,24 +104,21 @@ void OpenglView::fitToScreen()
     d_ptr->transform.scale(factor / factor_w, factor / factor_h, 1.0);
     emit emitScaleFactor();
 
-    QMetaObject::invokeMethod(
-        this, [this] { update(); }, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
 }
 
 void OpenglView::rotateNinetieth()
 {
     d_ptr->transform.rotate(90, 0, 0, 1);
 
-    QMetaObject::invokeMethod(
-        this, [this] { update(); }, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
 }
 
 void OpenglView::anti_rotateNinetieth()
 {
     d_ptr->transform.rotate(-90, 0, 0, 1);
 
-    QMetaObject::invokeMethod(
-        this, [this] { update(); }, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
 }
 
 void OpenglView::initializeGL()
@@ -161,8 +157,7 @@ void OpenglView::resizeGL(int w, int h)
     }
     d_ptr->windowSize = QSize(w, h);
 
-    QMetaObject::invokeMethod(
-        this, [this] { update(); }, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
 }
 
 void OpenglView::paintGL()
@@ -195,8 +190,7 @@ void OpenglView::wheelEvent(QWheelEvent *event)
     d_ptr->transform.scale(factor, factor, 1.0);
     emit emitScaleFactor();
 
-    QMetaObject::invokeMethod(
-        this, [this] { update(); }, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
 }
 
 void OpenglView::mouseDoubleClickEvent(QMouseEvent *event)
