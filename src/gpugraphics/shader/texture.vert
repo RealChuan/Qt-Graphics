@@ -1,14 +1,16 @@
-#version 330 core
+#version 330
+#ifdef GL_ARB_shading_language_420pack
+#extension GL_ARB_shading_language_420pack : require
+#endif
 
 uniform mat4 transform;
 
-in vec3 aPos;
-in vec2 aTexCord;
-
-out vec2 TexCord; // 纹理坐标
+out vec2 TexCord;
+layout(location = 0) in vec3 aPos;
+layout(location = 1) in vec2 aTexCord;
 
 void main()
 {
-    gl_Position = transform * vec4(aPos, 1.0);
     TexCord = vec2(aTexCord.x, 1.0 - aTexCord.y);
+    gl_Position = transform * vec4(aPos, 1.0);
 }
