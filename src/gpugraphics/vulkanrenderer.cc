@@ -1,4 +1,5 @@
 #include "vulkanrenderer.hpp"
+#include "gpudata.hpp"
 
 #include <QApplication>
 #include <QFile>
@@ -6,16 +7,6 @@
 #include <QVulkanFunctions>
 
 namespace GpuGraphics {
-
-// Use a triangle strip to get a quad.
-//
-// Note that the vertex data and the projection matrix assume OpenGL. With
-// Vulkan Y is negated in clip space and the near/far plane is at 0/1 instead
-// of -1/1. These will be corrected for by an extra transformation when
-// calculating the modelview-projection matrix.
-static float vertexData[] = { // Y up, front = CW
-    // x, y, z, u, v
-    -1, -1, 0, 0, 1, -1, 1, 0, 0, 0, 1, -1, 0, 1, 1, 1, 1, 0, 1, 0};
 
 static const int UNIFORM_DATA_SIZE = 16 * sizeof(float);
 
@@ -390,6 +381,7 @@ public:
                                                  nullptr);
         VkDeviceSize vbOffset = 0;
         deviceFunctions->vkCmdBindVertexBuffers(cb, 0, 1, &vertexBuffer, &vbOffset);
+        deviceFunctions->vkCmdBindIndexBuffer(cb, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
         VkViewport viewport;
         viewport.x = viewport.y = 0;
@@ -405,7 +397,7 @@ public:
         scissor.extent.height = viewport.height;
         deviceFunctions->vkCmdSetScissor(cb, 0, 1, &scissor);
 
-        deviceFunctions->vkCmdDraw(cb, 4, 1, 0, 0);
+        deviceFunctions->vkCmdDrawIndexed(cb, sizeof(indices), 1, 0, 0, 0);
 
         deviceFunctions->vkCmdEndRenderPass(cmdBuf);
     }
@@ -429,6 +421,10 @@ public:
 
     VkBuffer vertexBuffer;
     VkDeviceMemory vertexBufferMemory;
+
+    VkBuffer indexBuffer;
+    VkDeviceMemory indexBufferMemory;
+
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     std::vector<void *> uniformBuffersMapped;
@@ -539,22 +535,11 @@ void VulkanRenderer::createDescriptorSetLayout()
 {
     VkDevice dev = d_ptr->window->device();
 
-    VkDescriptorSetLayoutBinding layoutBinding[2] = {{0, // binding
-                                                      VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                                      1, // descriptorCount
-                                                      VK_SHADER_STAGE_VERTEX_BIT,
-                                                      nullptr},
-                                                     {1, // binding
-                                                      VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                                      1, // descriptorCount
-                                                      VK_SHADER_STAGE_FRAGMENT_BIT,
-                                                      nullptr}};
+    VkDescriptorSetLayoutBinding layoutBinding[2]
+        = {{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
+           {1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}};
     VkDescriptorSetLayoutCreateInfo descLayoutInfo
-        = {VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-           nullptr,
-           0,
-           2, // bindingCount
-           layoutBinding};
+        = {VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO, nullptr, 0, 2, layoutBinding};
     auto err = d_ptr->deviceFunctions->vkCreateDescriptorSetLayout(dev,
                                                                    &descLayoutInfo,
                                                                    nullptr,
@@ -599,28 +584,20 @@ void VulkanRenderer::createGraphicsPipeline()
     VkShaderModule fragShaderModule = d_ptr->createShader(
         QString("%1/vulkan_shader/vulkan.frag.spv").arg(qApp->applicationDirPath()));
 
-    VkVertexInputBindingDescription vertexBindingDesc = {0, // binding
-                                                         5 * sizeof(float),
-                                                         VK_VERTEX_INPUT_RATE_VERTEX};
-    VkVertexInputAttributeDescription vertexAttrDesc[] = {{   // position
-                                                           0, // location
-                                                           0, // binding
-                                                           VK_FORMAT_R32G32B32_SFLOAT,
-                                                           0},
-                                                          {// texcoord
-                                                           1,
-                                                           0,
-                                                           VK_FORMAT_R32G32_SFLOAT,
-                                                           3 * sizeof(float)}};
+    std::array<VkVertexInputBindingDescription, 1> vertexBindingDesc = {
+        {0, sizeof(float) * 5, VK_VERTEX_INPUT_RATE_VERTEX}};
+    std::array<VkVertexInputAttributeDescription, 2> vertexAttrDesc
+        = {VkVertexInputAttributeDescription{0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0},
+           VkVertexInputAttributeDescription{1, 0, VK_FORMAT_R32G32_SFLOAT, sizeof(float) * 3}};
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo;
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputInfo.pNext = nullptr;
     vertexInputInfo.flags = 0;
-    vertexInputInfo.vertexBindingDescriptionCount = 1;
-    vertexInputInfo.pVertexBindingDescriptions = &vertexBindingDesc;
-    vertexInputInfo.vertexAttributeDescriptionCount = 2;
-    vertexInputInfo.pVertexAttributeDescriptions = vertexAttrDesc;
+    vertexInputInfo.vertexBindingDescriptionCount = vertexBindingDesc.size();
+    vertexInputInfo.pVertexBindingDescriptions = vertexBindingDesc.data();
+    vertexInputInfo.vertexAttributeDescriptionCount = vertexAttrDesc.size();
+    vertexInputInfo.pVertexAttributeDescriptions = vertexAttrDesc.data();
 
     // Graphics pipeline
     VkPipelineShaderStageCreateInfo shaderStages[2]
@@ -757,7 +734,7 @@ void VulkanRenderer::createVertexBuffer()
     const VkPhysicalDeviceLimits *pdevLimits = &d_ptr->window->physicalDeviceProperties()->limits;
     const VkDeviceSize uniAlign = pdevLimits->minUniformBufferOffsetAlignment;
     qDebug("uniform buffer offset alignment is %u", static_cast<uint>(uniAlign));
-    const VkDeviceSize vertexAllocSize = aligned(sizeof(vertexData), uniAlign);
+    const VkDeviceSize vertexAllocSize = aligned(sizeof(vertices), uniAlign);
 
     d_ptr->createBuffer(vertexAllocSize,
                         VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -775,9 +752,39 @@ void VulkanRenderer::createVertexBuffer()
     if (err != VK_SUCCESS) {
         qFatal("Failed to map memory: %d", err);
     }
-    memcpy(p, vertexData, sizeof(vertexData));
+    memcpy(p, vertices, sizeof(vertices));
 
     d_ptr->deviceFunctions->vkUnmapMemory(dev, d_ptr->vertexBufferMemory);
+}
+
+void VulkanRenderer::createIndexBuffer()
+{
+    VkDevice dev = d_ptr->window->device();
+
+    const VkPhysicalDeviceLimits *pdevLimits = &d_ptr->window->physicalDeviceProperties()->limits;
+    const VkDeviceSize uniAlign = pdevLimits->minUniformBufferOffsetAlignment;
+    qDebug("uniform buffer offset alignment is %u", static_cast<uint>(uniAlign));
+    const VkDeviceSize indexAllocSize = aligned(sizeof(indices), uniAlign);
+
+    d_ptr->createBuffer(indexAllocSize,
+                        VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                        {},
+                        d_ptr->indexBuffer,
+                        d_ptr->indexBufferMemory);
+
+    quint8 *p;
+    auto err = d_ptr->deviceFunctions->vkMapMemory(dev,
+                                                   d_ptr->indexBufferMemory,
+                                                   0,
+                                                   indexAllocSize,
+                                                   0,
+                                                   reinterpret_cast<void **>(&p));
+    if (err != VK_SUCCESS) {
+        qFatal("Failed to map memory: %d", err);
+    }
+    memcpy(p, indices, sizeof(indices));
+
+    d_ptr->deviceFunctions->vkUnmapMemory(dev, d_ptr->indexBufferMemory);
 }
 
 void VulkanRenderer::createUniformBuffers()
@@ -928,6 +935,7 @@ void VulkanRenderer::initResources()
     createTextureSampler();
 
     createVertexBuffer();
+    createIndexBuffer();
     createUniformBuffers();
 
     // Texture.
@@ -1007,6 +1015,16 @@ void VulkanRenderer::releaseResources()
     if (d_ptr->vertexBufferMemory != VK_NULL_HANDLE) {
         d_ptr->deviceFunctions->vkFreeMemory(dev, d_ptr->vertexBufferMemory, nullptr);
         d_ptr->vertexBufferMemory = VK_NULL_HANDLE;
+    }
+
+    if (d_ptr->indexBuffer != VK_NULL_HANDLE) {
+        d_ptr->deviceFunctions->vkDestroyBuffer(dev, d_ptr->indexBuffer, nullptr);
+        d_ptr->indexBuffer = VK_NULL_HANDLE;
+    }
+
+    if (d_ptr->indexBufferMemory != VK_NULL_HANDLE) {
+        d_ptr->deviceFunctions->vkFreeMemory(dev, d_ptr->indexBufferMemory, nullptr);
+        d_ptr->indexBufferMemory = VK_NULL_HANDLE;
     }
 
     const int concurrentFrameCount = d_ptr->window->concurrentFrameCount();

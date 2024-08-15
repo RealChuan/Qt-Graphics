@@ -36,6 +36,7 @@ private:
     void createGraphicsPipeline();
     void createTextureSampler();
     void createVertexBuffer();
+    void createIndexBuffer();
     void createUniformBuffers();
     auto createTexture(const QString &name, bool &img) -> bool;
     void createTextureImageView();

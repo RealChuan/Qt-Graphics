@@ -5,12 +5,12 @@
 
 uniform mat4 transform;
 
-out vec2 TexCord;
-layout(location = 0) in vec3 aPos;
-layout(location = 1) in vec2 aTexCord;
+out vec2 fragTexCoord;
+layout(location = 0) in vec3 inPosition;
+layout(location = 1) in vec2 inTexCoord;
 
 void main()
 {
-    TexCord = vec2(aTexCord.x, 1.0 - aTexCord.y);
-    gl_Position = transform * vec4(aPos, 1.0);
+    fragTexCoord = vec2(inTexCoord.x, 1.0 - inTexCoord.y);
+    gl_Position = transform * vec4(inPosition, 1.0);
 }

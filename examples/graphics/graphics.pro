@@ -37,8 +37,7 @@ SOURCES += \
     selectionwidget.cc \
     stretchparamssettingdailog.cc \
     subtitlsplicingwidget.cc \
-    viewer.cc \
-    vulkanviewer.cc
+    viewer.cc
 
 HEADERS += \
     capturewidget.hpp \
@@ -59,5 +58,12 @@ HEADERS += \
     selectionwidget.hpp \
     stretchparamssettingdailog.hpp \
     subtitlsplicingwidget.hpp \
-    viewer.hpp \
-    vulkanviewer.hpp
+    viewer.hpp
+
+win32{
+    SOURCES += vulkanviewer.cc
+
+    HEADERS += vulkanviewer.hpp
+
+    DEFINES += BUILD_VULKAN
+}
