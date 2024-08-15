@@ -14,6 +14,8 @@ project(
   HOMEPAGE_URL "https://github.com/RealChuan/Qt-Graphics"
   LANGUAGES CXX)
 
+option(BUILD_VULKAN "build vulkan" ON)
+
 include(cmake/common.cmake)
 
 find_package(Qt6 REQUIRED COMPONENTS Gui Widgets Network Core5Compat Concurrent

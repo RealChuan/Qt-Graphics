@@ -37,11 +37,15 @@ set(PROJECT_SOURCES
     subtitlsplicingwidget.cc
     subtitlsplicingwidget.hpp
     viewer.cc
-    viewer.hpp
-    vulkanviewer.cc
-    vulkanviewer.hpp)
+    viewer.hpp)
 
+if(BUILD_VULKAN)
+  list(APPEND PROJECT_SOURCES vulkanviewer.cc vulkanviewer.hpp)
+endif()
 qt_add_executable(Qt-Graphics MANUAL_FINALIZATION ${PROJECT_SOURCES})
+if(BUILD_VULKAN)
+  target_compile_definitions(Qt-Graphics PRIVATE "BUILD_VULKAN")
+endif()
 
 target_link_libraries(
   Qt-Graphics

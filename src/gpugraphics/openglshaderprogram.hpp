@@ -11,7 +11,7 @@ public:
     explicit OpenGLShaderProgram(QObject *parent = nullptr);
     ~OpenGLShaderProgram() override;
 
-    void initVertex(const QString &pos, const QString &texCord);
+    void initVertex(const QString &pos, const QString &texCoord);
 
     void clear();
 

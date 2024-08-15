@@ -5,7 +5,9 @@
 #include "openglviewer.hpp"
 #include "recordwidget.hpp"
 #include "subtitlsplicingwidget.hpp"
+#ifdef BUILD_VULKAN
 #include "vulkanviewer.hpp"
+#endif
 
 #include <utils/utils.h>
 
@@ -20,14 +22,16 @@ public:
         drawWidget = new DrawWidget(q_ptr);
         imageViewer = new ImageViewer(q_ptr);
         openglViewer = new OpenglViewer(q_ptr);
-        vulkanViewer = new VulkanViewer(q_ptr);
         subtitlSplicingWidget = new SubtitlSplicingWidget(q_ptr);
         stackedWidget = new QStackedWidget(q_ptr);
         stackedWidget->addWidget(imageViewer);
         stackedWidget->addWidget(drawWidget);
         stackedWidget->addWidget(subtitlSplicingWidget);
         stackedWidget->addWidget(openglViewer);
+#ifdef BUILD_VULKAN
+        vulkanViewer = new VulkanViewer(q_ptr);
         stackedWidget->addWidget(vulkanViewer);
+#endif
     }
     ~MainWindowPrivate() {}
 
@@ -35,7 +39,9 @@ public:
     DrawWidget *drawWidget;
     ImageViewer *imageViewer;
     OpenglViewer *openglViewer;
+#ifdef BUILD_VULKAN
     VulkanViewer *vulkanViewer;
+#endif
     SubtitlSplicingWidget *subtitlSplicingWidget;
     QStackedWidget *stackedWidget;
 };
@@ -80,9 +86,11 @@ void MainWindow::initMenuBar()
     menu->addAction(tr("Opengl Viewer"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->openglViewer);
     });
+#ifdef BUILD_VULKAN
     menu->addAction(tr("Vulakn Viewer"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->vulkanViewer);
     });
+#endif
     menu->addAction(tr("Draw"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->drawWidget);
     });

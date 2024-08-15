@@ -55,8 +55,19 @@ jobs:
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
             -G "${{ matrix.generators }}"
           cmake --build ./build --config ${{ matrix.build_type }}
-      - name: Configure and build on ubuntu or macos
-        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macos')
+      - name: Configure and build on macos
+        if: startsWith(matrix.os, 'macos')
+        shell: bash
+        run: |
+          cmake \
+            -S . \
+            -B ./build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DBUILD_VULKAN=OFF \
+            -G "${{ matrix.generators }}"
+          cmake --build ./build --config ${{ matrix.build_type }}
+      - name: Configure and build on ubuntu
+        if: startsWith(matrix.os, 'ubuntu')
         shell: bash
         run: |
           cmake \

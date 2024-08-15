@@ -137,7 +137,7 @@ void OpenglView::initializeGL()
     d_ptr->programPtr->link();
     d_ptr->programPtr->bind();
 
-    d_ptr->programPtr->initVertex("aPos", "aTexCord");
+    d_ptr->programPtr->initVertex("inPosition", "inTexCoord");
     initTexture();
 
     d_ptr->programPtr->release();

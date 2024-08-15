@@ -1,4 +1,5 @@
 #include "openglshaderprogram.hpp"
+#include "gpudata.hpp"
 
 #include <QOpenGLBuffer>
 
@@ -27,19 +28,10 @@ OpenGLShaderProgram::~OpenGLShaderProgram()
     clear();
 }
 
-void OpenGLShaderProgram::initVertex(const QString &pos, const QString &texCord)
+void OpenGLShaderProgram::initVertex(const QString &pos, const QString &texCoord)
 {
     auto posAttr = attributeLocation(pos);
-    auto texCordAttr = attributeLocation(texCord);
-
-    float vertices[] = {
-        // positions             // texture coords
-        1.0F,  1.0F,  0.0F, 1.0F, 1.0F, // top right
-        1.0F,  -1.0F, 0.0F, 1.0F, 0.0F, // bottom right
-        -1.0F, -1.0F, 0.0F, 0.0F, 0.0F, // bottom left
-        -1.0F, 1.0F,  0.0F, 0.0F, 1.0F  // top left
-    };
-    unsigned int indices[] = {0, 1, 3, 1, 2, 3};
+    auto texCoordAttr = attributeLocation(texCoord);
 
     d_ptr->vbo.destroy();
     d_ptr->vbo.create();
@@ -53,8 +45,8 @@ void OpenGLShaderProgram::initVertex(const QString &pos, const QString &texCord)
 
     setAttributeBuffer(posAttr, GL_FLOAT, 0, 3, sizeof(float) * 5);
     enableAttributeArray(posAttr);
-    setAttributeBuffer(texCordAttr, GL_FLOAT, 3 * sizeof(float), 2, sizeof(float) * 5);
-    enableAttributeArray(texCordAttr);
+    setAttributeBuffer(texCoordAttr, GL_FLOAT, 3 * sizeof(float), 2, sizeof(float) * 5);
+    enableAttributeArray(texCoordAttr);
 }
 
 void OpenGLShaderProgram::clear()
