@@ -18,12 +18,13 @@ include(../../src/3rdparty/3rdparty.pri)
 DESTDIR = $$APP_OUTPUT_PATH
 
 SOURCES += \
+    ../common/viewer.cc \
+    ../common/imagelistmodel.cpp \
     capturewidget.cc \
     customlineitem.cc \
     drawscene.cc \
     drawwidget.cpp \
     imagecaptureview.cc \
-    imagelistmodel.cpp \
     imageviewer.cpp \
     listiitemview.cc \
     main.cpp \
@@ -36,16 +37,16 @@ SOURCES += \
     sectionalsubtitlesview.cc \
     selectionwidget.cc \
     stretchparamssettingdailog.cc \
-    subtitlsplicingwidget.cc \
-    viewer.cc
+    subtitlsplicingwidget.cc
 
 HEADERS += \
+    ../common/viewer.hpp \
+    ../common/imagelistmodel.h \
     capturewidget.hpp \
     customlineitem.hpp \
     drawscene.hpp \
     drawwidget.h \
     imagecaptureview.hpp \
-    imagelistmodel.h \
     imageviewer.h \
     listiitemview.hpp \
     mainwindow.h \
@@ -57,8 +58,7 @@ HEADERS += \
     sectionalsubtitlesview.hpp \
     selectionwidget.hpp \
     stretchparamssettingdailog.hpp \
-    subtitlsplicingwidget.hpp \
-    viewer.hpp
+    subtitlsplicingwidget.hpp
 
 win32{
     SOURCES += vulkanviewer.cc

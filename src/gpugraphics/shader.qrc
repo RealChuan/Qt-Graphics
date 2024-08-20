@@ -4,5 +4,8 @@
         <file>shader/texture.vert</file>
         <file>shader/vulkan.frag</file>
         <file>shader/vulkan.vert</file>
+        <file>shader/complie_qsb.ps1</file>
+        <file>shader/vulkan.frag.qsb</file>
+        <file>shader/vulkan.vert.qsb</file>
     </qresource>
 </RCC>

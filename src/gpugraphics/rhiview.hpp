@@ -1,20 +1,17 @@
-
 #pragma once
 
 #include "gpugraphics_global.hpp"
 
-#include <QImage>
-#include <QOpenGLFunctions>
-#include <QOpenGLWidget>
+#include <QRhiWidget>
 
 namespace GpuGraphics {
 
-class GPUAPHICS OpenglView : public QOpenGLWidget, protected QOpenGLFunctions
+class GPUAPHICS RhiView : public QRhiWidget
 {
     Q_OBJECT
 public:
-    explicit OpenglView(QWidget *parent = nullptr);
-    ~OpenglView() override;
+    explicit RhiView(QWidget *parent = nullptr);
+    ~RhiView() override;
 
 public slots:
     void setImageUrl(const QString &imageUrl);
@@ -29,11 +26,12 @@ signals:
     void scaleFactorChanged(qreal factor);
     void imageSizeChanged(const QSize &size);
     void imageUrlChanged(const QString &);
+    void rhiChanged(const QString &apiName);
 
 protected:
-    void initializeGL() override;
-    void resizeGL(int w, int h) override;
-    void paintGL() override;
+    void initialize(QRhiCommandBuffer *cb) override;
+    void render(QRhiCommandBuffer *cb) override;
+    void releaseResources() override;
 
     void wheelEvent(QWheelEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
@@ -41,8 +39,8 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
 
 private:
-    class OpenglViewPrivate;
-    QScopedPointer<OpenglViewPrivate> d_ptr;
+    class RhiViewPrivate;
+    QScopedPointer<RhiViewPrivate> d_ptr;
 };
 
 } // namespace GpuGraphics

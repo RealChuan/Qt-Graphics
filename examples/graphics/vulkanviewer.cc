@@ -1,6 +1,6 @@
 #include "vulkanviewer.hpp"
-#include "imagelistmodel.h"
 
+#include <examples/common/imagelistmodel.h>
 #include <gpugraphics/vulkanrenderer.hpp>
 #include <gpugraphics/vulkanview.hpp>
 #include <utils/utils.h>
@@ -50,14 +50,14 @@ VulkanViewer::~VulkanViewer()
     clearThumbnail();
 }
 
-auto VulkanViewer::setImage(const QFileInfo &info, const QImage &image, const qint64 taskCount)
-    -> bool
+auto VulkanViewer::setImage(const QFileInfo &info,
+                            const QImage &image,
+                            const qint64 taskCount) -> bool
 {
     if (taskCount != d_ptr->taskCount.loadRelaxed()) {
         return false;
     }
-    QMetaObject::invokeMethod(
-        this, [=] { onImageLoaded(info, image); }, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, [=] { onImageLoaded(info, image); }, Qt::QueuedConnection);
     return true;
 }
 

@@ -1,4 +1,8 @@
 set(PROJECT_SOURCES
+    ../common/viewer.cc
+    ../common/viewer.hpp
+    ../common/imagelistmodel.cpp
+    ../common/imagelistmodel.h
     capturewidget.cc
     capturewidget.hpp
     customlineitem.cc
@@ -9,8 +13,6 @@ set(PROJECT_SOURCES
     drawwidget.h
     imagecaptureview.cc
     imagecaptureview.hpp
-    imagelistmodel.cpp
-    imagelistmodel.h
     imageviewer.cpp
     imageviewer.h
     listiitemview.cc
@@ -35,9 +37,7 @@ set(PROJECT_SOURCES
     stretchparamssettingdailog.cc
     stretchparamssettingdailog.hpp
     subtitlsplicingwidget.cc
-    subtitlsplicingwidget.hpp
-    viewer.cc
-    viewer.hpp)
+    subtitlsplicingwidget.hpp)
 
 if(BUILD_VULKAN)
   list(APPEND PROJECT_SOURCES vulkanviewer.cc vulkanviewer.hpp)

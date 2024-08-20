@@ -1,5 +1,9 @@
 #pragma once
 
+#include "gpugraphics_global.hpp"
+
+#include <QImage>
+
 namespace GpuGraphics {
 
 static float vertices[] = {
@@ -10,5 +14,7 @@ static float vertices[] = {
     -1.0F, 1.0F,  0.0F, 0.0F, 1.0F  // top left
 };
 static unsigned int indices[] = {0, 1, 3, 1, 2, 3};
+
+QImage GPUAPHICS emptyImage();
 
 } // namespace GpuGraphics

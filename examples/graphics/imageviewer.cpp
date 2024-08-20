@@ -1,8 +1,8 @@
 #include "imageviewer.h"
-#include "imagelistmodel.h"
 #include "maskdialog.h"
 #include "rounddialog.hpp"
 
+#include <examples/common/imagelistmodel.h>
 #include <graphics/imageview.h>
 #include <utils/utils.h>
 
@@ -72,8 +72,7 @@ bool ImageViewer::setImage(const QFileInfo &info, const QImage &image, const qin
     if (taskCount != d_ptr->taskCount.loadRelaxed()) {
         return false;
     }
-    QMetaObject::invokeMethod(
-        this, [=] { onImageLoaded(info, image); }, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, [=] { onImageLoaded(info, image); }, Qt::QueuedConnection);
     return true;
 }
 
