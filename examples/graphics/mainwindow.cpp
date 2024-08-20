@@ -79,24 +79,34 @@ void MainWindow::setupUI()
 
 void MainWindow::initMenuBar()
 {
+    auto *actionGroup = new QActionGroup(this);
+    actionGroup->setExclusive(true);
+    auto setCheckable = [actionGroup](QAction *action) {
+        actionGroup->addAction(action);
+        action->setCheckable(true);
+    };
+
     auto *menu = new QMenu(tr("Select Widget"), this);
-    menu->addAction(tr("Image Viewer"), this, [this] {
+    auto *action = menu->addAction(tr("Image Viewer"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->imageViewer);
     });
-    menu->addAction(tr("Opengl Viewer"), this, [this] {
+    setCheckable(action);
+    action->setChecked(true);
+
+    setCheckable(menu->addAction(tr("Opengl Viewer"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->openglViewer);
-    });
+    }));
 #ifdef BUILD_VULKAN
-    menu->addAction(tr("Vulakn Viewer"), this, [this] {
+    setCheckable(menu->addAction(tr("Vulakn Viewer"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->vulkanViewer);
-    });
+    }));
 #endif
-    menu->addAction(tr("Draw"), this, [this] {
+    setCheckable(menu->addAction(tr("Draw"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->drawWidget);
-    });
-    menu->addAction(tr("Subtitle Splicing"), this, [this] {
+    }));
+    setCheckable(menu->addAction(tr("Subtitle Splicing"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->subtitlSplicingWidget);
-    });
+    }));
     menuBar()->addMenu(menu);
     menuBar()->addAction(tr("Screenshots"), this, [this] {
         showMinimized();

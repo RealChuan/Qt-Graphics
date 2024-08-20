@@ -1,5 +1,14 @@
-set(PROJECT_SOURCES gpugraphics_global.hpp openglshaderprogram.cc
-                    openglshaderprogram.hpp openglview.cc openglview.hpp)
+set(PROJECT_SOURCES
+    gpudata.cc
+    gpudata.hpp
+    gpustr.hpp
+    gpugraphics_global.hpp
+    openglshaderprogram.cc
+    openglshaderprogram.hpp
+    openglview.cc
+    openglview.hpp
+    rhiview.hpp
+    rhiview.cc)
 
 if(BUILD_VULKAN)
   list(APPEND PROJECT_SOURCES vulkanrenderer.cc vulkanrenderer.hpp
@@ -9,7 +18,7 @@ endif()
 qt_add_resources(SOURCES shader.qrc)
 
 add_custom_library(gpugraphics ${PROJECT_SOURCES} ${SOURCES})
-target_link_libraries(gpugraphics PRIVATE Qt6::Gui Qt6::Widgets
+target_link_libraries(gpugraphics PRIVATE Qt6::GuiPrivate Qt6::Gui Qt6::Widgets
                                           Qt6::OpenGLWidgets)
 
 if(CMAKE_HOST_WIN32)
@@ -18,6 +27,7 @@ endif()
 
 if(BUILD_VULKAN)
   file(GLOB_RECURSE GLSL_SOURCE_FILES "shader/vulkan*")
+  list(FILTER GLSL_SOURCE_FILES EXCLUDE REGEX ".*qsb.*")
 
   foreach(GLSL ${GLSL_SOURCE_FILES})
     get_filename_component(FILE_NAME ${GLSL} NAME)

@@ -17,11 +17,7 @@ static inline auto aligned(VkDeviceSize v, VkDeviceSize byteAlign) -> VkDeviceSi
 
 struct Texture
 {
-    Texture()
-    {
-        whiteImage = QImage(10, 10, QImage::Format_RGBA8888_Premultiplied);
-        whiteImage.fill(Qt::white);
-    }
+    Texture() {}
 
     void cleanup(VkDevice &dev, QVulkanDeviceFunctions *deviceFunctions)
     {
@@ -63,8 +59,6 @@ struct Texture
     bool texStagingPending = false;
     QSize texSize;
     VkFormat texFormat;
-
-    QImage whiteImage;
 };
 
 class VulkanRenderer::VulkanRendererPrivate
@@ -449,7 +443,7 @@ auto VulkanRenderer::createTexture(const QString &name, bool &img) -> bool
     if (!img) {
         qWarning("Failed to load image %s", qPrintable(name));
         // return false;
-        image = d_ptr->texture.whiteImage;
+        image = emptyImage();
     }
 
     // Convert to byte ordered RGBA8. Use premultiplied alpha, see
@@ -938,17 +932,10 @@ void VulkanRenderer::initResources()
     createIndexBuffer();
     createUniformBuffers();
 
-    // Texture.
-    bool img;
-    if (!createTexture("", img)) {
-        qFatal("Failed to create texture");
-    }
-
-    createTextureImageView();
-
     createDescriptorPool();
     createDescriptorSets();
-    updateDescriptorSets();
+
+    setImageUrl({});
 }
 
 void VulkanRenderer::initSwapChainResources()

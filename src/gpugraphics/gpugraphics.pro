@@ -1,6 +1,6 @@
 include(../slib.pri)
 
-QT += gui widgets openglwidgets
+QT += gui-private gui widgets openglwidgets
 
 DEFINES += GPUGRAPHICS_LIBRARY
 TARGET = $$replaceLibName(gpugraphics)
@@ -8,13 +8,16 @@ TARGET = $$replaceLibName(gpugraphics)
 HEADERS += \
     gpudata.hpp \
     gpugraphics_global.hpp \
+    gpustr.hpp \
     openglshaderprogram.hpp \
-    openglview.hpp
+    openglview.hpp \
+    rhiview.hpp
 
 SOURCES += \
     gpudata.cc \
     openglshaderprogram.cc \
-    openglview.cc
+    openglview.cc \
+    rhiview.cc
 
 RESOURCES += \
     shader.qrc

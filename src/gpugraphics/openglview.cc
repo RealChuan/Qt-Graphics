@@ -1,4 +1,6 @@
 #include "openglview.hpp"
+#include "gpudata.hpp"
+#include "gpustr.hpp"
 #include "openglshaderprogram.hpp"
 
 #include <QOpenGLBuffer>
@@ -13,10 +15,73 @@ public:
         : q_ptr(q)
     {
         transform.setToIdentity();
-        menu = new QMenu(q_ptr);
+        createPopMenu();
     }
 
     ~OpenglViewPrivate() = default;
+
+    void initTexture()
+    {
+        q_ptr->glGenTextures(1, &texture);
+        q_ptr->glBindTexture(GL_TEXTURE_2D, texture);
+        q_ptr->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        q_ptr->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        q_ptr->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        q_ptr->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
+
+    void uploadTexture()
+    {
+        q_ptr->makeCurrent();
+        programPtr->bind();
+        q_ptr->glBindTexture(GL_TEXTURE_2D, texture);
+        q_ptr->glTexImage2D(GL_TEXTURE_2D,
+                            0,
+                            GL_RGBA,
+                            image.width(),
+                            image.height(),
+                            0,
+                            GL_RGBA,
+                            GL_UNSIGNED_BYTE,
+                            image.bits());
+        q_ptr->glGenerateMipmap(GL_TEXTURE_2D);
+        programPtr->release();
+        q_ptr->doneCurrent();
+    }
+
+    void updateTransform()
+    {
+        q_ptr->makeCurrent();
+        programPtr->bind();
+        programPtr->setUniformValue("transform", transform);
+        programPtr->release();
+        q_ptr->doneCurrent();
+    }
+
+    void clear()
+    {
+        q_ptr->glClearColor(backgroundColor.redF(),
+                            backgroundColor.greenF(),
+                            backgroundColor.blueF(),
+                            backgroundColor.alphaF());
+        q_ptr->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
+    void createPopMenu()
+    {
+        menu = new QMenu(q_ptr);
+        menu->addAction(Tr::tr("Reset to original size"), q_ptr, &OpenglView::resetToOriginalSize);
+        menu->addAction(Tr::tr("Fit to screen"), q_ptr, &OpenglView::fitToScreen);
+        menu->addAction(Tr::tr("Rotate 90"), q_ptr, &OpenglView::rotateNinetieth);
+        menu->addAction(Tr::tr("Anti rotate 90"), q_ptr, &OpenglView::anti_rotateNinetieth);
+    }
+
+    void emitScaleFactor()
+    {
+        updateTransform();
+        auto factor = transform.toTransform().m11() * windowSize.width() / image.width();
+        emit q_ptr->scaleFactorChanged(factor);
+    }
 
     OpenglView *q_ptr;
 
@@ -37,7 +102,6 @@ OpenglView::OpenglView(QWidget *parent)
     : QOpenGLWidget(parent)
     , d_ptr(new OpenglViewPrivate(this))
 {
-    createPopMenu();
     auto format = this->format();
     qInfo() << "OpenGL Version:" << format.minorVersion() << "~" << format.majorVersion();
 }
@@ -57,7 +121,8 @@ void OpenglView::setImageUrl(const QString &imageUrl)
 {
     QImage image(imageUrl);
     if (image.isNull()) {
-        return;
+        image = emptyImage();
+        // return;
     }
 
     d_ptr->image = image.convertedTo(QImage::Format_RGBA8888_Premultiplied);
@@ -68,7 +133,7 @@ void OpenglView::setImageUrl(const QString &imageUrl)
         resetToOriginalSize();
     }
 
-    uploadTexture();
+    d_ptr->uploadTexture();
 
     emit imageUrlChanged(imageUrl);
     emit imageSizeChanged(size);
@@ -85,7 +150,7 @@ void OpenglView::resetToOriginalSize()
     auto factor_h = static_cast<qreal>(size.height()) / height();
     d_ptr->transform.setToIdentity();
     d_ptr->transform.scale(factor_w, factor_h, 1.0);
-    emit emitScaleFactor();
+    d_ptr->emitScaleFactor();
 
     QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
 }
@@ -102,7 +167,7 @@ void OpenglView::fitToScreen()
     auto factor = qMin(factor_w, factor_h);
     d_ptr->transform.setToIdentity();
     d_ptr->transform.scale(factor / factor_w, factor / factor_h, 1.0);
-    emit emitScaleFactor();
+    d_ptr->emitScaleFactor();
 
     QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
 }
@@ -110,6 +175,7 @@ void OpenglView::fitToScreen()
 void OpenglView::rotateNinetieth()
 {
     d_ptr->transform.rotate(90, 0, 0, 1);
+    d_ptr->updateTransform();
 
     QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
 }
@@ -117,6 +183,7 @@ void OpenglView::rotateNinetieth()
 void OpenglView::anti_rotateNinetieth()
 {
     d_ptr->transform.rotate(-90, 0, 0, 1);
+    d_ptr->updateTransform();
 
     QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
 }
@@ -125,7 +192,7 @@ void OpenglView::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    clear();
+    d_ptr->clear();
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -138,9 +205,11 @@ void OpenglView::initializeGL()
     d_ptr->programPtr->bind();
 
     d_ptr->programPtr->initVertex("inPosition", "inTexCoord");
-    initTexture();
+    d_ptr->initTexture();
 
     d_ptr->programPtr->release();
+
+    QMetaObject::invokeMethod(this, [this] { setImageUrl({}); }, Qt::QueuedConnection);
 }
 
 void OpenglView::resizeGL(int w, int h)
@@ -153,7 +222,7 @@ void OpenglView::resizeGL(int w, int h)
         auto factor_h = static_cast<qreal>(d_ptr->windowSize.height()) / h;
         d_ptr->transform.scale(factor_w, factor_h, 1.0);
         //qDebug() << "resizeGL" << factor_w << factor_h;
-        emit emitScaleFactor();
+        d_ptr->emitScaleFactor();
     }
     d_ptr->windowSize = QSize(w, h);
 
@@ -166,14 +235,13 @@ void OpenglView::paintGL()
         return;
     }
 
-    clear();
+    d_ptr->clear();
 
     d_ptr->programPtr->bind();
 
     glActiveTexture(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, d_ptr->texture);
 
-    d_ptr->programPtr->setUniformValue("transform", d_ptr->transform);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     d_ptr->programPtr->release();
@@ -188,7 +256,7 @@ void OpenglView::wheelEvent(QWheelEvent *event)
 
     qreal factor = qPow(d_ptr->scaleFactor, event->angleDelta().y() / 240.0);
     d_ptr->transform.scale(factor, factor, 1.0);
-    emit emitScaleFactor();
+    d_ptr->emitScaleFactor();
 
     QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
 }
@@ -202,60 +270,6 @@ void OpenglView::mouseDoubleClickEvent(QMouseEvent *event)
 void OpenglView::contextMenuEvent(QContextMenuEvent *event)
 {
     d_ptr->menu->exec(event->globalPos());
-}
-
-void OpenglView::initTexture()
-{
-    glGenTextures(1, &d_ptr->texture);
-    glBindTexture(GL_TEXTURE_2D, d_ptr->texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-}
-
-void OpenglView::uploadTexture()
-{
-    makeCurrent();
-    d_ptr->programPtr->bind();
-    glBindTexture(GL_TEXTURE_2D, d_ptr->texture);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGBA,
-                 d_ptr->image.width(),
-                 d_ptr->image.height(),
-                 0,
-                 GL_RGBA,
-                 GL_UNSIGNED_BYTE,
-                 d_ptr->image.bits());
-    glGenerateMipmap(GL_TEXTURE_2D);
-    d_ptr->programPtr->release();
-    doneCurrent();
-}
-
-void OpenglView::clear()
-{
-    glClearColor(d_ptr->backgroundColor.redF(),
-                 d_ptr->backgroundColor.greenF(),
-                 d_ptr->backgroundColor.blueF(),
-                 d_ptr->backgroundColor.alphaF());
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-void OpenglView::createPopMenu()
-{
-    d_ptr->menu->clear();
-    d_ptr->menu->addAction(tr("Reset to original size"), this, &OpenglView::resetToOriginalSize);
-    d_ptr->menu->addAction(tr("Fit to screen"), this, &OpenglView::fitToScreen);
-    d_ptr->menu->addAction(tr("Rotate 90"), this, &OpenglView::rotateNinetieth);
-    d_ptr->menu->addAction(tr("Anti rotate 90"), this, &OpenglView::anti_rotateNinetieth);
-}
-
-void OpenglView::emitScaleFactor()
-{
-    auto factor = d_ptr->transform.toTransform().m11() * d_ptr->windowSize.width()
-                  / d_ptr->image.width();
-    emit scaleFactorChanged(factor);
 }
 
 } // namespace GpuGraphics

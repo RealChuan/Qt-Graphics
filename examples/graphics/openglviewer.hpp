@@ -1,6 +1,6 @@
 #pragma once
 
-#include "viewer.hpp"
+#include <examples/common/viewer.hpp>
 
 class OpenglViewer : public Viewer
 {
@@ -9,7 +9,9 @@ public:
     explicit OpenglViewer(QWidget *parent = nullptr);
     ~OpenglViewer() override;
 
-    auto setImage(const QFileInfo &info, const QImage &image, const qint64 taskCount) -> bool override;
+    auto setImage(const QFileInfo &info,
+                  const QImage &image,
+                  const qint64 taskCount) -> bool override;
 
 signals:
     void imageReady(const QImage &);

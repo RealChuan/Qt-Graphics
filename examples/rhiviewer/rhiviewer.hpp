@@ -1,14 +1,13 @@
-#ifndef IMAGEVIEWER_H
-#define IMAGEVIEWER_H
+#pragma once
 
 #include <examples/common/viewer.hpp>
 
-class ImageViewer : public Viewer
+class RhiViewer : public Viewer
 {
     Q_OBJECT
 public:
-    explicit ImageViewer(QWidget *parent = nullptr);
-    ~ImageViewer() override;
+    explicit RhiViewer(QWidget *parent = nullptr);
+    ~RhiViewer() override;
 
     auto setImage(const QFileInfo &info,
                   const QImage &image,
@@ -19,27 +18,21 @@ signals:
 
 private slots:
     void onOpenImage();
-    void onMaskImage();
-    void onRoundImage();
+    void onBackendChanged(const QString &name);
 
     void onScaleFactorChanged(qreal factor);
     void onImageSizeChanged(const QSize &size);
-    void onImageChanged(const QString &);
-    void onChangedImage(int);
+    void onImageChanged(const QString &url);
+    void onChangedImage(int index);
     void onImageLoaded(const QFileInfo &fileInfo, const QImage &image);
 
-    void onFormatChecked(bool);
-    void onFormatChanged(const QString &);
-
 private:
-    void startImageLoadThread(const QString &url);
-    void clearThumbnail();
     void setupUI();
     auto toolWidget() -> QWidget *;
     void buildConnect();
+    void startImageLoadThread(const QString &url);
+    void clearThumbnail();
 
-    class ImageViewerPrivate;
-    QScopedPointer<ImageViewerPrivate> d_ptr;
+    class RhiViewerPrivate;
+    QScopedPointer<RhiViewerPrivate> d_ptr;
 };
-
-#endif // IMAGEVIEWER_H

@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+#include "mainwindow.hpp"
 
 #include <3rdparty/qtsingleapplication/qtsingleapplication.h>
 #include <dump/breakpad.hpp>
@@ -11,7 +11,7 @@
 #include <QNetworkProxyFactory>
 #include <QStyle>
 
-#define AppName "Qt-Graphics"
+#define AppName "Qt-RhiViewer"
 
 void setAppInfo()
 {
@@ -24,15 +24,8 @@ void setAppInfo()
     qApp->setWindowIcon(qApp->style()->standardIcon(QStyle::SP_MediaPlay));
 }
 
-auto main(int argc, char *argv[]) -> int
+int main(int argc, char *argv[])
 {
-#if defined(Q_OS_WIN) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    if (!qEnvironmentVariableIsSet("QT_OPENGL")) {
-        QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
-    }
-#else
-    qputenv("QSG_RHI_BACKEND", "opengl");
-#endif
     Utils::setHighDpiEnvironmentVariable();
 
     SharedTools::QtSingleApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
