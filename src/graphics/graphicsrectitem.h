@@ -1,19 +1,18 @@
-#ifndef GRAPHICSRECTITEM_H
-#define GRAPHICSRECTITEM_H
+#pragma once
 
-#include "basicgraphicsitem.h"
+#include "graphicsroundedrectitem.hpp"
 
 namespace Graphics {
 
-class GRAPHICS_EXPORT GraphicsRectItem : public BasicGraphicsItem
+class GRAPHICS_EXPORT GraphicsRectItem : public GraphicsRoundedRectItem
 {
     Q_OBJECT
 public:
     explicit GraphicsRectItem(QGraphicsItem *parent = nullptr);
-    explicit GraphicsRectItem(const QRectF &, QGraphicsItem *parent = nullptr);
+    explicit GraphicsRectItem(const QRectF &rect, QGraphicsItem *parent = nullptr);
     ~GraphicsRectItem() override;
 
-    void setRect(const QRectF &);
+    void setRect(const QRectF &rect);
     [[nodiscard]] auto rect() const -> QRectF;
 
     [[nodiscard]] auto isValid() const -> bool override;
@@ -22,22 +21,11 @@ public:
 signals:
     void rectChanged(const QRectF &rectF);
 
-protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-    void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-    void paint(QPainter *painter,
-               const QStyleOptionGraphicsItem *option,
-               QWidget *widget = nullptr) override;
+private slots:
+    void onRoundedRectChanged(const RoundedRect &roundedRect);
 
 private:
-    void pointsChanged(const QPolygonF &ply);
-    void showHoverRect(const QPolygonF &ply);
-
-    struct GraphicsRectItemPrivate;
-    QScopedPointer<GraphicsRectItemPrivate> d_ptr;
+    void buildConnect();
 };
 
 } // namespace Graphics
-
-#endif // GRAPHICSRECTITEM_H

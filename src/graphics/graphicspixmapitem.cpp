@@ -46,8 +46,9 @@ GraphicsPixmapItem::~GraphicsPixmapItem() {}
 void GraphicsPixmapItem::setCustomPixmap(const QPixmap &pixmap)
 {
     setPixmap(pixmap);
-    if (pixmap.size() != d_ptr->mask.size())
+    if (pixmap.size() != d_ptr->mask.size()) {
         clearMask();
+    }
     setPenSize(qMin(pixmap.width(), pixmap.height()) / 20.0);
 }
 
@@ -59,22 +60,7 @@ void GraphicsPixmapItem::setMaskImage(const QImage &mask)
     if (pixmap().size() != mask.size()) {
         return;
     }
-    // generate 4 channel color mask image
-    QImage temp = QImage(pixmap().size(), QImage::Format_ARGB32);
-    temp.fill(Qt::transparent);
-    QRgb dstRgb = d_ptr->color.rgb();
-    int cols = temp.width();
-    int rows = temp.height();
-    for (int y = 0; y < rows; y++) {
-        QRgb *dst_row = (QRgb *) temp.scanLine(y);
-        const uchar *mask_row = mask.scanLine(y);
-        for (int x = 0; x < cols; x++) {
-            if (mask_row[x] != 0) {
-                dst_row[x] = dstRgb;
-            }
-        }
-    }
-    d_ptr->mask = temp;
+    d_ptr->mask = mask;
     update();
 }
 
@@ -140,7 +126,7 @@ auto GraphicsPixmapItem::maskColor2() -> QColor
 void GraphicsPixmapItem::clearMask()
 {
     if (!pixmap().isNull()) {
-        d_ptr->mask = QImage(pixmap().size(), QImage::Format_ARGB32);
+        d_ptr->mask = QImage(pixmap().size(), QImage::Format_RGBA8888_Premultiplied);
         d_ptr->mask.fill(Qt::transparent);
     }
     update();

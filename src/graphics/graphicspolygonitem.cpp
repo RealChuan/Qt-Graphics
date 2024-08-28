@@ -1,8 +1,8 @@
 #include "graphicspolygonitem.h"
 #include "graphics.h"
 
-#include <QGraphicsSceneHoverEvent>
 #include <QGraphicsScene>
+#include <QGraphicsSceneHoverEvent>
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
 
@@ -18,17 +18,17 @@ struct GraphicsPolygonItem::GraphicsPolygonItemPrivate
 
 GraphicsPolygonItem::GraphicsPolygonItem(QGraphicsItem *parent)
     : BasicGraphicsItem(parent)
-    , d_ptr(new GraphicsPolygonItemPrivate){}
+    , d_ptr(new GraphicsPolygonItemPrivate)
+{}
 
-GraphicsPolygonItem::GraphicsPolygonItem(const QPolygonF& polygon,
-                                         QGraphicsItem* parent)
+GraphicsPolygonItem::GraphicsPolygonItem(const QPolygonF &polygon, QGraphicsItem *parent)
     : BasicGraphicsItem(parent)
     , d_ptr(new GraphicsPolygonItemPrivate)
 {
     setPolygon(polygon);
 }
 
-GraphicsPolygonItem::~GraphicsPolygonItem(){}
+GraphicsPolygonItem::~GraphicsPolygonItem() {}
 
 inline auto checkPolygon(const QPolygonF &ply, const double margin) -> bool
 {
@@ -71,7 +71,7 @@ void GraphicsPolygonItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
         return;
     }
     QPolygonF pts_tmp = cache();
-    pts_tmp.append( event->pos());
+    pts_tmp.append(event->pos());
     pointsChanged(pts_tmp);
 }
 
@@ -105,7 +105,7 @@ void GraphicsPolygonItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void GraphicsPolygonItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     QPolygonF pts_tmp = cache();
-    if(pts_tmp.size() > 0){
+    if (pts_tmp.size() > 0) {
         pts_tmp.append(event->scenePos());
         showHoverPolygon(pts_tmp);
     }
@@ -113,9 +113,7 @@ void GraphicsPolygonItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     BasicGraphicsItem::hoverMoveEvent(event);
 }
 
-void GraphicsPolygonItem::paint(QPainter *painter,
-                                const QStyleOptionGraphicsItem *option,
-                                QWidget*)
+void GraphicsPolygonItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
     painter->setRenderHint(QPainter::Antialiasing);
     double linew = 2 * pen().widthF() / painter->transform().m11();
@@ -129,6 +127,7 @@ void GraphicsPolygonItem::paint(QPainter *painter,
     }
     if (option->state & QStyle::State_Selected) {
         drawAnchor(painter);
+        drawBoundingRect(painter);
     }
 }
 
@@ -159,4 +158,4 @@ void GraphicsPolygonItem::showHoverPolygon(const QPolygonF &ply)
     update();
 }
 
-}
+} // namespace Graphics

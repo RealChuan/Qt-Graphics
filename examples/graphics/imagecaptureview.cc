@@ -5,13 +5,13 @@
 class ImageCaptureView::ImageCaptureViewPrivate
 {
 public:
-    ImageCaptureViewPrivate(QWidget *parent)
-        : q_ptr(parent)
+    explicit ImageCaptureViewPrivate(ImageCaptureView *q)
+        : q_ptr(q)
         , rectPtr(new Graphics::GraphicsRectItem)
     {}
     ~ImageCaptureViewPrivate() {}
 
-    QWidget *q_ptr;
+    ImageCaptureView *q_ptr;
     QScopedPointer<Graphics::GraphicsRectItem> rectPtr;
 };
 

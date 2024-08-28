@@ -15,7 +15,16 @@ class GRAPHICS_EXPORT BasicGraphicsItem : public QObject, public QAbstractGraphi
     Q_OBJECT
 public:
     // Why does add UserType not draw
-    enum Shape { LINE = /*UserType +*/ 1, RECT, CIRCLE, POLYGON, RING, ARC, ROTATEDRECT };
+    enum Shape {
+        LINE = /*UserType +*/ 1,
+        RECT,
+        ROUNDEDRECT,
+        ROTATEDRECT,
+        CIRCLE,
+        POLYGON,
+        RING,
+        ARC
+    };
     Q_ENUM(Shape)
 
     enum MouseRegion { DotRegion, All, Edge, None };
@@ -35,6 +44,9 @@ public:
 
     void setItemEditable(bool editable);
 
+    void setShowBoundingRect(bool show);
+    bool showBoundingRect() const;
+
 protected:
     //QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
@@ -52,6 +64,7 @@ protected:
     [[nodiscard]] auto hoveredDotIndex() const -> int;
 
     void drawAnchor(QPainter *painter);
+    void drawBoundingRect(QPainter *painter);
 
     void setMyCursor(const QPointF &center, const QPointF &pos);
 

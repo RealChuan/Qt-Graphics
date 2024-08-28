@@ -233,6 +233,7 @@ void GraphicsRotatedRectItem::paint(QPainter *painter,
 
     if (!isValid() || (option->state & QStyle::State_Selected)) {
         drawAnchor(painter);
+        drawBoundingRect(painter);
     }
 }
 

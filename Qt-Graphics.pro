@@ -6,7 +6,7 @@ SUBDIRS += \
     examples
 
 DISTFILES += \
-    doc/** \
+    docs/** \
     .clang* \
     LICENSE \
     README*

@@ -196,6 +196,7 @@ void GraphicsCircleItem::paint(QPainter *painter, const QStyleOptionGraphicsItem
     }
     if ((option->state & QStyle::State_Selected)) {
         drawAnchor(painter);
+        drawBoundingRect(painter);
     }
 }
 

@@ -20,6 +20,8 @@ set(PROJECT_SOURCES
     graphicsringitem.h
     graphicsrotatedrectitem.cpp
     graphicsrotatedrectitem.h
+    graphicsroundedrectitem.cc
+    graphicsroundedrectitem.hpp
     graphicstextitem.cc
     graphicstextitem.hpp
     imageview.cpp

@@ -27,7 +27,7 @@ public:
                 auto clipImage = i.copy(info.imageRect);
                 QImage tmpImage(image.width(),
                                 image.height() + clipImage.height(),
-                                QImage::Format_ARGB32);
+                                QImage::Format_RGBA8888_Premultiplied);
                 QPainter painter(&tmpImage);
                 painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
                 painter.drawImage(image.rect(), image);
@@ -141,7 +141,7 @@ void SubtitlSplicingWidget::onGenerated()
     //         auto clipImage = view->clipImage();
     //         QImage tmpImage(image.width(),
     //                         image.height() + clipImage.height(),
-    //                         QImage::Format_ARGB32);
+    //                         QImage::Format_RGBA8888_Premultiplied);
     //         QPainter painter(&tmpImage);
     //         painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
     //         painter.drawImage(image.rect(), image);

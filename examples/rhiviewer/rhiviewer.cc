@@ -144,7 +144,7 @@ void RhiViewer::setupUI()
     splitter->setSizes({INT_MAX, 1});
 
     auto *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(QMargins());
+    layout->setContentsMargins({});
     layout->addWidget(splitter);
     layout->addWidget(d_ptr->imageListView);
 }
