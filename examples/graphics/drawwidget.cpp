@@ -9,6 +9,7 @@
 #include <graphics/graphicsrectitem.h>
 #include <graphics/graphicsringitem.h>
 #include <graphics/graphicsrotatedrectitem.h>
+#include <graphics/graphicsroundedrectitem.hpp>
 #include <graphics/graphicstextitem.hpp>
 #include <graphics/imageview.h>
 #include <utils/validator.hpp>
@@ -100,11 +101,12 @@ void DrawWidget::onAddShape(QListWidgetItem *item)
     switch (type) {
     case BasicGraphicsItem::LINE: shape = new GraphicsLineItem; break;
     case BasicGraphicsItem::RECT: shape = new GraphicsRectItem; break;
+    case BasicGraphicsItem::ROUNDEDRECT: shape = new GraphicsRoundedRectItem; break;
+    case BasicGraphicsItem::ROTATEDRECT: shape = new GraphicsRotatedRectItem; break;
     case BasicGraphicsItem::CIRCLE: shape = new GraphicsCircleItem; break;
     case BasicGraphicsItem::POLYGON: shape = new GraphicsPolygonItem; break;
     case BasicGraphicsItem::RING: shape = new GraphicsRingItem; break;
     case BasicGraphicsItem::ARC: shape = new GraphicsArcItem; break;
-    case BasicGraphicsItem::ROTATEDRECT: shape = new GraphicsRotatedRectItem; break;
     default: break;
     }
     if (shape) {
@@ -218,13 +220,13 @@ void DrawWidget::setupUI()
     d_ptr->shapeWidget->addItem(item);
 
     auto bodyLayout = new QHBoxLayout;
-    bodyLayout->setContentsMargins(QMargins());
+    bodyLayout->setContentsMargins({});
     bodyLayout->setSpacing(0);
     bodyLayout->addWidget(d_ptr->shapeWidget);
     bodyLayout->addWidget(d_ptr->imageView);
 
     auto layout = new QVBoxLayout(this);
-    layout->setContentsMargins(QMargins());
+    layout->setContentsMargins({});
     layout->setSpacing(0);
     layout->addWidget(cerateToolBar());
     layout->addLayout(bodyLayout);

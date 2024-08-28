@@ -168,7 +168,7 @@ void RecordWidget::setupUI()
     titleLayout->addWidget(d_ptr->closeButton);
 
     auto layout = new QGridLayout(this);
-    layout->setContentsMargins(QMargins());
+    layout->setContentsMargins({});
     layout->setSpacing(0);
     layout->addWidget(d_ptr->titleWidget, 0, 0);
     layout->addWidget(d_ptr->screenshotsWidget, 1, 0);

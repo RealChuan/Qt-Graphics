@@ -2,26 +2,41 @@
 #include "stretchparamssettingdailog.hpp"
 
 #include <graphics/graphicspixmapitem.h>
-#include <graphics/graphicsrectitem.h>
+#include <graphics/graphicsroundedrectitem.hpp>
 #include <graphics/imageview.h>
 
 #include <QtWidgets>
 
 using namespace Graphics;
 
+auto radiusImage(const QPixmap &pixmap, int radius) -> QImage
+{
+    QImage image(pixmap.size(), QImage::Format_RGBA8888_Premultiplied);
+    image.fill(Qt::transparent);
+    QPainter painter(&image);
+    painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    painter.setBrush(pixmap);
+    painter.setPen(Qt::transparent);
+    painter.drawRoundedRect(pixmap.rect(), radius, radius);
+    return image;
+}
+
 class RoundDialog::RoundDialogPrivate
 {
 public:
-    RoundDialogPrivate(QWidget *parent)
-        : q_ptr(parent)
-        , graphicsRectItemPtr(new GraphicsRectItem)
+    explicit RoundDialogPrivate(RoundDialog *q)
+        : q_ptr(q)
+        , roundedRectItemPtr(new GraphicsRoundedRectItem)
     {
-        imageView = new ImageView(q_ptr);
-        buttonGroup = new QButtonGroup(q_ptr);
-        buttonGroup->setExclusive(true);
+        roundedRectItemPtr->setShowBoundingRect(true);
 
-        cropWidget = new QWidget(q_ptr);
-        rectGroupBox = new QGroupBox(QObject::tr("Rect Info"), q_ptr);
+        imageView = new ImageView(q_ptr);
+
+        previewLabel = new QLabel(q_ptr);
+        previewLabel->setMinimumHeight(200);
+        previewLabel->setAlignment(Qt::AlignCenter);
+
+        rectGroupBox = new QGroupBox(QObject::tr("Rounded rect info"), q_ptr);
         topLeftXSpinBox = new QSpinBox(q_ptr);
         topLeftXSpinBox->setKeyboardTracking(false);
         topLeftYSpinBox = new QSpinBox(q_ptr);
@@ -30,31 +45,83 @@ public:
         widthSpinBox->setKeyboardTracking(false);
         heightSpinBox = new QSpinBox(q_ptr);
         heightSpinBox->setKeyboardTracking(false);
-
         radiusSpinBox = new QSpinBox(q_ptr);
         radiusSpinBox->setKeyboardTracking(false);
     }
     ~RoundDialogPrivate() {}
 
-    QWidget *q_ptr;
+    void setRoundedRect(const RoundedRect &roundedRect)
+    {
+        roundedRectItemPtr->setRoundedRect(roundedRect);
+        radiusSpinBox->setRange(0, qMin(roundedRect.rect.width(), roundedRect.rect.height()) / 2.0);
+        if (radiusSpinBox->value() > radiusSpinBox->maximum()) {
+            radiusSpinBox->setValue(radiusSpinBox->maximum());
+        }
+
+        QMetaObject::invokeMethod(
+            roundedRectItemPtr.data(), [=] { roundedRectItemPtr->update(); }, Qt::QueuedConnection);
+        updatePreview();
+    }
+
+    void updatePreview()
+    {
+        static QAtomicInt count = 0;
+        count.ref();
+        auto currentCount = count.loadAcquire();
+
+        QThreadPool::globalInstance()->start([this, currentCount] {
+            auto roundedRect = roundedRectItemPtr->roundedRect();
+            auto previewPixmap = pixmap.copy(roundedRect.rect.toRect());
+            previewPixmap = QPixmap::fromImage(radiusImage(previewPixmap, roundedRect.xRadius));
+            previewPixmap = previewPixmap.scaled(previewLabel->size(),
+                                                 Qt::KeepAspectRatio,
+                                                 Qt::SmoothTransformation);
+            if (currentCount == count.loadAcquire()) {
+                QMetaObject::invokeMethod(
+                    q_ptr, [=] { previewLabel->setPixmap(previewPixmap); }, Qt::QueuedConnection);
+            }
+        });
+
+        QThreadPool::globalInstance()->start([this, currentCount] {
+            auto roundedRect = roundedRectItemPtr->roundedRect();
+            QImage image(pixmap.size(), QImage::Format_RGBA8888_Premultiplied);
+            image.fill(Qt::transparent);
+            QPainterPath p1, p2;
+            p1.addRect(pixmap.rect());
+            p2.addRoundedRect(roundedRect.rect, roundedRect.xRadius, roundedRect.yRadius);
+            p1 = p1.subtracted(p2);
+            {
+                QPainter painter(&image);
+                painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+                painter.setOpacity(0.6);
+                painter.fillPath(p1, QBrush(Qt::black));
+            }
+            if (currentCount == count.loadAcquire()) {
+                QMetaObject::invokeMethod(
+                    q_ptr,
+                    [=] { imageView->pixmapItem()->setMaskImage(image); },
+                    Qt::QueuedConnection);
+            }
+        });
+    }
+
+    RoundDialog *q_ptr;
 
     ImageView *imageView;
 
-    QWidget *cropWidget;
-    QButtonGroup *buttonGroup;
+    QLabel *previewLabel;
+
     QGroupBox *rectGroupBox;
     QSpinBox *topLeftXSpinBox;
     QSpinBox *topLeftYSpinBox;
     QSpinBox *widthSpinBox;
     QSpinBox *heightSpinBox;
-
     QSpinBox *radiusSpinBox;
 
     QString name;
 
-    QScopedPointer<GraphicsRectItem> graphicsRectItemPtr;
+    QScopedPointer<GraphicsRoundedRectItem> roundedRectItemPtr;
     QPixmap pixmap;
-    QPixmap cutPixmap;
 };
 
 RoundDialog::RoundDialog(QWidget *parent)
@@ -84,53 +151,22 @@ void RoundDialog::setPixmap(const QPixmap &pixmap)
     d_ptr->widthSpinBox->setRange(0, pixmap.width());
     d_ptr->heightSpinBox->setRange(0, pixmap.height());
     d_ptr->imageView->setPixmap(pixmap);
-    d_ptr->graphicsRectItemPtr->setRect(pixmap.rect().adjusted(10, 10, -10, -10));
-    if (!d_ptr->imageView->scene()->items().contains(d_ptr->graphicsRectItemPtr.data())) {
-        d_ptr->imageView->scene()->addItem(d_ptr->graphicsRectItemPtr.data());
+
+    RoundedRect roundedRect;
+    roundedRect.rect = pixmap.rect().adjusted(10, 10, -10, -10);
+    roundedRect.xRadius = roundedRect.yRadius = d_ptr->radiusSpinBox->value();
+    d_ptr->setRoundedRect(roundedRect);
+    if (!d_ptr->imageView->scene()->items().contains(d_ptr->roundedRectItemPtr.data())) {
+        d_ptr->imageView->scene()->addItem(d_ptr->roundedRectItemPtr.data());
     }
     buildConnect2();
 }
 
-void RoundDialog::onStartRound(bool checked)
-{
-    QPushButton *button = qobject_cast<QPushButton *>(sender());
-    if (!button) {
-        return;
-    }
-    if (checked) {
-        if (d_ptr->buttonGroup->button(1)->isChecked()) {
-            d_ptr->cutPixmap = d_ptr->pixmap;
-        } else {
-            d_ptr->cutPixmap = d_ptr->pixmap.copy(d_ptr->graphicsRectItemPtr->rect().toRect());
-        }
-        d_ptr->imageView->setPixmap(d_ptr->cutPixmap);
-        d_ptr->graphicsRectItemPtr->setRect(d_ptr->cutPixmap.rect().adjusted(10, 10, -10, -10));
-        d_ptr->cropWidget->hide();
-        d_ptr->graphicsRectItemPtr->hide();
-        button->setText(tr("Reset Crop"));
-        d_ptr->radiusSpinBox->setRange(0,
-                                       qMin(d_ptr->cutPixmap.size().width(),
-                                            d_ptr->cutPixmap.size().height())
-                                           / 2.0);
-        return;
-    }
-    d_ptr->cropWidget->show();
-    d_ptr->rectGroupBox->show();
-    setPixmap(d_ptr->pixmap);
-    d_ptr->graphicsRectItemPtr->show();
-    button->setText(tr("Start Round"));
-}
-
 void RoundDialog::onSave()
 {
-    if (d_ptr->cropWidget->isVisible()) {
-        return;
-    }
-
-    QPixmap pixmap(d_ptr->imageView->pixmap());
-    if (pixmap.isNull()) {
-        return;
-    }
+    auto roundedRect = d_ptr->roundedRectItemPtr->roundedRect();
+    auto pixmap = d_ptr->pixmap.copy(roundedRect.rect.toRect());
+    pixmap = QPixmap::fromImage(radiusImage(pixmap, roundedRect.xRadius));
 
     StretchParamsSettingDailog::StretchParams params{pixmap.size(), Qt::KeepAspectRatio};
     StretchParamsSettingDailog dialog(this);
@@ -161,29 +197,10 @@ void RoundDialog::onSave()
     qDebug() << pixmap.save(filename, "PNG", params.quality);
 }
 
-void RoundDialog::onButtonClicked(int id)
+void RoundDialog::onRoundedRectChanged(const Graphics::RoundedRect &roundedRect)
 {
-    GraphicsPixmapItem *pixmapItem = d_ptr->imageView->pixmapItem();
-    if (!pixmapItem) {
-        return;
-    }
-    switch (id) {
-    case 1:
-        d_ptr->graphicsRectItemPtr->hide();
-        d_ptr->rectGroupBox->hide();
-        d_ptr->radiusSpinBox
-            ->setRange(0, qMin(d_ptr->widthSpinBox->value(), d_ptr->heightSpinBox->value()) / 2);
-        break;
-    case 2:
-        d_ptr->graphicsRectItemPtr->show();
-        d_ptr->rectGroupBox->show();
-        break;
-    default: break;
-    }
-}
+    auto rectF = roundedRect.rect;
 
-void RoundDialog::onRectChanged(const QRectF &rectF)
-{
     d_ptr->topLeftXSpinBox->blockSignals(true);
     d_ptr->topLeftYSpinBox->blockSignals(true);
     d_ptr->widthSpinBox->blockSignals(true);
@@ -199,91 +216,76 @@ void RoundDialog::onRectChanged(const QRectF &rectF)
 
     d_ptr->widthSpinBox->setRange(0, d_ptr->pixmap.width() - rectF.x());
     d_ptr->heightSpinBox->setRange(0, d_ptr->pixmap.height() - rectF.y());
+    d_ptr->updatePreview();
 }
 
 void RoundDialog::onTopLeftXChanged(int value)
 {
-    QRectF rectF = d_ptr->graphicsRectItemPtr->rect();
-    QPointF point1 = rectF.topLeft();
+    auto roundedRect = d_ptr->roundedRectItemPtr->roundedRect();
+    QPointF point1 = roundedRect.rect.topLeft();
     point1.setX(value);
-    d_ptr->graphicsRectItemPtr->setRect(QRectF(point1, rectF.bottomRight()));
-    d_ptr->graphicsRectItemPtr->update();
+    roundedRect.rect = QRectF(point1, roundedRect.rect.bottomRight());
+    d_ptr->setRoundedRect(roundedRect);
 }
 
 void RoundDialog::onTopLeftYChanged(int value)
 {
-    QRectF rectF = d_ptr->graphicsRectItemPtr->rect();
-    QPointF point1 = rectF.topLeft();
+    auto roundedRect = d_ptr->roundedRectItemPtr->roundedRect();
+    QPointF point1 = roundedRect.rect.topLeft();
     point1.setY(value);
-    d_ptr->graphicsRectItemPtr->setRect(QRectF(point1, rectF.bottomRight()));
-    d_ptr->graphicsRectItemPtr->update();
+    roundedRect.rect = QRectF(point1, roundedRect.rect.bottomRight());
+    d_ptr->setRoundedRect(roundedRect);
 }
 
 void RoundDialog::onWidthChanged(int value)
 {
-    QRectF rectF = d_ptr->graphicsRectItemPtr->rect();
-    QPointF point1 = rectF.bottomRight();
-    point1.setX(value + rectF.x());
-    d_ptr->graphicsRectItemPtr->setRect(QRectF(rectF.topLeft(), point1));
-    d_ptr->graphicsRectItemPtr->update();
+    auto roundedRect = d_ptr->roundedRectItemPtr->roundedRect();
+    QPointF point1 = roundedRect.rect.bottomRight();
+    point1.setX(value + roundedRect.rect.x());
+    roundedRect.rect = QRectF(roundedRect.rect.topLeft(), point1);
+    d_ptr->setRoundedRect(roundedRect);
 }
 
 void RoundDialog::onHeightChanged(int value)
 {
-    QRectF rectF = d_ptr->graphicsRectItemPtr->rect();
-    QPointF point1 = rectF.bottomRight();
-    point1.setY(value + rectF.y());
-    d_ptr->graphicsRectItemPtr->setRect(QRectF(rectF.topLeft(), point1));
-    d_ptr->graphicsRectItemPtr->update();
-}
-
-auto radiusImage(const QPixmap &pixmap, int radius) -> QImage
-{
-    QImage image(pixmap.size(), QImage::Format_ARGB32);
-    image.fill(Qt::transparent);
-    QPainter painter(&image);
-    painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    painter.setBrush(pixmap);
-    painter.setPen(Qt::transparent);
-    painter.drawRoundedRect(pixmap.rect(), radius, radius);
-    return image;
+    auto roundedRect = d_ptr->roundedRectItemPtr->roundedRect();
+    QPointF point1 = roundedRect.rect.bottomRight();
+    point1.setY(value + roundedRect.rect.y());
+    roundedRect.rect = QRectF(roundedRect.rect.topLeft(), point1);
+    d_ptr->setRoundedRect(roundedRect);
 }
 
 void RoundDialog::onRadiusChanged(int value)
 {
-    if (d_ptr->cropWidget->isVisible()) {
-        return;
-    }
-
-    d_ptr->imageView->setPixmap(QPixmap::fromImage(radiusImage(d_ptr->cutPixmap, value)));
+    auto roundedRect = d_ptr->roundedRectItemPtr->roundedRect();
+    roundedRect.xRadius = roundedRect.yRadius = value;
+    d_ptr->setRoundedRect(roundedRect);
 }
 
 void RoundDialog::setupUI()
 {
-    QSplitter *splitter = new QSplitter(Qt::Horizontal, this);
+    auto *splitter = new QSplitter(Qt::Horizontal, this);
     splitter->addWidget(d_ptr->imageView);
     splitter->addWidget(toolWidget());
     splitter->setStretchFactor(0, 1);
     splitter->setStretchFactor(1, 1);
     splitter->setSizes({INT_MAX, 1});
 
-    QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(QMargins());
+    auto *layout = new QVBoxLayout(this);
+    layout->setContentsMargins({});
     layout->addWidget(splitter);
 }
 
 void RoundDialog::buildConnect()
 {
-    connect(d_ptr->buttonGroup, &QButtonGroup::idClicked, this, &RoundDialog::onButtonClicked);
-    connect(d_ptr->graphicsRectItemPtr.data(),
-            &Graphics::GraphicsRectItem::rectChanged,
+    connect(d_ptr->roundedRectItemPtr.data(),
+            &Graphics::GraphicsRoundedRectItem::roundedRectChanged,
             this,
-            &RoundDialog::onRectChanged);
+            &RoundDialog::onRoundedRectChanged);
     connect(d_ptr->radiusSpinBox,
             QOverload<int>::of(&QSpinBox::valueChanged),
             this,
             &RoundDialog::onRadiusChanged);
-    d_ptr->buttonGroup->button(1)->click();
 }
 
 void RoundDialog::buildConnect2()
@@ -312,39 +314,22 @@ void RoundDialog::buildConnect2()
 
 QWidget *RoundDialog::toolWidget()
 {
-    QRadioButton *radioButton1 = new QRadioButton(tr("Original Image"), this);
-    QRadioButton *radioButton2 = new QRadioButton(tr("Rect Crop"), this);
-    d_ptr->buttonGroup->addButton(radioButton1, 1);
-    d_ptr->buttonGroup->addButton(radioButton2, 2);
-
-    QFormLayout *formLayout = new QFormLayout(d_ptr->rectGroupBox);
+    auto *formLayout = new QFormLayout(d_ptr->rectGroupBox);
     formLayout->addRow(tr("TopLeft X:"), d_ptr->topLeftXSpinBox);
     formLayout->addRow(tr("TopLeft Y:"), d_ptr->topLeftYSpinBox);
     formLayout->addRow(tr("Width:"), d_ptr->widthSpinBox);
     formLayout->addRow(tr("Height:"), d_ptr->heightSpinBox);
+    formLayout->addRow(tr("Radius:"), d_ptr->radiusSpinBox);
 
-    QVBoxLayout *cropLayout = new QVBoxLayout(d_ptr->cropWidget);
-    cropLayout->setContentsMargins(QMargins());
-    cropLayout->addWidget(radioButton1);
-    cropLayout->addWidget(radioButton2);
-    cropLayout->addWidget(d_ptr->rectGroupBox);
-
-    QPushButton *startRoundButton = new QPushButton(tr("Start Round"), this);
-    startRoundButton->setCheckable(true);
-    connect(startRoundButton, &QPushButton::clicked, this, &RoundDialog::onStartRound);
-
-    QFormLayout *radiusLayout = new QFormLayout;
-    radiusLayout->addRow(tr("Radius:"), d_ptr->radiusSpinBox);
-
-    QPushButton *saveButton = new QPushButton(tr("Save"), this);
+    auto *saveButton = new QPushButton(tr("Save"), this);
     connect(saveButton, &QPushButton::clicked, this, &RoundDialog::onSave);
 
-    QWidget *toolWidget = new QWidget(this);
+    auto *toolWidget = new QWidget(this);
     toolWidget->setMaximumWidth(250);
-    QVBoxLayout *toolLayout = new QVBoxLayout(toolWidget);
-    toolLayout->addWidget(d_ptr->cropWidget);
-    toolLayout->addWidget(startRoundButton);
-    toolLayout->addLayout(radiusLayout);
+    auto *toolLayout = new QVBoxLayout(toolWidget);
+    toolLayout->addWidget(new QLabel(tr("Preview:"), this));
+    toolLayout->addWidget(d_ptr->previewLabel);
+    toolLayout->addWidget(d_ptr->rectGroupBox);
     toolLayout->addWidget(saveButton);
     toolLayout->addStretch();
     return toolWidget;

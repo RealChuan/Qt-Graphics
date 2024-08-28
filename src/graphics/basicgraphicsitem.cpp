@@ -14,17 +14,19 @@ namespace Graphics {
 class BasicGraphicsItem::BasicGraphicsItemPrivate
 {
 public:
-    explicit BasicGraphicsItemPrivate(QObject *parent)
-        : q_ptr(parent)
+    explicit BasicGraphicsItemPrivate(BasicGraphicsItem *q)
+        : q_ptr(q)
     {}
 
-    QObject *q_ptr;
+    BasicGraphicsItem *q_ptr;
+
     QString name;
     BasicGraphicsItem::MouseRegion mouseRegin = BasicGraphicsItem::None;
     int hoveredDotIndex = -1;
     QPointF clickedPos;
     QPolygonF cache;
     double margin = 10;
+    bool showBoundingRect = false;
 };
 
 BasicGraphicsItem::BasicGraphicsItem(QGraphicsItem *parent)
@@ -82,6 +84,17 @@ auto BasicGraphicsItem::margin() const -> double
 void BasicGraphicsItem::setItemEditable(bool editable)
 {
     setAcceptHoverEvents(editable);
+}
+
+void BasicGraphicsItem::setShowBoundingRect(bool show)
+{
+    d_ptr->showBoundingRect = show;
+    QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
+}
+
+bool BasicGraphicsItem::showBoundingRect() const
+{
+    return d_ptr->showBoundingRect;
 }
 
 //QVariant BasicGraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change,
@@ -185,6 +198,18 @@ void BasicGraphicsItem::drawAnchor(QPainter *painter)
                                  d_ptr->margin),
                           QColor(242, 80, 86));
     }
+}
+
+void BasicGraphicsItem::drawBoundingRect(QPainter *painter)
+{
+    if (!d_ptr->showBoundingRect || !isValid()) {
+        return;
+    }
+
+    QPen outline(Qt::black, 1, Qt::DashLine);
+    outline.setCosmetic(true);
+    painter->setPen(outline);
+    painter->drawRect(boundingRect());
 }
 
 void BasicGraphicsItem::setMyCursor(const QPointF &center, const QPointF &pos)

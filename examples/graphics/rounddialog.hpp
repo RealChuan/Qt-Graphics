@@ -3,6 +3,10 @@
 
 #include <QDialog>
 
+namespace Graphics {
+struct RoundedRect;
+}
+
 class RoundDialog : public QDialog
 {
     Q_OBJECT
@@ -15,10 +19,8 @@ public:
     void setPixmap(const QPixmap &pixmap);
 
 private slots:
-    void onStartRound(bool checked);
     void onSave();
-    void onButtonClicked(int id);
-    void onRectChanged(const QRectF &rectF);
+    void onRoundedRectChanged(const Graphics::RoundedRect &roundedRect);
     void onTopLeftXChanged(int value);
     void onTopLeftYChanged(int value);
     void onWidthChanged(int value);

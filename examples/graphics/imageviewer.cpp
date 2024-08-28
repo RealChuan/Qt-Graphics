@@ -13,8 +13,8 @@ using namespace Graphics;
 class ImageViewer::ImageViewerPrivate
 {
 public:
-    ImageViewerPrivate(QWidget *parent)
-        : q_ptr(parent)
+    explicit ImageViewerPrivate(ImageViewer *q)
+        : q_ptr(q)
     {
         imageView = new ImageView(q_ptr);
         imageViewFormat = new ImageView(q_ptr);
@@ -38,7 +38,9 @@ public:
             colorBox->addItem(Conversionflags.key(i), Conversionflags.value(i));
         }
     }
-    QWidget *q_ptr;
+
+    ImageViewer *q_ptr;
+
     ImageView *imageView;
     ImageView *imageViewFormat;
     QLabel *urlLabel;
@@ -200,7 +202,7 @@ void ImageViewer::clearThumbnail()
 
 void ImageViewer::setupUI()
 {
-    QSplitter *splitter = new QSplitter(Qt::Horizontal, this);
+    auto *splitter = new QSplitter(Qt::Horizontal, this);
     splitter->addWidget(d_ptr->imageView);
     splitter->addWidget(d_ptr->imageViewFormat);
     splitter->addWidget(toolWidget());
@@ -209,8 +211,8 @@ void ImageViewer::setupUI()
     splitter->setStretchFactor(2, 1);
     splitter->setSizes({INT_MAX, INT_MAX, 1});
 
-    QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(QMargins());
+    auto *layout = new QVBoxLayout(this);
+    layout->setContentsMargins({});
     layout->addWidget(splitter);
     layout->addWidget(d_ptr->imageListView);
 

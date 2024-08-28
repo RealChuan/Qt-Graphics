@@ -5,7 +5,7 @@
 class LoadImageTask : public QRunnable
 {
 public:
-    LoadImageTask(const QString &path, ListItemView *parent)
+    explicit LoadImageTask(const QString &path, ListItemView *parent)
         : m_imagePath(path)
         , m_viewPtr(parent)
     {
@@ -16,18 +16,14 @@ public:
     void run() override
     {
         QImage image(m_imagePath);
-        QSize widgetSize;
         if (m_viewPtr.isNull() || image.isNull()) {
             return;
-        } else {
-            widgetSize = m_viewPtr->size();
         }
+        auto widgetSize = m_viewPtr->size();
         auto imageSize = image.size();
         image = image.scaled(widgetSize, Qt::KeepAspectRatio /*, Qt::SmoothTransformation*/);
-        if (m_viewPtr.isNull()) {
-            return;
-        }
-        m_viewPtr->setImage(image, imageSize);
+        QMetaObject::invokeMethod(
+            m_viewPtr.data(), [=] { m_viewPtr->setImage(image, imageSize); }, Qt::QueuedConnection);
     }
 
 private:
@@ -38,8 +34,8 @@ private:
 class ListItemView::ListItemViewPrivate
 {
 public:
-    ListItemViewPrivate(QWidget *parent)
-        : q_ptr(parent)
+    explicit ListItemViewPrivate(ListItemView *q)
+        : q_ptr(q)
     {
         upButton = new QPushButton(QObject::tr("UP", "ListItemView"), q_ptr);
         upButton->setCursor(Qt::PointingHandCursor);
@@ -47,7 +43,8 @@ public:
         downButton->setCursor(Qt::PointingHandCursor);
     }
 
-    QWidget *q_ptr;
+    ListItemView *q_ptr;
+
     QString path;
     QSize imageSize;
 
@@ -123,14 +120,14 @@ void ListItemView::resizeEvent(QResizeEvent *event)
 
 void ListItemView::setupUI()
 {
-    auto buttonLayout = new QHBoxLayout;
-    buttonLayout->setContentsMargins(QMargins());
+    auto *buttonLayout = new QHBoxLayout;
+    buttonLayout->setContentsMargins({});
     buttonLayout->addStretch();
     buttonLayout->addWidget(d_ptr->upButton);
     buttonLayout->addWidget(d_ptr->downButton);
 
-    auto layout = new QVBoxLayout(this);
-    layout->setContentsMargins(QMargins());
+    auto *layout = new QVBoxLayout(this);
+    layout->setContentsMargins({});
     layout->addLayout(buttonLayout);
     layout->addStretch();
 }

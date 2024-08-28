@@ -166,24 +166,24 @@ void MaskDialog::onSave()
 
 auto newFlatBlueButton(const QString &text, QWidget *parent) -> QPushButton *
 {
-    QPushButton *button = new QPushButton(text, parent);
+    auto *button = new QPushButton(text, parent);
     return button;
 }
 
 void MaskDialog::setupUI()
 {
-    QPushButton *button1 = newFlatBlueButton(tr("Mask"), this);
-    QPushButton *button2 = newFlatBlueButton(tr("Erase"), this);
-    QPushButton *button3 = new QPushButton(tr("Clear"), this);
+    auto *button1 = newFlatBlueButton(tr("Mask"), this);
+    auto *button2 = newFlatBlueButton(tr("Erase"), this);
+    auto *button3 = new QPushButton(tr("Clear"), this);
     d_ptr->buttonGroup->addButton(button1, 1);
     d_ptr->buttonGroup->addButton(button2, 2);
     d_ptr->buttonGroup->addButton(button3, 3);
     d_ptr->buttonGroup->button(1)->setChecked(true);
 
-    QPushButton *saveButton = newFlatBlueButton(tr("Save"), this);
+    auto *saveButton = newFlatBlueButton(tr("Save"), this);
     connect(saveButton, &QPushButton::clicked, this, &MaskDialog::onSave);
 
-    QHBoxLayout *editLayout = new QHBoxLayout;
+    auto *editLayout = new QHBoxLayout;
     editLayout->addStretch();
     editLayout->addWidget(new QLabel(tr("Pen Size: "), this));
     editLayout->addWidget(d_ptr->penSizeSpinBox);
@@ -195,7 +195,7 @@ void MaskDialog::setupUI()
     editLayout->addWidget(saveButton);
     editLayout->addStretch();
 
-    QVBoxLayout *layout = new QVBoxLayout(this);
+    auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 10);
     layout->addWidget(d_ptr->imageView);
     layout->addLayout(editLayout);

@@ -3,14 +3,14 @@ name: CMake Build
 on: 
   push:
     paths-ignore:
-        - 'doc/**'
+        - 'docs/**'
         - '.clang-format'
         - '.gitignore'
         - 'LICENSE'
         - 'README*'
   pull_request:
     paths-ignore:
-        - 'doc/**'
+        - 'docs/**'
         - '.clang-format'
         - '.gitignore'
         - 'LICENSE'

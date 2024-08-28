@@ -64,10 +64,8 @@ void ImageLoadRunnable::run()
         if (image.width() > WIDTH || image.height() > WIDTH) {
             image = image.scaled(WIDTH, WIDTH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         }
-        if (d_ptr->viewPtr.isNull() || !d_ptr->running.load()) {
-            return;
-        }
-        if (!d_ptr->viewPtr->setImage(info, image, d_ptr->taskCount)) {
+        if (d_ptr->viewPtr.isNull() || !d_ptr->running.load()
+            || !d_ptr->viewPtr->setImage(info, image, d_ptr->taskCount)) {
             return;
         }
     }

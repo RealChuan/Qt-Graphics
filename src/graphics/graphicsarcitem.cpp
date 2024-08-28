@@ -241,7 +241,7 @@ auto GraphicsArcItem::isValid() const -> bool
 
 auto GraphicsArcItem::type() const -> int
 {
-    return ARC;
+    return Shape::ARC;
 }
 
 auto GraphicsArcItem::boundingRect() const -> QRectF
@@ -356,7 +356,7 @@ void GraphicsArcItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         return;
     }
     BasicGraphicsItem::hoverMoveEvent(event);
-    if (mouseRegion() == DotRegion){
+    if (mouseRegion() == DotRegion) {
         return;
     }
     setMouseRegion(BasicGraphicsItem::None);
@@ -404,6 +404,7 @@ void GraphicsArcItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *o
     }
     if (option->state & QStyle::State_Selected) {
         drawAnchor(painter);
+        drawBoundingRect(painter);
     }
 }
 
