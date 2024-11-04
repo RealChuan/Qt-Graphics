@@ -18,7 +18,7 @@ inputs:
   qt_ver:
     description: 'qt version'
     required: false
-    default: '6.7.2'
+    default: '6.8.0'
     type: string
 
 runs:
@@ -37,7 +37,7 @@ runs:
         rm vcpkg.json
 
     - name: Cache windows vcpkg
-      if: startsWith(runner.os, 'Windows')
+      if: runner.os == 'Windows'
       uses: actions/cache@v4
       with: 
         path: C:\vcpkg\installed
@@ -49,7 +49,7 @@ runs:
         save-always: true
 
     - name: Cache macos or linux vcpkg
-      if: startsWith(runner.os, 'macOS') || startsWith(runner.os, 'Linux')
+      if: runner.os == 'macOS' || runner.os == 'Linux'
       uses: actions/cache@v4
       with: 
         path: /usr/local/share/vcpkg/installed
@@ -61,7 +61,7 @@ runs:
         save-always: true
 
     - name: Install dependencies on windows
-      if: startsWith(runner.os, 'Windows')
+      if: runner.os == 'Windows'
       shell: bash
       run: |
         choco install ninja
@@ -70,7 +70,7 @@ runs:
         vcpkg install ${{ inputs.vcpkg_libs }} --triplet x64-windows || (cat C:/vcpkg/installed/vcpkg/issue_body.md && exit 1)
 
     - name: Install dependencies on macos
-      if: startsWith(runner.os, 'macOS')
+      if: runner.os == 'macOS'
       shell: bash
       run: |
         brew install ninja python-setuptools
@@ -81,7 +81,7 @@ runs:
         vcpkg install ${{ inputs.vcpkg_libs }} --triplet arm64-osx || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
 
     - name: Install dependencies on linux
-      if: startsWith(runner.os, 'Linux')
+      if: runner.os == 'Linux'
       shell: bash
       run: |
         sudo apt-get update
@@ -91,12 +91,22 @@ runs:
         gcc --version
         vcpkg install ${{ inputs.vcpkg_libs }} --triplet x64-linux || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
 
-    - name: Install Qt
+    - name: Install Qt on non-windows
+      if: runner.os == 'macOS' || runner.os == 'Linux'
       uses: jurplel/install-qt-action@v4
       with:
         version: ${{ inputs.qt_ver }}
         modules: ${{ inputs.qt_modules }}
         cache: 'true'
+
+    - name: Install Qt on windows
+      if: runner.os == 'Windows'
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: ${{ inputs.qt_ver }}
+        modules: ${{ inputs.qt_modules }}
+        cache: 'true'
+        arch: 'win64_msvc2022_64'
 
     - name: Install Vulkan SDK
       uses: humbletim/install-vulkan-sdk@main
