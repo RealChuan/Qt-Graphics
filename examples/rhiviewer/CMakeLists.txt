@@ -16,9 +16,9 @@ target_link_libraries(
           thirdparty
           dump
           utils
-          Qt6::GuiPrivate
-          Qt6::Gui
-          Qt6::Widgets
-          Qt6::Network
-          Qt6::Concurrent)
+          Qt::GuiPrivate
+          Qt::Gui
+          Qt::Widgets
+          Qt::Network
+          Qt::Concurrent)
 qt_finalize_executable(Qt-RhiViewer)
