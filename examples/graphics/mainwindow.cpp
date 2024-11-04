@@ -16,8 +16,8 @@
 class MainWindow::MainWindowPrivate
 {
 public:
-    MainWindowPrivate(QWidget *parent)
-        : q_ptr(parent)
+    explicit MainWindowPrivate(MainWindow *q)
+        : q_ptr(q)
     {
         drawWidget = new DrawWidget(q_ptr);
         imageViewer = new ImageViewer(q_ptr);
@@ -35,7 +35,8 @@ public:
     }
     ~MainWindowPrivate() {}
 
-    QWidget *q_ptr;
+    MainWindow *q_ptr;
+
     DrawWidget *drawWidget;
     ImageViewer *imageViewer;
     OpenglViewer *openglViewer;
@@ -53,6 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupUI();
     resize(1000, 618);
     Utils::windowCenter(this);
+
 #if QT_VERSION > QT_VERSION_CHECK(6, 0, 0)
     // 图片读取限制大小
     qInfo() << tr("QImage memory allocation above this limit: %1MB.")

@@ -83,12 +83,9 @@ void ImageViewer::onOpenImage()
     QString imageFilters(tr("Images (*.bmp *.gif *.jpg *.jpeg *.png *.svg *.tiff *.webp *.icns "
                             "*.bitmap *.graymap *.pixmap *.tga *.xbitmap *.xpixmap)"));
     //qDebug() << imageFilters;
-    const QString path = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation)
-                             .value(0, QDir::homePath());
-    const QString filename = QFileDialog::getOpenFileName(this,
-                                                          tr("Open Image"),
-                                                          path,
-                                                          imageFilters);
+    const auto path = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation)
+                          .value(0, QDir::homePath());
+    const auto filename = QFileDialog::getOpenFileName(this, tr("Open Image"), path, imageFilters);
     if (filename.isEmpty()) {
         return;
     }
@@ -97,7 +94,7 @@ void ImageViewer::onOpenImage()
 
 void ImageViewer::onMaskImage()
 {
-    QPixmap pixmap = d_ptr->imageView->pixmap();
+    auto pixmap = d_ptr->imageView->pixmap();
     if (pixmap.isNull()) {
         return;
     }
@@ -109,7 +106,7 @@ void ImageViewer::onMaskImage()
 
 void ImageViewer::onRoundImage()
 {
-    QPixmap pixmap = d_ptr->imageView->pixmap();
+    auto pixmap = d_ptr->imageView->pixmap();
     if (pixmap.isNull()) {
         return;
     }
@@ -121,7 +118,7 @@ void ImageViewer::onRoundImage()
 
 void ImageViewer::onScaleFactorChanged(qreal factor)
 {
-    const QString info = QString::number(factor * 100, 'f', 2) + QLatin1Char('%');
+    const auto info = QString::number(factor * 100, 'f', 2) + QLatin1Char('%');
     d_ptr->scaleLabel->setText(info);
 }
 
@@ -139,7 +136,7 @@ void ImageViewer::onImageChanged(const QString &url)
     d_ptr->urlLabel->setText(url);
     d_ptr->fileSizeLabel->setText(Utils::convertBytesToString(QFile(url).size()));
 
-    for (const ImageInfo &image : std::as_const(d_ptr->imageInfoList)) {
+    for (const auto &image : std::as_const(d_ptr->imageInfoList)) {
         if (image.fileInfo().absoluteFilePath() == url) {
             return;
         }
@@ -171,12 +168,11 @@ void ImageViewer::onFormatChecked(bool state)
 
 void ImageViewer::onFormatChanged(const QString &)
 {
-    QImage::Format format = QImage::Format(d_ptr->formatBox->currentData().toInt());
-    Qt::ImageConversionFlags flags = Qt::ImageConversionFlags(
-        d_ptr->colorBox->currentData().toInt());
+    auto format = QImage::Format(d_ptr->formatBox->currentData().toInt());
+    auto flags = Qt::ImageConversionFlags(d_ptr->colorBox->currentData().toInt());
 
-    QImage image = d_ptr->imageView->pixmap().toImage();
-    QPixmap pixmap = QPixmap::fromImage(image.convertToFormat(format, flags));
+    auto image = d_ptr->imageView->pixmap().toImage();
+    auto pixmap = QPixmap::fromImage(image.convertToFormat(format, flags));
     if (pixmap.isNull()) {
         QMessageBox::warning(this, tr("WARNING"), tr("Format Conversion Failed!"));
         return;
@@ -223,17 +219,17 @@ void ImageViewer::setupUI()
 
 QWidget *ImageViewer::toolWidget()
 {
-    QPushButton *openImageButton = new QPushButton(tr("Open Picture"), this);
+    auto *openImageButton = new QPushButton(tr("Open Picture"), this);
     connect(openImageButton, &QPushButton::clicked, this, &ImageViewer::onOpenImage);
 
-    QPushButton *maskImageButton = new QPushButton(tr("Mask Picture"), this);
+    auto *maskImageButton = new QPushButton(tr("Mask Picture"), this);
     connect(maskImageButton, &QPushButton::clicked, this, &ImageViewer::onMaskImage);
 
-    QPushButton *roundImageButton = new QPushButton(tr("Round Picture"), this);
+    auto *roundImageButton = new QPushButton(tr("Round Picture"), this);
     connect(roundImageButton, &QPushButton::clicked, this, &ImageViewer::onRoundImage);
 
-    QGroupBox *infoBox = new QGroupBox(tr("Image Information"), this);
-    QGridLayout *gridLayout = new QGridLayout(infoBox);
+    auto *infoBox = new QGroupBox(tr("Image Information"), this);
+    auto *gridLayout = new QGridLayout(infoBox);
     gridLayout->addWidget(new QLabel(tr("Url: "), this), 0, 0, 1, 1);
     gridLayout->addWidget(d_ptr->urlLabel, 0, 1, 1, 1);
     gridLayout->addWidget(new QLabel(tr("File Size: "), this), 1, 0, 1, 1);
@@ -243,16 +239,16 @@ QWidget *ImageViewer::toolWidget()
     gridLayout->addWidget(new QLabel(tr("Scaling Ratio:"), this), 3, 0, 1, 1);
     gridLayout->addWidget(d_ptr->scaleLabel, 3, 1, 1, 1);
 
-    QCheckBox *formatBox = new QCheckBox(tr("Format"), this);
+    auto *formatBox = new QCheckBox(tr("Format"), this);
     connect(formatBox, &QCheckBox::clicked, this, &ImageViewer::onFormatChecked);
-    QHBoxLayout *formatLayout = new QHBoxLayout;
+    auto *formatLayout = new QHBoxLayout;
     formatLayout->addWidget(formatBox);
     formatLayout->addWidget(d_ptr->formatBox);
     formatLayout->addWidget(d_ptr->colorBox);
 
-    QWidget *widget = new QWidget(this);
+    auto *widget = new QWidget(this);
     widget->setMaximumWidth(300);
-    QVBoxLayout *rightLayout = new QVBoxLayout(widget);
+    auto *rightLayout = new QVBoxLayout(widget);
     rightLayout->addWidget(openImageButton);
     rightLayout->addWidget(infoBox);
     rightLayout->addLayout(formatLayout);

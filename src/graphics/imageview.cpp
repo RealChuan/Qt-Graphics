@@ -8,8 +8,8 @@ namespace Graphics {
 class ImageView::ImageViewPrivate
 {
 public:
-    ImageViewPrivate(QWidget *parent)
-        : q_ptr(parent)
+    explicit ImageViewPrivate(ImageView *q)
+        : q_ptr(q)
         , menu(new QMenu)
     {
         pixmapItem = new GraphicsPixmapItem;
@@ -33,7 +33,8 @@ public:
 
     ~ImageViewPrivate() {}
 
-    QWidget *q_ptr;
+    ImageView *q_ptr;
+
     GraphicsPixmapItem *pixmapItem;
     QGraphicsRectItem *backgroundItem;
     QGraphicsRectItem *outlineItem;
@@ -118,7 +119,7 @@ void ImageView::setPixmap(const QPixmap &pixmap)
     }
 
     d_ptr->pixmapItem->setCustomPixmap(pixmap);
-    QRectF rectF = d_ptr->pixmapItem->boundingRect();
+    auto rectF = d_ptr->pixmapItem->boundingRect();
     d_ptr->backgroundItem->setRect(rectF);
     d_ptr->outlineItem->setRect(rectF);
 

@@ -1,5 +1,4 @@
-#ifndef GRAPHICS_H
-#define GRAPHICS_H
+#pragma once
 
 #include <QCursor>
 #include <QLineF>
@@ -7,12 +6,10 @@
 
 namespace Graphics {
 
-auto calculateCircle(const QPolygonF& pts, QPointF& center, double& radius) -> bool;
+auto calculateCircle(const QPolygonF &pts, QPointF &center, double &radius) -> bool;
 auto curorFromAngle(double angle) -> QCursor;
-auto boundingFromLine(const QLineF& line, double margin) -> QPolygonF;
+auto boundingFromLine(const QLineF &line, double margin) -> QPolygonF;
 auto distance(QPointF pos, QPointF center) -> double;
 auto ConvertTo360(double angle) -> double;
 
-}
-
-#endif // GRAPHICS_H
+} // namespace Graphics
