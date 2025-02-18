@@ -117,6 +117,11 @@ auto compilerString() -> QString
     return QLatin1String("<unknown compiler>");
 }
 
+auto Utils::isMainThread() -> bool
+{
+    return QThread::currentThread() == qApp->thread();
+}
+
 auto Utils::systemInfo() -> QString
 {
     auto text = QString("%1 (%2) on %3 (%4) with CPU Cores: %5")
