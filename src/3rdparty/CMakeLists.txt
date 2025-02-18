@@ -9,8 +9,8 @@ set(PROJECT_SOURCES
     thirdparty_global.hpp)
 
 add_custom_library(thirdparty ${PROJECT_SOURCES})
-target_link_libraries(thirdparty PRIVATE shared_qtlockedfile utils Qt6::Network
-                                         Qt6::Widgets)
+target_link_libraries(thirdparty PRIVATE shared_qtlockedfile utils Qt::Network
+                                         Qt::Widgets)
 
 if(CMAKE_HOST_WIN32)
   target_compile_definitions(thirdparty PRIVATE "THRIDPARTY_LIBRARY")

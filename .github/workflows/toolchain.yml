@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  MACOSX_DEPLOYMENT_TARGET: 11.0
+  MACOSX_DEPLOYMENT_TARGET: 12.0
 
 jobs:
   build:
@@ -20,7 +20,6 @@ jobs:
       matrix:
         os:
           - windows-latest
-          - windows-2019
           - macos-latest
           - ubuntu-latest
 

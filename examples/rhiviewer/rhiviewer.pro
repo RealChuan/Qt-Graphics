@@ -18,6 +18,7 @@ DESTDIR = $$APP_OUTPUT_PATH
 
 SOURCES += \
     ../common/viewer.cc \
+    ../common/thumbnail.cc \
     ../common/imagelistmodel.cpp \
     main.cc \
     mainwindow.cc \
@@ -25,6 +26,7 @@ SOURCES += \
 
 HEADERS += \
     ../common/viewer.hpp \
+    ../common/thumbnail.hpp \
     ../common/imagelistmodel.h \
     mainwindow.hpp \
     rhiviewer.hpp

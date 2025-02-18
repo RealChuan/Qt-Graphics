@@ -1,8 +1,10 @@
 set(PROJECT_SOURCES
-    ../common/viewer.cc
-    ../common/viewer.hpp
     ../common/imagelistmodel.cpp
     ../common/imagelistmodel.h
+    ../common/thumbnail.cc
+    ../common/thumbnail.hpp
+    ../common/viewer.cc
+    ../common/viewer.hpp
     capturewidget.cc
     capturewidget.hpp
     customlineitem.cc
@@ -54,10 +56,10 @@ target_link_libraries(
           thirdparty
           dump
           utils
-          Qt6::Gui
-          Qt6::Widgets
-          Qt6::OpenGLWidgets
-          Qt6::Network
-          Qt6::Concurrent
+          Qt::Gui
+          Qt::Widgets
+          Qt::OpenGLWidgets
+          Qt::Network
+          Qt::Concurrent
           egif)
 qt_finalize_executable(Qt-Graphics)

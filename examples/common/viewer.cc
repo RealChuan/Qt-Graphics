@@ -1,17 +1,123 @@
 #include "viewer.hpp"
-#include "imagelistmodel.h"
+
+#include <utils/utils.h>
 
 #include <QDir>
 #include <QPointer>
 #include <QThreadPool>
+#include <QtWidgets>
 
 Viewer::Viewer(QWidget *parent)
     : QWidget(parent)
-{}
+{
+    setupUI();
+}
 
 Viewer::~Viewer()
 {
     ImageLoadRunnable::terminateAll();
+}
+
+bool Viewer::setImage(const QFileInfo &info, const QImage &image, const qint64 taskCount)
+{
+    if (taskCount != (m_taskCount.load(std::memory_order_acquire) - 1)) {
+        return false;
+    }
+    QMetaObject::invokeMethod(this, [=] { appendThumbnail(info, image); }, Qt::QueuedConnection);
+    return true;
+}
+
+void Viewer::onScaleFactorChanged(qreal factor)
+{
+    const auto text = QString::number(factor * 100, 'f', 2) + QLatin1Char('%');
+    m_scaleLabel->setText(text);
+    m_scaleLabel->setToolTip(text);
+}
+
+void Viewer::onImageSizeChanged(const QSize &size)
+{
+    QString text;
+    if (size.isValid()) {
+        text = QString::fromLatin1("%1x%2").arg(size.width()).arg(size.height());
+    }
+    m_sizeLabel->setText(text);
+    m_sizeLabel->setToolTip(text);
+}
+
+void Viewer::onImageChanged(const QString &url)
+{
+    m_urlLabel->setText(url);
+    m_fileSizeLabel->setText(Utils::formatBytes(QFile(url).size()));
+
+    for (const auto &data : std::as_const(m_thumbnailList)) {
+        if (data.fileInfo().absoluteFilePath() == url) {
+            return;
+        }
+    }
+    clearThumbnail();
+    startImageLoadThread(url);
+}
+
+QString Viewer::openImage()
+{
+    const QString imageFilters(
+        tr("Images (*.bmp *.gif *.jpg *.jpeg *.png *.svg *.tiff *.webp *.icns "
+           "*.bitmap *.graymap *.pixmap *.tga *.xbitmap *.xpixmap)"));
+    const QString path = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation)
+                             .value(0, QDir::homePath());
+    return QFileDialog::getOpenFileName(this, tr("Open Image"), path, imageFilters);
+}
+
+void Viewer::startImageLoadThread(const QString &url)
+{
+    QThreadPool::globalInstance()->start(
+        new ImageLoadRunnable(url, this, m_taskCount.fetch_add(1, std::memory_order_seq_cst)));
+}
+
+void Viewer::appendThumbnail(const QFileInfo &fileInfo, const QImage &image)
+{
+    if (image.isNull()) {
+        return;
+    }
+    m_thumbnailList.append(Thumbnail(fileInfo, image));
+    m_imageListView->setDatas(m_thumbnailList);
+}
+
+void Viewer::clearThumbnail()
+{
+    if (m_thumbnailList.isEmpty()) {
+        return;
+    }
+    m_thumbnailList.clear();
+    m_imageListView->setDatas(m_thumbnailList);
+}
+
+void Viewer::setupUI()
+{
+    m_openButton = new QToolButton(this);
+    auto sizePolicy = m_openButton->sizePolicy();
+    sizePolicy.setHorizontalPolicy(QSizePolicy::Preferred);
+    m_openButton->setSizePolicy(sizePolicy);
+    m_openButton->setText(tr("Open Picture"));
+
+    m_infoBox = new QGroupBox(tr("Image Information"), this);
+    m_urlLabel = new QLabel("-", this);
+    m_urlLabel->setWordWrap(true);
+    m_sizeLabel = new QLabel("-", this);
+    m_fileSizeLabel = new QLabel("-", this);
+    m_scaleLabel = new QLabel("-", this);
+    m_imageListView = new ImageListView(this);
+    m_imageListView->setFixedHeight(120);
+
+    auto *gridLayout = new QGridLayout(m_infoBox);
+    gridLayout->addWidget(new QLabel(tr("Url: "), this), 0, 0, 1, 1);
+    gridLayout->addWidget(m_urlLabel, 0, 1, 1, 1);
+    gridLayout->addWidget(new QLabel(tr("File Size: "), this), 1, 0, 1, 1);
+    gridLayout->addWidget(m_fileSizeLabel, 1, 1, 1, 1);
+    gridLayout->addWidget(new QLabel(tr("Image Size: "), this), 2, 0, 1, 1);
+    gridLayout->addWidget(m_sizeLabel, 2, 1, 1, 1);
+    gridLayout->addWidget(new QLabel(tr("Scaling Ratio:"), this), 3, 0, 1, 1);
+    gridLayout->addWidget(m_scaleLabel, 3, 1, 1, 1);
 }
 
 class ImageLoadRunnable::ImageLoadRunnablePrivate
@@ -46,7 +152,7 @@ ImageLoadRunnable::~ImageLoadRunnable() = default;
 
 void ImageLoadRunnable::terminateAll()
 {
-    ImageLoadRunnablePrivate::running.store(false);
+    ImageLoadRunnablePrivate::running.store(false, std::memory_order_relaxed);
     auto *instance = QThreadPool::globalInstance();
     instance->clear();
     instance->waitForDone();
@@ -55,8 +161,8 @@ void ImageLoadRunnable::terminateAll()
 void ImageLoadRunnable::run()
 {
     const QFileInfo file(d_ptr->fileUrl);
-    const QFileInfoList list = file.absoluteDir().entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
-    for (const QFileInfo &info : std::as_const(list)) {
+    const auto list = file.absoluteDir().entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
+    for (const auto &info : std::as_const(list)) {
         QImage image(info.absoluteFilePath());
         if (image.isNull()) {
             continue;
@@ -64,7 +170,7 @@ void ImageLoadRunnable::run()
         if (image.width() > WIDTH || image.height() > WIDTH) {
             image = image.scaled(WIDTH, WIDTH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         }
-        if (d_ptr->viewPtr.isNull() || !d_ptr->running.load()
+        if (d_ptr->viewPtr.isNull() || !d_ptr->running.load(std::memory_order_acquire)
             || !d_ptr->viewPtr->setImage(info, image, d_ptr->taskCount)) {
             return;
         }

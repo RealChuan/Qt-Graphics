@@ -1,14 +1,16 @@
 #include "utils.h"
 #include "hostosinfo.h"
+#include "utilstr.h"
 
 #include <QTextCodec>
 #include <QtWidgets>
 
+// clang-format off
 #ifdef Q_OS_WIN
 #include <windows.h>
-
 #include <tlhelp32.h>
 #endif
+// clang-format on
 
 auto Utils::desktopGeometry() -> QRect
 {
@@ -47,22 +49,21 @@ void Utils::setUTF8Code()
 
 void Utils::setQSS(const QStringList &qssFilePaths)
 {
-    QString qss;
+    QStringList qssFiles;
     for (const auto &path : std::as_const(qssFilePaths)) {
-        qDebug() << QCoreApplication::translate("Utils", "Loading QSS file: %1.").arg(path);
         QFile file(path);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            qDebug() << QCoreApplication::translate("Utils", "Cannot open the file: %1!").arg(path)
-                     << file.errorString();
+            qWarning() << QString("Cannot open the file: %1").arg(path) << file.errorString();
             continue;
         }
-        qss.append(QLatin1String(file.readAll())).append("\n");
+        qInfo() << QString("Load QSS: %1").arg(path);
+        qssFiles.append(QLatin1String(file.readAll()));
         file.close();
     }
-    if (qss.isEmpty()) {
+    if (qssFiles.isEmpty()) {
         return;
     }
-    qApp->setStyleSheet(qss);
+    qApp->setStyleSheet(qssFiles.join("\n"));
 }
 
 void Utils::loadFonts(const QString &fontPath)
@@ -78,8 +79,8 @@ void Utils::loadFonts(const QString &fontPath)
         if (fontId == -1) {
             qWarning() << QString("Loading Fonts file: %1 Failed.").arg(fileInfo.fileName());
         } else {
-            qDebug() << QString("Loading Fonts file: %1.").arg(fileInfo.fileName())
-                     << QFontDatabase::applicationFontFamilies(fontId);
+            qInfo() << QString("Loading Fonts file: %1.").arg(fileInfo.fileName())
+                    << QFontDatabase::applicationFontFamilies(fontId);
         }
     }
 }
@@ -159,119 +160,39 @@ void Utils::reboot()
     QApplication::exit();
 }
 
-auto calculateDir(const QString &localPath) -> qint64
+auto Utils::createDirectoryRecursively(const QString &path) -> bool
 {
-    qint64 size = 0;
-    QDir dir(localPath);
-    if (!dir.exists()) {
-        return size;
-    }
-    QFileInfoList list = dir.entryInfoList(QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot);
-    for (int i = 0; i < list.count(); i++) {
-        const QFileInfo &info = list.at(i);
-        if (info.isDir()) {
-            size += calculateDir(info.filePath());
-        } else {
-            size += info.size();
-        }
-    }
-    return size;
+    return QDir().mkpath(path);
 }
 
-auto Utils::fileSize(const QString &localPath) -> qint64
-{
-    QFileInfo info(localPath);
-    if (info.isDir()) {
-        return calculateDir(localPath);
-    }
-    return info.size();
-}
-
-auto Utils::generateDirectorys(const QString &directory) -> bool
-{
-    QDir sourceDir(directory);
-    if (sourceDir.exists()) {
-        return true;
-    }
-
-    QString tempDir;
-    auto directorys = directory.split("/");
-    for (int i = 0; i < directorys.count(); i++) {
-        auto path = directorys[i];
-        tempDir += path + "/";
-
-        QDir dir(tempDir);
-        if (!dir.exists() && !dir.mkdir(tempDir)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-void removeFiles(const QString &path)
-{
-    QDir dir(path);
-    if (!dir.exists()) {
-        return;
-    }
-    const QFileInfoList entries = dir.entryInfoList(QDir::AllEntries | QDir::Hidden);
-    for (const QFileInfo &fi : std::as_const(entries)) {
-        if (fi.isSymLink() || fi.isFile()) {
-            QFile f(fi.filePath());
-            if (!f.remove()) {
-                const QString errorMessage
-                    = QCoreApplication::translate("Utils", "Cannot remove file \"%1\": %2")
-                          .arg(QDir::toNativeSeparators(f.fileName()), f.errorString());
-                qWarning() << errorMessage;
-            }
-        }
-    }
-}
-
-static auto errnoToQString(int error) -> QString
-{
-#if defined(Q_OS_WIN) && !defined(Q_CC_MINGW)
-    char msg[128];
-    if (strerror_s(msg, sizeof msg, error) != 0) {
-        return QString::fromLocal8Bit(msg);
-    }
-    return {};
-#else
-    return QString::fromLocal8Bit(strerror(error));
-#endif
-}
-
-void Utils::removeDirectory(const QString &path)
+auto Utils::removeDirectory(const QString &path) -> bool
 {
     if (path.isEmpty()) { // QDir("") points to the working directory! We never want to remove that one.
-        return;
+        return false;
     }
 
-    QStringList dirs;
-    QDirIterator it(path,
-                    QDir::NoDotAndDotDot | QDir::Dirs | QDir::NoSymLinks | QDir::Hidden,
-                    QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        dirs.prepend(it.next());
-        removeFiles(dirs.at(0));
+    QDir dir(path);
+    if (!dir.exists()) {
+        qWarning() << Tr::tr("Directory does not exist: %1").arg(path);
+        return false;
     }
-
-    QDir d;
-    dirs.append(path);
-    removeFiles(path);
-    for (const QString &dir : std::as_const(dirs)) {
-        errno = 0;
-        if (d.exists(path) && !d.rmdir(dir)) {
-            const QString errorMessage
-                = QCoreApplication::translate("Utils", "Cannot remove directory \"%1\": %2")
-                      .arg(QDir::toNativeSeparators(dir), errnoToQString(errno));
-            qWarning() << errorMessage;
-        }
-    }
+    return dir.removeRecursively();
 }
 
-auto Utils::convertBytesToString(qint64 bytes) -> QString
+auto Utils::removeFile(const QString &path) -> bool
+{
+    if (path.isEmpty()) {
+        return false;
+    }
+    QFile file(path);
+    if (!file.exists()) {
+        qWarning() << Tr::tr("File does not exist: %1").arg(path);
+        return false;
+    }
+    return file.remove();
+}
+
+QString Utils::formatBytes(qint64 bytes, int precision)
 {
     const QStringList list = {"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
     const int unit = 1024;
@@ -281,14 +202,15 @@ auto Utils::convertBytesToString(qint64 bytes) -> QString
         size /= unit;
         index++;
     }
-    return QString("%1 %2").arg(QString::number(size, 'f', 2)).arg(list.at(index));
+    Q_ASSERT_X(index < list.size(), "formatBytes", "size is too large");
+    return QString("%1 %2").arg(QString::number(size, 'f', precision)).arg(list.at(index));
 }
 
 auto Utils::jsonFromFile(const QString &filePath) -> QJsonObject
 {
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << QCoreApplication::translate("Utils", "Cannot open the file: %1").arg(filePath);
+        qWarning() << Tr::tr("Cannot open the file: %1").arg(filePath);
         return {};
     }
     const QByteArray buf(file.readAll());
@@ -301,7 +223,7 @@ auto Utils::jsonFromBytes(const QByteArray &bytes) -> QJsonObject
     QJsonParseError jsonParseError;
     auto jsonDocument = QJsonDocument::fromJson(bytes, &jsonParseError);
     if (QJsonParseError::NoError != jsonParseError.error) {
-        qWarning() << QCoreApplication::translate("Utils", "%1\nOffset: %2")
+        qWarning() << Tr::tr("%1\nOffset: %2")
                           .arg(jsonParseError.errorString(), jsonParseError.offset);
         return {};
     }
@@ -318,7 +240,7 @@ auto Utils::configLocation() -> QString
         }
     }
     //qInfo() << path;
-    Utils::generateDirectorys(path);
+    Utils::createDirectoryRecursively(path);
     return path;
 }
 
@@ -431,25 +353,61 @@ void Utils::quitApplication()
 auto Utils::crashPath() -> QString
 {
     const auto path = configLocation() + "/crash";
-    generateDirectorys(path);
+    createDirectoryRecursively(path);
     return path;
 }
 
 auto Utils::logPath() -> QString
 {
     const auto path = configLocation() + "/log";
-    generateDirectorys(path);
+    createDirectoryRecursively(path);
     return path;
 }
 
 auto Utils::configPath() -> QString
 {
     const auto path = configLocation() + "/config";
-    generateDirectorys(path);
+    createDirectoryRecursively(path);
     return path;
 }
 
 auto Utils::configFilePath() -> QString
 {
     return (configPath() + "/config.ini");
+}
+
+auto Utils::cachePath() -> QString
+{
+    const auto path = configLocation() + "/cache";
+    createDirectoryRecursively(path);
+    return path;
+}
+
+auto Utils::calculateDirectoryStats(const QString &path) -> DirectoryStats
+{
+    DirectoryStats stats;
+    if (path.isEmpty() || !QDir(path).exists()) {
+        return stats;
+    }
+
+    QStack<QString> dirs;
+    dirs.push(path);
+
+    while (!dirs.isEmpty()) {
+        QString dirPath = dirs.pop();
+        QDirIterator it(dirPath, QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot);
+
+        while (it.hasNext()) {
+            const QFileInfo info(it.next());
+            if (info.isDir()) {
+                dirs.push(info.filePath());
+                stats.folders++;
+            } else {
+                stats.size += info.size();
+                stats.files++;
+            }
+        }
+    }
+
+    return stats;
 }

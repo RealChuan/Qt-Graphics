@@ -19,6 +19,7 @@ DESTDIR = $$APP_OUTPUT_PATH
 
 SOURCES += \
     ../common/viewer.cc \
+    ../common/thumbnail.cc \
     ../common/imagelistmodel.cpp \
     capturewidget.cc \
     customlineitem.cc \
@@ -41,6 +42,7 @@ SOURCES += \
 
 HEADERS += \
     ../common/viewer.hpp \
+    ../common/thumbnail.hpp \
     ../common/imagelistmodel.h \
     capturewidget.hpp \
     customlineitem.hpp \

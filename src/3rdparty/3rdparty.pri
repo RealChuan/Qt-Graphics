@@ -35,7 +35,7 @@ CONFIG(debug, debug|release) {
             -llibbreakpad_client -llibbreakpad
 }
 
-LIBS += -lcommon -lclient -lutil -lbase
+LIBS += -lvcpkg_crashpad_client_common -lvcpkg_crashpad_client -lvcpkg_crashpad_util -lvcpkg_crashpad_base
 
 LIBS += -lgif
 

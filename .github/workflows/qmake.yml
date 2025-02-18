@@ -17,7 +17,7 @@ on:
         - 'README*'
 
 env:
-  MACOSX_DEPLOYMENT_TARGET: 11.0
+  MACOSX_DEPLOYMENT_TARGET: 12.0
 
 jobs:
   build:
@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - windows-2019
+          - windows-latest
           - macos-latest
           - ubuntu-latest
 
@@ -51,7 +51,7 @@ jobs:
         if: startsWith(matrix.os, 'windows')
         shell: pwsh
         run: |
-          ..\scripts\windows\setVsDev.ps1 -VersionRange "[16.0,17.0)" -Arch "x64"
+          ..\scripts\windows\setVsDev.ps1
           & qmake ./../.
           & jom
         working-directory: build

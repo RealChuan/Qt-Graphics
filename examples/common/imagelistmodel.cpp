@@ -2,21 +2,28 @@
 
 #include <QScrollBar>
 
-struct ImageListModel::ImageListModelPrivate
+class ImageListModel::ImageListModelPrivate
 {
-    ImageInfoList imageInfoList;
+public:
+    explicit ImageListModelPrivate(ImageListModel *q)
+        : q_ptr(q)
+    {}
+
+    ImageListModel *q_ptr;
+
+    ThumbnailList datas;
 };
 
 ImageListModel::ImageListModel(QObject *parent)
     : QAbstractListModel(parent)
-    , d_ptr(new ImageListModelPrivate)
+    , d_ptr(new ImageListModelPrivate(this))
 {}
 
 ImageListModel::~ImageListModel() {}
 
 auto ImageListModel::rowCount(const QModelIndex &) const -> int
 {
-    return d_ptr->imageInfoList.size();
+    return d_ptr->datas.size();
 }
 
 auto ImageListModel::data(const QModelIndex &index, int role) const -> QVariant
@@ -25,11 +32,11 @@ auto ImageListModel::data(const QModelIndex &index, int role) const -> QVariant
         return QVariant();
     }
 
-    ImageInfo imageInfo = d_ptr->imageInfoList.at(index.row());
+    auto data = d_ptr->datas.at(index.row());
     switch (role) {
-    case Qt::DecorationRole: return QIcon(QPixmap::fromImage(imageInfo.image()));
+    case Qt::DecorationRole: return QPixmap::fromImage(data.image());
     case Qt::WhatsThisRole:
-    case Qt::ToolTipRole: return imageInfo.fileInfo().fileName();
+    case Qt::ToolTipRole: return data.fileInfo().fileName();
     case Qt::SizeHintRole: return QSize(90, 90);
     case Qt::TextAlignmentRole: return Qt::AlignCenter;
     default: break;
@@ -37,26 +44,23 @@ auto ImageListModel::data(const QModelIndex &index, int role) const -> QVariant
     return QVariant();
 }
 
-void ImageListModel::setImageInfoList(const ImageInfoList &imageInfoList)
+void ImageListModel::setDatas(const ThumbnailList &datas)
 {
     beginResetModel();
-    d_ptr->imageInfoList = imageInfoList;
+    d_ptr->datas = datas;
     endResetModel();
 }
-
-/*
- *
- * */
 
 class ImageListView::ImageListViewPrivate
 {
 public:
-    ImageListViewPrivate(QWidget *parent)
-        : q_ptr(parent)
+    explicit ImageListViewPrivate(ImageListView *q)
+        : q_ptr(q)
     {
         imageListModel = new ImageListModel(q_ptr);
     }
-    QWidget *q_ptr;
+
+    ImageListView *q_ptr;
     ImageListModel *imageListModel;
 };
 
@@ -70,9 +74,9 @@ ImageListView::ImageListView(QWidget *parent)
 
 ImageListView::~ImageListView() {}
 
-void ImageListView::setImageInfoList(const ImageInfoList &imageVector)
+void ImageListView::setDatas(const ThumbnailList &datas)
 {
-    d_ptr->imageListModel->setImageInfoList(imageVector);
+    d_ptr->imageListModel->setDatas(datas);
 }
 
 void ImageListView::onChangedItem(const QModelIndex &index)
