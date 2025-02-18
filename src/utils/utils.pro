@@ -1,6 +1,6 @@
 include(../slib.pri)
 
-QT += widgets core5compat
+QT += widgets core5compat concurrent
 
 DEFINES += UTILS_LIBRARY
 TARGET = $$replaceLibName(utils)
@@ -9,6 +9,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     hostosinfo.cpp \
+    imagecache.cc \
     logasync.cpp \
     logfile.cc \
     utils.cpp \
@@ -16,6 +17,7 @@ SOURCES += \
 
 HEADERS += \
     hostosinfo.h \
+    imagecache.hpp \
     logasync.h \
     logfile.hpp \
     osspecificaspects.h \
