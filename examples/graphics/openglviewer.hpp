@@ -9,9 +9,6 @@ public:
     explicit OpenglViewer(QWidget *parent = nullptr);
     ~OpenglViewer() override;
 
-signals:
-    void imageReady(const QImage &);
-
 private slots:
     void onOpenImage();
     void onChangedImage(int);

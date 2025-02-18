@@ -10,9 +10,6 @@ public:
     explicit ImageViewer(QWidget *parent = nullptr);
     ~ImageViewer() override;
 
-signals:
-    void imageReady(const QImage &);
-
 private slots:
     void onOpenImage();
     void onMaskImage();
