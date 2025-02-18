@@ -3,6 +3,8 @@ set(PROJECT_SOURCES
     ../common/imagelistmodel.h
     ../common/thumbnail.cc
     ../common/thumbnail.hpp
+    ../common/thumbnailcache.cc
+    ../common/thumbnailcache.hpp
     ../common/viewer.cc
     ../common/viewer.hpp
     main.cc

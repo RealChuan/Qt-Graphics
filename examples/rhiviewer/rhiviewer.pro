@@ -17,6 +17,7 @@ include(../../src/3rdparty/3rdparty.pri)
 DESTDIR = $$APP_OUTPUT_PATH
 
 SOURCES += \
+    ../common/thumbnailcache.cc \
     ../common/viewer.cc \
     ../common/thumbnail.cc \
     ../common/imagelistmodel.cpp \
@@ -25,6 +26,7 @@ SOURCES += \
     rhiviewer.cc
 
 HEADERS += \
+    ../common/thumbnailcache.hpp \
     ../common/viewer.hpp \
     ../common/thumbnail.hpp \
     ../common/imagelistmodel.h \
