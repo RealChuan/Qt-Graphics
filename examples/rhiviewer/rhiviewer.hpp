@@ -9,9 +9,6 @@ public:
     explicit RhiViewer(QWidget *parent = nullptr);
     ~RhiViewer() override;
 
-signals:
-    void imageReady(const QImage &);
-
 private slots:
     void onOpenImage();
     void onBackendChanged(const QString &name);

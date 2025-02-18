@@ -1,4 +1,5 @@
 #include "viewer.hpp"
+#include "thumbnailcache.hpp"
 
 #include <utils/utils.h>
 
@@ -18,12 +19,12 @@ Viewer::~Viewer()
     ImageLoadRunnable::terminateAll();
 }
 
-bool Viewer::setImage(const QFileInfo &info, const QImage &image, const qint64 taskCount)
+bool Viewer::setThumbnail(const Thumbnail &thumbnail, const qint64 taskCount)
 {
     if (taskCount != (m_taskCount.load(std::memory_order_acquire) - 1)) {
         return false;
     }
-    QMetaObject::invokeMethod(this, [=] { appendThumbnail(info, image); }, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, [=] { appendThumbnail(thumbnail); }, Qt::QueuedConnection);
     return true;
 }
 
@@ -74,12 +75,9 @@ void Viewer::startImageLoadThread(const QString &url)
         new ImageLoadRunnable(url, this, m_taskCount.fetch_add(1, std::memory_order_seq_cst)));
 }
 
-void Viewer::appendThumbnail(const QFileInfo &fileInfo, const QImage &image)
+void Viewer::appendThumbnail(const Thumbnail &thumbnail)
 {
-    if (image.isNull()) {
-        return;
-    }
-    m_thumbnailList.append(Thumbnail(fileInfo, image));
+    m_thumbnailList.append(thumbnail);
     m_imageListView->setDatas(m_thumbnailList);
 }
 
@@ -161,17 +159,34 @@ void ImageLoadRunnable::terminateAll()
 void ImageLoadRunnable::run()
 {
     const QFileInfo file(d_ptr->fileUrl);
-    const auto list = file.absoluteDir().entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
-    for (const auto &info : std::as_const(list)) {
-        QImage image(info.absoluteFilePath());
-        if (image.isNull()) {
-            continue;
+    if (!file.exists()) {
+        return;
+    }
+    auto *thumbnailCacheInstance = ThumbnailCache::instance();
+    QDirIterator it(file.absolutePath(), QDir::Files | QDir::NoDotAndDotDot);
+    while (it.hasNext()) {
+        const QFileInfo info(it.next());
+        Thumbnail thumbnail;
+        thumbnail.setFileInfo(info);
+        auto find = thumbnailCacheInstance->find(thumbnail);
+        if (!find) {
+            QImage image(info.absoluteFilePath());
+            if (image.isNull()) {
+                continue;
+            }
+            thumbnail.setImage(image);
         }
+        auto image = thumbnail.image();
         if (image.width() > WIDTH || image.height() > WIDTH) {
             image = image.scaled(WIDTH, WIDTH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            thumbnail.setImage(image);
         }
-        if (d_ptr->viewPtr.isNull() || !d_ptr->running.load(std::memory_order_acquire)
-            || !d_ptr->viewPtr->setImage(info, image, d_ptr->taskCount)) {
+        if (!find) {
+            thumbnailCacheInstance->insert(thumbnail);
+        }
+        if (d_ptr->viewPtr.isNull()
+            || !ImageLoadRunnablePrivate::running.load(std::memory_order_acquire)
+            || !d_ptr->viewPtr->setThumbnail(thumbnail, d_ptr->taskCount)) {
             return;
         }
     }

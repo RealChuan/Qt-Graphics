@@ -1,5 +1,4 @@
-#ifndef SINGLETON_HPP
-#define SINGLETON_HPP
+#pragma once
 
 #include <QObject>
 
@@ -36,5 +35,3 @@ public: \
     { \
         return Utils::Singleton<Class>::getInstance(); \
     }
-
-#endif // SINGLETON_HPP

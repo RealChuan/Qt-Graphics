@@ -15,8 +15,10 @@ public:
     explicit Viewer(QWidget *parent = nullptr);
     ~Viewer() override;
 
-    virtual auto setImage(const QFileInfo &info, const QImage &image, const qint64 taskCount)
-        -> bool;
+    virtual auto setThumbnail(const Thumbnail &thumbnail, const qint64 taskCount) -> bool;
+
+signals:
+    void imageReady(const QImage &image);
 
 protected slots:
     void onScaleFactorChanged(qreal factor);
@@ -26,7 +28,7 @@ protected slots:
 protected:
     QString openImage();
     virtual void startImageLoadThread(const QString &url);
-    virtual void appendThumbnail(const QFileInfo &fileInfo, const QImage &image);
+    virtual void appendThumbnail(const Thumbnail &thumbnail);
     virtual void clearThumbnail();
 
     QToolButton *m_openButton;
