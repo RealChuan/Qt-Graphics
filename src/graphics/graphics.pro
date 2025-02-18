@@ -1,9 +1,11 @@
 include(../slib.pri)
 
-QT += widgets
+QT += widgets concurrent
 
 DEFINES += GRAPHICS_LIBRARY
 TARGET = $$replaceLibName(graphics)
+
+LIBS += -l$$replaceLibName(utils)
 
 SOURCES += \
     basicgraphicsitem.cpp \

@@ -5,6 +5,11 @@
 
 ## 效果图更新会不太及时
 
+## 支持更多图片格式，请参考[kimageformats-binaries](https://github.com/RealChuan/kimageformats-binaries/tree/dev)
+
+1. 下载`Actions`中的`Artifacts`文件夹，把`kimg_*`的库文件解压到`Qt`打包目录下的`imageformats`文件夹中；
+2. 其余部分库文件，需要放在主程序同级目录下，或者主程序可以加载到的地方。
+
 ## QRhiWidget
 
 ### 问题
@@ -27,10 +32,6 @@
 #### 旋转
 
 1. 跟OpenGL看图界面类似，在旋转任意角度的时候，纹理的宽高比会变化，导致显示不正常；
-
-#### 图片加载速度问题
-
-1. 使用`QPixmapCache`或者`QCache`之类的缓存技术，可以通过空间换时间，在加载已经加载过的图片时，提升加载速度。
 
 ## 看图界面
 

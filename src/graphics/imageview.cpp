@@ -1,6 +1,8 @@
 #include "imageview.h"
 #include "graphicspixmapitem.h"
 
+#include <utils/imagecache.hpp>
+
 #include <QtWidgets>
 
 namespace Graphics {
@@ -137,7 +139,14 @@ void ImageView::setImagerReader(QImageReader *imageReader)
 {
     if (!imageReader->supportsAnimation()) {
         d_ptr->movie.reset();
-        setPixmap(QPixmap::fromImageReader(imageReader));
+        QImage image;
+        if (!Utils::ImageCache::instance()->find(imageReader->fileName(), image)) {
+            QMessageBox::warning(this,
+                                 tr("WARNING"),
+                                 tr("Picture failed to open, Url: %1!").arg(imageReader->fileName()));
+            return;
+        }
+        setPixmap(QPixmap::fromImage(image));
         return;
     }
 

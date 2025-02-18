@@ -18,8 +18,8 @@ endif()
 qt_add_resources(SOURCES shader.qrc)
 
 add_custom_library(gpugraphics ${PROJECT_SOURCES} ${SOURCES})
-target_link_libraries(gpugraphics PRIVATE Qt::GuiPrivate Qt::Gui Qt::Widgets
-                                          Qt::OpenGLWidgets)
+target_link_libraries(gpugraphics PRIVATE utils Qt::Concurrent Qt::GuiPrivate
+                                          Qt::Gui Qt::Widgets Qt::OpenGLWidgets)
 
 if(CMAKE_HOST_WIN32)
   target_compile_definitions(gpugraphics PRIVATE "GPUGRAPHICS_LIBRARY")

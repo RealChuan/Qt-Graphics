@@ -29,7 +29,7 @@ auto ImageListModel::rowCount(const QModelIndex &) const -> int
 auto ImageListModel::data(const QModelIndex &index, int role) const -> QVariant
 {
     if (!index.isValid()) {
-        return QVariant();
+        return {};
     }
 
     auto data = d_ptr->datas.at(index.row());
@@ -41,7 +41,7 @@ auto ImageListModel::data(const QModelIndex &index, int role) const -> QVariant
     case Qt::TextAlignmentRole: return Qt::AlignCenter;
     default: break;
     }
-    return QVariant();
+    return {};
 }
 
 void ImageListModel::setDatas(const ThumbnailList &datas)

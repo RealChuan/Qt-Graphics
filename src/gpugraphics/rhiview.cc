@@ -2,6 +2,7 @@
 #include "gpustr.hpp"
 
 #include <gpugraphics/gpudata.hpp>
+#include <utils/imagecache.hpp>
 
 #include <rhi/qrhi.h>
 #include <QApplication>
@@ -166,10 +167,16 @@ RhiView::~RhiView() {}
 
 void RhiView::setImageUrl(const QString &imageUrl)
 {
-    QImage image(imageUrl);
-    if (image.isNull()) {
+    QImage image;
+    if (!Utils::ImageCache::instance()->find(imageUrl, image)) {
+        if (!imageUrl.isEmpty()) {
+            QMessageBox::warning(this,
+                                 tr("WARNING"),
+                                 tr("Picture failed to open, Url: %1!").arg(imageUrl));
+        }
         image = emptyImage();
     }
+
     d_ptr->image = image.convertToFormat(QImage::Format_RGBA8888_Premultiplied);
     d_ptr->initTexture();
 

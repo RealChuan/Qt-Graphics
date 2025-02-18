@@ -3,6 +3,8 @@
 #include "gpustr.hpp"
 #include "openglshaderprogram.hpp"
 
+#include <utils/imagecache.hpp>
+
 #include <QOpenGLBuffer>
 #include <QtWidgets>
 
@@ -119,10 +121,14 @@ OpenglView::~OpenglView()
 
 void OpenglView::setImageUrl(const QString &imageUrl)
 {
-    QImage image(imageUrl);
-    if (image.isNull()) {
+    QImage image;
+    if (!Utils::ImageCache::instance()->find(imageUrl, image)) {
+        if (!imageUrl.isEmpty()) {
+            QMessageBox::warning(this,
+                                 tr("WARNING"),
+                                 tr("Picture failed to open, Url: %1!").arg(imageUrl));
+        }
         image = emptyImage();
-        // return;
     }
 
     d_ptr->image = image.convertedTo(QImage::Format_RGBA8888_Premultiplied);

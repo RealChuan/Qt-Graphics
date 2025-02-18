@@ -1,6 +1,8 @@
 #include "vulkanrenderer.hpp"
 #include "gpudata.hpp"
 
+#include <utils/imagecache.hpp>
+
 #include <QApplication>
 #include <QFile>
 #include <QPainter>
@@ -438,11 +440,12 @@ VulkanRenderer::~VulkanRenderer() = default;
 
 auto VulkanRenderer::createTexture(const QString &name, bool &img) -> bool
 {
-    QImage image(name);
-    img = !image.isNull();
+    QImage image;
+    img = Utils::ImageCache::instance()->find(name, image);
     if (!img) {
-        qWarning("Failed to load image %s", qPrintable(name));
-        // return false;
+        if (!name.isEmpty()) {
+            qWarning("Failed to load image %s", qPrintable(name));
+        }
         image = emptyImage();
     }
 

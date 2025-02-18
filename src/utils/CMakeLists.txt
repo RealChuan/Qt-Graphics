@@ -1,6 +1,8 @@
 set(PROJECT_SOURCES
     hostosinfo.cpp
     hostosinfo.h
+    imagecache.cc
+    imagecache.hpp
     logasync.cpp
     logasync.h
     logfile.cc
@@ -15,7 +17,7 @@ set(PROJECT_SOURCES
     validator.hpp)
 
 add_custom_library(utils ${PROJECT_SOURCES})
-target_link_libraries(utils PRIVATE Qt::Widgets Qt::Core5Compat)
+target_link_libraries(utils PRIVATE Qt::Concurrent Qt::Widgets Qt::Core5Compat)
 
 if(CMAKE_HOST_WIN32)
   target_compile_definitions(utils PRIVATE "UTILS_LIBRARY")

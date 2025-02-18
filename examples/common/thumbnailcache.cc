@@ -1,6 +1,7 @@
 #include "thumbnailcache.hpp"
 #include "thumbnail.hpp"
 
+#include <utils/imagecache.hpp>
 #include <utils/utils.h>
 
 #include <QCache>
@@ -55,9 +56,7 @@ public:
 
     QString thumbnailCachePath(const QString &key) const
     {
-        return QString("%1/%2")
-            .arg(cachePath,
-                 QCryptographicHash::hash(key.toLocal8Bit(), QCryptographicHash::Md5).toHex());
+        return QString("%1/%2").arg(cachePath, key);
     }
 
     void cleanCache()
@@ -102,15 +101,14 @@ void ThumbnailCache::insert(const Thumbnail &thumbnail)
     if (image.isNull()) {
         return;
     }
-    auto key = thumbnail.fileInfo().absoluteFilePath();
-
+    auto key = Utils::getCacheKey(thumbnail.fileInfo());
     d_ptr->insert(key, image);
     d_ptr->saveToDisk(key, image);
 }
 
 bool ThumbnailCache::find(Thumbnail &thumbnail)
 {
-    auto key = thumbnail.fileInfo().absoluteFilePath();
+    auto key = Utils::getCacheKey(thumbnail.fileInfo());
     QImage image;
     if (d_ptr->find(key, image)) {
         thumbnail.setImage(image);
