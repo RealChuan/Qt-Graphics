@@ -85,6 +85,27 @@ public:
         emit q_ptr->scaleFactorChanged(factor);
     }
 
+    QSize rotatedTextureSize()
+    {
+        Q_ASSERT(!image.isNull());
+        float theta = qDegreesToRadians(rotationAngle);
+        float cosTheta = qAbs(qCos(theta));
+        float sinTheta = qAbs(qSin(theta));
+        float rotatedWidth = image.width() * cosTheta + image.height() * sinTheta;
+        float rotatedHeight = image.width() * sinTheta + image.height() * cosTheta;
+        return QSize(rotatedWidth, rotatedHeight);
+    }
+
+    void adjustImageToScreen()
+    {
+        auto size = image.size();
+        if (size.width() > q_ptr->width() || size.height() > q_ptr->height()) {
+            q_ptr->fitToScreen();
+        } else {
+            q_ptr->resetToOriginalSize();
+        }
+    }
+
     OpenglView *q_ptr;
 
     QScopedPointer<OpenGLShaderProgram> programPtr;
@@ -95,6 +116,8 @@ public:
 
     QMatrix4x4 transform;
     const qreal scaleFactor = 1.2;
+    qreal scale = 1.0;
+    int rotationAngle = 0;
     QSize windowSize;
 
     QMenu *menu;
@@ -132,17 +155,14 @@ void OpenglView::setImageUrl(const QString &imageUrl)
     }
 
     d_ptr->image = image.convertedTo(QImage::Format_RGBA8888_Premultiplied);
-    auto size = d_ptr->image.size();
-    if (size.width() > width() || size.height() > height()) {
-        fitToScreen();
-    } else {
-        resetToOriginalSize();
-    }
+    d_ptr->scale = 1.0;
+    d_ptr->rotationAngle = 0;
+    d_ptr->adjustImageToScreen();
 
     d_ptr->uploadTexture();
 
     emit imageUrlChanged(imageUrl);
-    emit imageSizeChanged(size);
+    emit imageSizeChanged(d_ptr->image.size());
 }
 
 void OpenglView::resetToOriginalSize()
@@ -151,11 +171,13 @@ void OpenglView::resetToOriginalSize()
         return;
     }
 
-    auto size = d_ptr->image.size();
-    auto factor_w = static_cast<qreal>(size.width()) / width();
-    auto factor_h = static_cast<qreal>(size.height()) / height();
+    auto rotatedSize = d_ptr->rotatedTextureSize();
+
+    auto factor_w = static_cast<qreal>(rotatedSize.width()) / width();
+    auto factor_h = static_cast<qreal>(rotatedSize.height()) / height();
     d_ptr->transform.setToIdentity();
     d_ptr->transform.scale(factor_w, factor_h, 1.0);
+    d_ptr->transform.rotate(d_ptr->rotationAngle, 0, 0, 1);
     d_ptr->emitScaleFactor();
 
     QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
@@ -167,12 +189,13 @@ void OpenglView::fitToScreen()
         return;
     }
 
-    auto size = d_ptr->image.size();
-    auto factor_w = static_cast<qreal>(width()) / size.width();
-    auto factor_h = static_cast<qreal>(height()) / size.height();
+    auto rotatedSize = d_ptr->rotatedTextureSize();
+    auto factor_w = static_cast<qreal>(width()) / rotatedSize.width();
+    auto factor_h = static_cast<qreal>(height()) / rotatedSize.height();
     auto factor = qMin(factor_w, factor_h);
     d_ptr->transform.setToIdentity();
     d_ptr->transform.scale(factor / factor_w, factor / factor_h, 1.0);
+    d_ptr->transform.rotate(d_ptr->rotationAngle, 0, 0, 1);
     d_ptr->emitScaleFactor();
 
     QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
@@ -180,18 +203,16 @@ void OpenglView::fitToScreen()
 
 void OpenglView::rotateNinetieth()
 {
-    d_ptr->transform.rotate(90, 0, 0, 1);
-    d_ptr->updateTransform();
-
-    QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
+    d_ptr->rotationAngle += 90;
+    d_ptr->rotationAngle %= 360;
+    d_ptr->adjustImageToScreen();
 }
 
 void OpenglView::anti_rotateNinetieth()
 {
-    d_ptr->transform.rotate(-90, 0, 0, 1);
-    d_ptr->updateTransform();
-
-    QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
+    d_ptr->rotationAngle -= 90;
+    d_ptr->rotationAngle %= 360;
+    d_ptr->adjustImageToScreen();
 }
 
 void OpenglView::initializeGL()
@@ -224,15 +245,9 @@ void OpenglView::resizeGL(int w, int h)
     glViewport(0, 0, w * ratioF, w * ratioF);
 
     if (d_ptr->windowSize.isValid()) {
-        auto factor_w = static_cast<qreal>(d_ptr->windowSize.width()) / w;
-        auto factor_h = static_cast<qreal>(d_ptr->windowSize.height()) / h;
-        d_ptr->transform.scale(factor_w, factor_h, 1.0);
-        //qDebug() << "resizeGL" << factor_w << factor_h;
-        d_ptr->emitScaleFactor();
+        d_ptr->adjustImageToScreen();
     }
     d_ptr->windowSize = QSize(w, h);
-
-    QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
 }
 
 void OpenglView::paintGL()
@@ -261,6 +276,7 @@ void OpenglView::wheelEvent(QWheelEvent *event)
     }
 
     qreal factor = qPow(d_ptr->scaleFactor, event->angleDelta().y() / 240.0);
+    d_ptr->scale *= factor;
     d_ptr->transform.scale(factor, factor, 1.0);
     d_ptr->emitScaleFactor();
 
