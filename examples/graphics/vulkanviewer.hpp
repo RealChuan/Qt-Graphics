@@ -10,6 +10,8 @@ public:
     explicit VulkanViewer(QWidget *parent = nullptr);
     ~VulkanViewer() override;
 
+    static bool isSupported();
+
 private slots:
     void onOpenImage();
     void onChangedImage(int index);

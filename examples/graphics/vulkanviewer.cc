@@ -33,6 +33,12 @@ VulkanViewer::~VulkanViewer()
     clearThumbnail();
 }
 
+bool VulkanViewer::isSupported()
+{
+    static bool ret = GpuGraphics::isVulkanSupported();
+    return ret;
+}
+
 void VulkanViewer::onOpenImage()
 {
     const auto filename = openImage();

@@ -7,6 +7,8 @@
 
 namespace GpuGraphics {
 
+GPUAPHICS bool isVulkanSupported();
+
 class VulkanRenderer;
 
 class GPUAPHICS VulkanView : public QVulkanWindow

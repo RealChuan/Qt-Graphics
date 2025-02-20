@@ -29,8 +29,10 @@ public:
         stackedWidget->addWidget(subtitlSplicingWidget);
         stackedWidget->addWidget(openglViewer);
 #ifdef BUILD_VULKAN
-        vulkanViewer = new VulkanViewer(q_ptr);
-        stackedWidget->addWidget(vulkanViewer);
+        if (VulkanViewer::isSupported()) {
+            vulkanViewer = new VulkanViewer(q_ptr);
+            stackedWidget->addWidget(vulkanViewer);
+        }
 #endif
     }
     ~MainWindowPrivate() {}
@@ -41,7 +43,7 @@ public:
     ImageViewer *imageViewer;
     OpenglViewer *openglViewer;
 #ifdef BUILD_VULKAN
-    VulkanViewer *vulkanViewer;
+    VulkanViewer *vulkanViewer = nullptr;
 #endif
     SubtitlSplicingWidget *subtitlSplicingWidget;
     QStackedWidget *stackedWidget;
@@ -99,9 +101,11 @@ void MainWindow::initMenuBar()
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->openglViewer);
     }));
 #ifdef BUILD_VULKAN
-    setCheckable(menu->addAction(tr("Vulakn Viewer"), this, [this] {
-        d_ptr->stackedWidget->setCurrentWidget(d_ptr->vulkanViewer);
-    }));
+    if (nullptr != d_ptr->vulkanViewer) {
+        setCheckable(menu->addAction(tr("Vulakn Viewer"), this, [this] {
+            d_ptr->stackedWidget->setCurrentWidget(d_ptr->vulkanViewer);
+        }));
+    }
 #endif
     setCheckable(menu->addAction(tr("Draw"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->drawWidget);
