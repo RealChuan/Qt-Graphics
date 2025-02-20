@@ -6,6 +6,17 @@
 
 namespace GpuGraphics {
 
+bool isVulkanSupported()
+{
+    QVulkanInstance inst;
+    if (inst.create()) {
+        inst.destroy();
+        return true;
+    }
+    qWarning() << "Vulkan is not supported, error code:" << inst.errorCode();
+    return false;
+}
+
 class VulkanView::VulkanViewPrivate
 {
 public:
@@ -28,6 +39,7 @@ public:
         if (!inst.create()) {
             qFatal("Failed to create Vulkan instance: %d", inst.errorCode());
         }
+        qInfo() << "Vulkan Version: " << inst.apiVersion();
         q_ptr->setVulkanInstance(&inst);
 
         menuPtr.reset(new QMenu);
