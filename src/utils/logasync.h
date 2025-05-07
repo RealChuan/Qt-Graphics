@@ -11,7 +11,11 @@ class UTILS_EXPORT LogAsync : public QThread
 {
     Q_OBJECT
 public:
-    enum Orientation : int { Std = 1, File, StdAndFile };
+    enum class Orientation : int {
+        Standard = 1 << 0,
+        File = 1 << 1,
+        StandardAndFile = Standard | File
+    };
 
     void setLogPath(const QString &path);
     auto logPath() -> QString;

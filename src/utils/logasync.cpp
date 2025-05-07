@@ -2,8 +2,8 @@
 #include "logfile.hpp"
 #include "utils.h"
 
+#include <semaphore>
 #include <QDateTime>
-#include <QWaitCondition>
 
 namespace Utils {
 
@@ -68,7 +68,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 
     switch (instance->orientation()) {
     case LogAsync::Orientation::File: emit instance->appendBuf(printToFile); break;
-    case LogAsync::Orientation::StdAndFile:
+    case LogAsync::Orientation::StandardAndFile:
         emit instance->appendBuf(printToFile);
         fprintf(stdPrint, "%s", printToConsole.toLocal8Bit().constData());
         ::fflush(stdPrint);
@@ -93,10 +93,9 @@ public:
     bool autoDelFile = false;
     qint64 autoDelFileDays = 7;
     QtMsgType msgType = QtWarningMsg;
-    LogAsync::Orientation orientation = LogAsync::Orientation::Std;
+    LogAsync::Orientation orientation = LogAsync::Orientation::Standard;
     int maxConsoleLineSize = 1024 * 10;
-    QWaitCondition waitCondition;
-    QMutex mutex;
+    std::binary_semaphore semaphore{0};
 };
 
 void LogAsync::setLogPath(const QString &path)
@@ -165,8 +164,7 @@ auto LogAsync::maxConsoleLineSize() -> int
 void LogAsync::startWork()
 {
     start();
-    QMutexLocker lock(&d_ptr->mutex);
-    d_ptr->waitCondition.wait(&d_ptr->mutex, 5000);
+    d_ptr->semaphore.acquire();
 }
 
 void LogAsync::stop()
@@ -182,7 +180,7 @@ void LogAsync::run()
 {
     LogFile logFile;
     connect(this, &LogAsync::appendBuf, &logFile, &LogFile::onWrite);
-    d_ptr->waitCondition.wakeOne();
+    d_ptr->semaphore.release();
     exec();
 }
 

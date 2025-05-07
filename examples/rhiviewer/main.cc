@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     log->setLogPath(Utils::logPath());
     log->setAutoDelFile(true);
     log->setAutoDelFileDays(7);
-    log->setOrientation(Utils::LogAsync::Orientation::StdAndFile);
+    log->setOrientation(Utils::LogAsync::Orientation::StandardAndFile);
     log->setLogLevel(QtDebugMsg);
     log->startWork();
 

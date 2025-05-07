@@ -41,10 +41,8 @@ jobs:
           fetch-depth: 1
           
       - uses: ./.github/actions/install-dependencies
-        with:
-          os_name: ${{ matrix.os }}
 
-      - name: Configure and build windows
+      - name: Configure and build on windows
         if: startsWith(matrix.os, 'windows')
         shell: pwsh
         run: |
@@ -63,7 +61,6 @@ jobs:
             -S . \
             -B ./build \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-            -DBUILD_VULKAN=OFF \
             -G "${{ matrix.generators }}"
           cmake --build ./build --config ${{ matrix.build_type }}
       - name: Configure and build on ubuntu

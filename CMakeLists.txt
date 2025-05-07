@@ -14,7 +14,7 @@ project(
   HOMEPAGE_URL "https://github.com/RealChuan/Qt-Graphics"
   LANGUAGES CXX)
 
-option(BUILD_VULKAN "build vulkan" ON)
+option(BUILD_VULKAN "build vulkan" OFF)
 
 include(cmake/common.cmake)
 
@@ -34,14 +34,17 @@ find_package(crashpad CONFIG REQUIRED)
 if(crashpad_FOUND)
   message(STATUS "found crashpad")
 endif()
-find_package(Vulkan REQUIRED)
-if(Vulkan_FOUND)
-  message(STATUS "found Vulkan")
-endif()
-
 find_package(GIF REQUIRED)
 if(GIF_FOUND)
   message(STATUS "found GIF")
+endif()
+
+message(STATUS "BUILD_VULKAN: ${BUILD_VULKAN}")
+if(BUILD_VULKAN)
+  find_package(Vulkan REQUIRED)
+  if(Vulkan_FOUND)
+    message(STATUS "found Vulkan")
+  endif()
 endif()
 
 include_directories(src)

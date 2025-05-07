@@ -1,10 +1,6 @@
 name: 'Install Dependencies'
 description: 'Install vcpkg libraries and qt environment'
 inputs:
-  os_name:
-    description: 'os name'
-    required: true
-    type: string
   vcpkg_libs:
     description: 'vcpkg libraries'
     required: false
@@ -18,7 +14,7 @@ inputs:
   qt_ver:
     description: 'qt version'
     required: false
-    default: '6.8.2'
+    default: '6.9.0'
     type: string
 
 runs:
@@ -27,9 +23,6 @@ runs:
   steps:
     - name: Install Custom VCPKG
       uses: RealChuan/install-vcpkg@main
-      with:
-        repo: 'https://github.com/RealChuan/vcpkg.git'
-        branch: 'dev'
         
     - name: Delete vcpkg.json
       shell: bash
@@ -41,22 +34,20 @@ runs:
       uses: actions/cache@v4
       with: 
         path: C:\vcpkg\installed
-        key: ${{ inputs.os_name }}-vcpkg-installed-${{ runner.os }}-${{ github.sha }}
+        key: ${{ runner.os }}-vcpkg-installed-${{ github.sha }}
         restore-keys: |
-          ${{ inputs.os_name }}-vcpkg-installed-${{ runner.os_name }}-
-          ${{ inputs.os_name }}-vcpkg-installed-
-          ${{ inputs.os_name }}-
+          ${{ runner.os }}-vcpkg-installed-
+          ${{ runner.os }}-
 
     - name: Cache macos or linux vcpkg
       if: runner.os == 'macOS' || runner.os == 'Linux'
       uses: actions/cache@v4
       with: 
         path: /usr/local/share/vcpkg/installed
-        key: ${{ inputs.os_name }}-vcpkg-installed-${{ runner.os }}-${{ github.sha }}
+        key: ${{ runner.os }}-vcpkg-installed-${{ github.sha }}
         restore-keys: |
-          ${{ inputs.os_name }}-vcpkg-installed-${{ runner.os_name }}-
-          ${{ inputs.os_name }}-vcpkg-installed-
-          ${{ inputs.os_name }}-
+           ${{ runner.os }}-vcpkg-installed-
+           ${{ runner.os }}-
 
     - name: Install dependencies on windows
       if: runner.os == 'Windows'
@@ -71,11 +62,10 @@ runs:
       if: runner.os == 'macOS'
       shell: bash
       run: |
-        brew install ninja python-setuptools
+        brew install python-setuptools
         ninja --version
         cmake --version
         clang --version
-        vcpkg install ${{ inputs.vcpkg_libs }} --triplet x64-osx || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
         vcpkg install ${{ inputs.vcpkg_libs }} --triplet arm64-osx || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
 
     - name: Install dependencies on linux
@@ -94,10 +84,4 @@ runs:
       with:
         version: ${{ inputs.qt_ver }}
         modules: ${{ inputs.qt_modules }}
-        cache: 'true'
-
-    - name: Install Vulkan SDK
-      uses: humbletim/install-vulkan-sdk@main
-      with:
-        version: 1.3.290.0
-        cache: true        
+        cache: 'true'  

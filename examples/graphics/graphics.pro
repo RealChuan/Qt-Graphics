@@ -65,9 +65,9 @@ HEADERS += \
     subtitlsplicingwidget.hpp
 
 win32{
-    SOURCES += vulkanviewer.cc
+#    SOURCES += vulkanviewer.cc
 
-    HEADERS += vulkanviewer.hpp
+#    HEADERS += vulkanviewer.hpp
 
-    DEFINES += BUILD_VULKAN
+#    DEFINES += BUILD_VULKAN
 }

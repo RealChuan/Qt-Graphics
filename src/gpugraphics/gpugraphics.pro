@@ -25,11 +25,11 @@ RESOURCES += \
     shader.qrc
 
 win32{
-    HEADERS += \
-        vulkanrenderer.hpp \
-        vulkanview.hpp
+#    HEADERS += \
+#        vulkanrenderer.hpp \
+#        vulkanview.hpp
 
-    SOURCES += \
-        vulkanrenderer.cc \
-        vulkanview.cc
+#    SOURCES += \
+#        vulkanrenderer.cc \
+#        vulkanview.cc
 }
