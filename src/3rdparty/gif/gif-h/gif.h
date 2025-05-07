@@ -165,9 +165,10 @@ void GifSwapPixels(uint8_t *image, int pixA, int pixB)
 }
 
 // just the partition operation from quicksort
-auto GifPartition(uint8_t *image, const int left, const int right, const int elt, int pivotIndex) -> int
+auto GifPartition(uint8_t *image, const int left, const int right, const int elt, int pivotIndex)
+    -> int
 {
-    const int pivotValue = image[(pivotIndex) *4 + elt];
+    const int pivotValue = image[(pivotIndex) * 4 + elt];
     GifSwapPixels(image, pivotIndex, right - 1);
     int storeIndex = left;
     bool split = 0;
@@ -383,7 +384,7 @@ void GifMakePalette(const uint8_t *lastFrame,
 
     // SplitPalette is destructive (it sorts the pixels by color) so
     // we must create a copy of the image for it to destroy
-    size_t imageSize = (size_t) (width * height * 4 * sizeof(uint8_t));
+    size_t imageSize = static_cast<size_t>(width) * height * 4 * sizeof(uint8_t);
     uint8_t *destroyableImage = (uint8_t *) GIF_TEMP_MALLOC(imageSize);
     memcpy(destroyableImage, nextFrame, imageSize);
 
@@ -431,7 +432,7 @@ void GifDitherImage(const uint8_t *lastFrame,
 
     for (int ii = 0; ii < numPixels * 4; ++ii) {
         uint8_t pix = nextFrame[ii];
-        int32_t pix16 = (int32_t) (pix) *256;
+        int32_t pix16 = (int32_t) (pix) * 256;
         quantPixels[ii] = pix16;
     }
 
@@ -787,7 +788,7 @@ auto GifBegin(GifWriter *writer,
     writer->firstFrame = true;
 
     // allocate
-    writer->oldImage = (uint8_t *) GIF_MALLOC(width * height * 4);
+    writer->oldImage = (uint8_t *) GIF_MALLOC(static_cast<size_t>(width) * height * 4);
 
     fputs("GIF89a", writer->f);
 

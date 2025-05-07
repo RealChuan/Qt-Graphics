@@ -65,7 +65,9 @@ static auto convertToBGR(
     GifEncoder::PixelFormat format, uint8_t *dst, const uint8_t *src, int width, int height) -> bool
 {
     switch (format) {
-    case GifEncoder::PIXEL_FORMAT_BGR: memcpy(dst, src, width * height * 3); break;
+    case GifEncoder::PIXEL_FORMAT_BGR:
+        memcpy(dst, src, static_cast<size_t>(width) * height * 3);
+        break;
     case GifEncoder::PIXEL_FORMAT_RGB: RGB2BGR(dst, src, width, height); break;
     case GifEncoder::PIXEL_FORMAT_BGRA: BGRA2BGR(dst, src, width, height); break;
     case GifEncoder::PIXEL_FORMAT_RGBA: RGBA2BGR(dst, src, width, height); break;
@@ -168,7 +170,7 @@ bool GifEncoder::push(PixelFormat format, const uint8_t *frame, int width, int h
         auto *colorMap = GifMakeMapObject(256, nullptr);
         getColorMap((uint8_t *) colorMap->Colors, pixels, width * height, m_quality);
 
-        auto *rasterBits = (GifByteType *) malloc(width * height);
+        auto *rasterBits = (GifByteType *) malloc(static_cast<size_t>(width) * height);
         getRasterBits((uint8_t *) rasterBits, pixels, width * height);
 
         encodeFrame(width, height, delay, colorMap, rasterBits);
@@ -197,7 +199,8 @@ bool GifEncoder::close()
 
         for (int i = 0; i < m_frameCount; ++i) {
             auto *pixels = m_framePixels + m_frameWidth * m_frameHeight * 3 * i;
-            auto *rasterBits = (GifByteType *) malloc(m_frameWidth * m_frameHeight);
+            auto *rasterBits = (GifByteType *) malloc(static_cast<size_t>(m_frameWidth)
+                                                      * m_frameHeight);
             getRasterBits((uint8_t *) rasterBits, pixels, m_frameWidth * m_frameHeight);
 
             encodeFrame(m_frameWidth, m_frameHeight, m_allFrameDelays[i], nullptr, rasterBits);
