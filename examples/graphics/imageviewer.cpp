@@ -8,25 +8,23 @@
 
 #include <QtWidgets>
 
-using namespace Graphics;
-
 class ImageViewer::ImageViewerPrivate
 {
 public:
     explicit ImageViewerPrivate(ImageViewer *q)
         : q_ptr(q)
     {
-        imageView = new ImageView(q_ptr);
-        imageViewFormat = new ImageView(q_ptr);
+        imageView = new Graphics::ImageView(q_ptr);
+        imageViewFormat = new Graphics::ImageView(q_ptr);
 
         formatBox = new QComboBox(q_ptr);
         colorBox = new QComboBox(q_ptr);
 
-        const QMetaEnum imageFormat = QMetaEnum::fromType<QImage::Format>();
+        const auto imageFormat = QMetaEnum::fromType<QImage::Format>();
         for (int i = 0; i < imageFormat.keyCount(); i++) {
             formatBox->addItem(imageFormat.key(i), imageFormat.value(i));
         }
-        const QMetaEnum Conversionflags = QMetaEnum::fromType<Qt::ImageConversionFlags>();
+        const auto Conversionflags = QMetaEnum::fromType<Qt::ImageConversionFlags>();
         for (int i = 0; i < Conversionflags.keyCount(); i++) {
             colorBox->addItem(Conversionflags.key(i), Conversionflags.value(i));
         }
@@ -34,8 +32,8 @@ public:
 
     ImageViewer *q_ptr;
 
-    ImageView *imageView;
-    ImageView *imageViewFormat;
+    Graphics::ImageView *imageView;
+    Graphics::ImageView *imageViewFormat;
 
     QComboBox *formatBox;
     QComboBox *colorBox;
@@ -164,11 +162,17 @@ void ImageViewer::buildConnect()
     connect(m_openButton, &QPushButton::clicked, this, &ImageViewer::onOpenImage);
 
     connect(d_ptr->imageView,
-            &ImageView::scaleFactorChanged,
+            &Graphics::ImageView::scaleFactorChanged,
             this,
             &ImageViewer::onScaleFactorChanged);
-    connect(d_ptr->imageView, &ImageView::imageSizeChanged, this, &ImageViewer::onImageSizeChanged);
-    connect(d_ptr->imageView, &ImageView::imageUrlChanged, this, &ImageViewer::onImageChanged);
+    connect(d_ptr->imageView,
+            &Graphics::ImageView::imageSizeChanged,
+            this,
+            &ImageViewer::onImageSizeChanged);
+    connect(d_ptr->imageView,
+            &Graphics::ImageView::imageUrlChanged,
+            this,
+            &ImageViewer::onImageChanged);
     connect(m_imageListView, &ImageListView::changeItem, this, &ImageViewer::onChangedImage);
     connect(d_ptr->formatBox, &QComboBox::currentTextChanged, this, &ImageViewer::onFormatChanged);
     connect(d_ptr->colorBox, &QComboBox::currentTextChanged, this, &ImageViewer::onFormatChanged);

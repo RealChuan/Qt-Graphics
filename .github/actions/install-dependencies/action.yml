@@ -4,7 +4,7 @@ inputs:
   vcpkg_libs:
     description: 'vcpkg libraries'
     required: false
-    default: 'breakpad crashpad giflib'
+    default: 'breakpad crashpad giflib opencv[thread]'
     type: string
   qt_modules:
     description: 'qt modules'
@@ -73,7 +73,8 @@ runs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get install ninja-build build-essential libgl1-mesa-dev clang
+        sudo apt-get install ninja-build build-essential libgl1-mesa-dev clang \
+          libltdl-dev libxi-dev libxtst-dev libx11-dev libxft-dev libxext-dev libxrandr-dev
         ninja --version
         cmake --version
         gcc --version

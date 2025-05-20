@@ -1,6 +1,8 @@
 include(../3rdparty/3rdparty.pri)
 include(../slib.pri)
 
+QT += concurrent
+
 DEFINES += DUMP_LIBRARY
 TARGET = $$replaceLibName(dump)
 

@@ -1,9 +1,9 @@
-#ifndef UTILS_H
-#define UTILS_H
+#pragma once
 
 #include "utils_global.h"
 
 #include <QJsonObject>
+#include <QtConcurrent>
 #include <QtCore>
 
 class QWidget;
@@ -11,6 +11,22 @@ class QAction;
 class QMenu;
 
 namespace Utils {
+
+template<typename T>
+auto asynchronous(std::function<T()> &&func) -> T
+{
+    if (!func) {
+        return T();
+    }
+    QEventLoop loop;
+    QFutureWatcher<T> watcher;
+    QObject::connect(&watcher, &QFutureWatcher<T>::finished, &loop, &QEventLoop::quit);
+    auto future = QtConcurrent::run([func = std::move(func)]() mutable { return func(); });
+    watcher.setFuture(future);
+    loop.exec();
+
+    return future.result();
+}
 
 UTILS_EXPORT QRect desktopGeometry();
 UTILS_EXPORT QPixmap grabFullWindow();
@@ -52,5 +68,3 @@ UTILS_EXPORT auto getPidFromProcessName(const QString &processName) -> qint64;
 UTILS_EXPORT auto killProcess(qint64 pid) -> bool;
 
 } // namespace Utils
-
-#endif // UTILS_H

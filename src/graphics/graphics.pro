@@ -37,5 +37,3 @@ HEADERS += \
     graphicsroundedrectitem.hpp \
     graphicstextitem.hpp \
     imageview.h
-
-RESOURCES +=

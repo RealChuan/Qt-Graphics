@@ -3,4 +3,5 @@ CONFIG += ordered
 
 SUBDIRS += \
     graphics  \
-    rhiviewer
+    rhiviewer   \
+    opencvtools

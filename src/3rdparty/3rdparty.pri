@@ -28,24 +28,30 @@ message("QT_ARCH: "$$QT_ARCH)
 message("vcpkg_path: "$$vcpkg_path)
 
 CONFIG(debug, debug|release) {
-    LIBS += -L$$vcpkg_path/debug/lib \
-            -llibbreakpad_clientd -llibbreakpadd
+    suffix = d
+    LIBS += -L$$vcpkg_path/debug/lib
 }else{
-    LIBS += -L$$vcpkg_path/lib \
-            -llibbreakpad_client -llibbreakpad
+    LIBS += -L$$vcpkg_path/lib
 }
 
+LIBS += -llibbreakpad_client$$suffix -llibbreakpad$$suffix
 LIBS += -lvcpkg_crashpad_client_common -lvcpkg_crashpad_client -lvcpkg_crashpad_util -lvcpkg_crashpad_base
-
 LIBS += -lgif
+LIBS += -lopencv_imgproc4$$suffix -lopencv_core4$$suffix
 
 INCLUDEPATH += \
     $$vcpkg_path/include \
-    $$vcpkg_path/include/crashpad
+    $$vcpkg_path/include/crashpad \
+    $$vcpkg_path/include/opencv4
 
 win32 {
+    LIBS += -lzlib$$suffix
     DEFINES += NOMINMAX
     LIBS += -lAdvapi32
+}
+
+unix{
+    LIBS += -lz
 }
 
 macx{

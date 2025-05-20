@@ -6,4 +6,5 @@ SUBDIRS += \
     dump \
     3rdparty \
     gpugraphics \
-    graphics
+    graphics \
+    qopencv 

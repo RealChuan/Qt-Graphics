@@ -1,5 +1,4 @@
-#ifndef IMAGEVIEWER_H
-#define IMAGEVIEWER_H
+#pragma once
 
 #include <examples/common/viewer.hpp>
 
@@ -15,10 +14,10 @@ private slots:
     void onMaskImage();
     void onRoundImage();
 
-    void onChangedImage(int);
+    void onChangedImage(int index);
 
-    void onFormatChecked(bool);
-    void onFormatChanged(const QString &);
+    void onFormatChecked(bool checked);
+    void onFormatChanged(const QString &format);
 
 private:
     void setupUI();
@@ -28,5 +27,3 @@ private:
     class ImageViewerPrivate;
     QScopedPointer<ImageViewerPrivate> d_ptr;
 };
-
-#endif // IMAGEVIEWER_H

@@ -1,0 +1,194 @@
+#include "opencvwidget.hpp"
+
+#include <examples/common/imagelistmodel.h>
+#include <graphics/imageview.h>
+#include <utils/utils.h>
+#include <qopencv/qopencv.hpp>
+
+#include <QtWidgets>
+
+class OpenCVWidget::OpenCVWidgetPrivate
+{
+public:
+    explicit OpenCVWidgetPrivate(OpenCVWidget *q)
+        : q_ptr(q)
+    {
+        imageView = new Graphics::ImageView(q_ptr);
+
+        toolLayout = new QVBoxLayout;
+
+        typeComboBox = new QComboBox(q_ptr);
+        auto metaEnum = QMetaEnum::fromType<OpenCVUtils::OpenCVOBject::AlgorithmType>();
+        for (int i = 0; i < metaEnum.keyCount(); ++i) {
+            typeComboBox->addItem(metaEnum.key(i), metaEnum.value(i));
+        }
+        algorithmComboBox = new QComboBox(q_ptr);
+
+        applyButton = new QToolButton(q_ptr);
+        applyButton->setText(OpenCVWidget::tr("Apply"));
+    }
+
+    OpenCVWidget *q_ptr;
+
+    Graphics::ImageView *imageView;
+
+    QVBoxLayout *toolLayout;
+    QComboBox *typeComboBox;
+    QComboBox *algorithmComboBox;
+    QToolButton *applyButton;
+    QScopedPointer<OpenCVUtils::OpenCVOBject> currentOpenCVOBjectPtr;
+
+    QImage image;
+};
+
+OpenCVWidget::OpenCVWidget(QWidget *parent)
+    : Viewer{parent}
+    , d_ptr{new OpenCVWidgetPrivate(this)}
+{
+    setupUI();
+    buildConnect();
+
+    QMetaObject::invokeMethod(this, &OpenCVWidget::onTypeChanged, Qt::QueuedConnection);
+}
+
+OpenCVWidget::~OpenCVWidget() {}
+
+void OpenCVWidget::onOpenImage()
+{
+    const auto filename = openImage();
+    if (filename.isEmpty()) {
+        return;
+    }
+    d_ptr->imageView->createScene(filename);
+}
+
+void OpenCVWidget::onChangedImage(int index)
+{
+    d_ptr->imageView->createScene(m_thumbnailList.at(index).fileInfo().absoluteFilePath());
+}
+
+void OpenCVWidget::onTypeChanged()
+{
+    auto type = static_cast<OpenCVUtils::OpenCVOBject::AlgorithmType>(
+        d_ptr->typeComboBox->currentData().toInt());
+    switch (type) {
+    case OpenCVUtils::OpenCVOBject::AlgorithmType::Enhancement: {
+        d_ptr->algorithmComboBox->clear();
+        auto metaEnum = QMetaEnum::fromType<OpenCVUtils::Enhancement::Type>();
+        for (int i = 0; i < metaEnum.keyCount(); ++i) {
+            d_ptr->algorithmComboBox->addItem(metaEnum.key(i), metaEnum.value(i));
+        }
+        break;
+    }
+    default: break;
+    }
+}
+
+void OpenCVWidget::onAlgorithmChanged()
+{
+    auto type = static_cast<OpenCVUtils::OpenCVOBject::AlgorithmType>(
+        d_ptr->typeComboBox->currentData().toInt());
+    switch (type) {
+    case OpenCVUtils::OpenCVOBject::AlgorithmType::Enhancement: {
+        auto algo = static_cast<OpenCVUtils::Enhancement::Type>(
+            d_ptr->algorithmComboBox->currentData().toInt());
+        d_ptr->currentOpenCVOBjectPtr.reset(OpenCVUtils::createOpenCVOBject(algo));
+        break;
+    }
+    default: break;
+    }
+
+    if (d_ptr->currentOpenCVOBjectPtr.isNull()) {
+        return;
+    }
+    d_ptr->toolLayout->insertWidget(d_ptr->toolLayout->indexOf(d_ptr->applyButton),
+                                    d_ptr->currentOpenCVOBjectPtr->paramWidget());
+}
+
+void OpenCVWidget::onApply()
+{
+    d_ptr->applyButton->setEnabled(false);
+    d_ptr->applyButton->setText(OpenCVWidget::tr("Applying..."));
+    auto enabled = qScopeGuard([this]() {
+        d_ptr->applyButton->setEnabled(true);
+        d_ptr->applyButton->setText(OpenCVWidget::tr("Apply"));
+    });
+
+    if (d_ptr->currentOpenCVOBjectPtr.isNull() || !d_ptr->currentOpenCVOBjectPtr->canApply()) {
+        return;
+    }
+
+    if (d_ptr->image.isNull()) {
+        d_ptr->image = d_ptr->imageView->pixmap().toImage();
+    }
+    if (d_ptr->image.isNull()) {
+        return;
+    }
+    auto mat = Utils::asynchronous<cv::Mat>(
+        [this]() -> cv::Mat { return OpenCVUtils::qImageToMat(d_ptr->image); });
+    mat = d_ptr->currentOpenCVOBjectPtr->apply(mat);
+    auto pixmap = Utils::asynchronous<QPixmap>(
+        [mat]() -> QPixmap { return QPixmap::fromImage(OpenCVUtils::matToQImage(mat)); });
+    d_ptr->imageView->setPixmap(pixmap);
+}
+
+void OpenCVWidget::setupUI()
+{
+    auto *splitter = new QSplitter(Qt::Horizontal, this);
+    splitter->addWidget(d_ptr->imageView);
+    splitter->addWidget(toolWidget());
+    splitter->setStretchFactor(0, 1);
+    splitter->setStretchFactor(1, 1);
+    splitter->setSizes({INT_MAX, 1});
+
+    auto *layout = new QVBoxLayout(this);
+    layout->setContentsMargins({});
+    layout->addWidget(splitter);
+    layout->addWidget(m_imageListView);
+}
+
+auto OpenCVWidget::toolWidget() -> QWidget *
+{
+    d_ptr->toolLayout->addWidget(m_openButton);
+    d_ptr->toolLayout->addWidget(m_infoBox);
+    d_ptr->toolLayout->addStretch();
+    d_ptr->toolLayout->addWidget(d_ptr->typeComboBox);
+    d_ptr->toolLayout->addWidget(d_ptr->algorithmComboBox);
+    d_ptr->toolLayout->addWidget(d_ptr->applyButton);
+    d_ptr->toolLayout->addStretch();
+
+    auto *widget = new QWidget(this);
+    widget->setMaximumWidth(300);
+    widget->setLayout(d_ptr->toolLayout);
+
+    return widget;
+}
+
+void OpenCVWidget::buildConnect()
+{
+    connect(m_openButton, &QPushButton::clicked, this, &OpenCVWidget::onOpenImage);
+
+    connect(d_ptr->imageView,
+            &Graphics::ImageView::scaleFactorChanged,
+            this,
+            &OpenCVWidget::onScaleFactorChanged);
+    connect(d_ptr->imageView,
+            &Graphics::ImageView::imageSizeChanged,
+            this,
+            &OpenCVWidget::onImageSizeChanged);
+    connect(d_ptr->imageView,
+            &Graphics::ImageView::imageUrlChanged,
+            this,
+            &OpenCVWidget::onImageChanged);
+    connect(m_imageListView, &ImageListView::changeItem, this, &OpenCVWidget::onChangedImage);
+
+    connect(d_ptr->typeComboBox,
+            &QComboBox::currentIndexChanged,
+            this,
+            &OpenCVWidget::onTypeChanged);
+    connect(d_ptr->algorithmComboBox,
+            &QComboBox::currentIndexChanged,
+            this,
+            &OpenCVWidget::onAlgorithmChanged);
+    connect(d_ptr->applyButton, &QToolButton::clicked, this, &OpenCVWidget::onApply);
+}
