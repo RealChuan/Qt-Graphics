@@ -9,10 +9,12 @@ TARGET = $$replaceLibName(qopencv)
 include(enhancement/enhancement.pri)
 
 HEADERS += \
+    opencvobject.hpp \
     opencvutils.hpp \
     qopencv.hpp \
     qopencv_global.hpp
 
 SOURCES += \
+    opencvobject.cc \
     opencvutils.cc \
     qopencv.cc

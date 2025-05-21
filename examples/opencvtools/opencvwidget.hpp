@@ -12,6 +12,7 @@ public:
 private slots:
     void onOpenImage();
     void onChangedImage(int index);
+    void onShowOriginalImage();
     void onTypeChanged();
     void onAlgorithmChanged();
     void onApply();

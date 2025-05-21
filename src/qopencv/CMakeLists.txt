@@ -1,10 +1,16 @@
 set(PROJECT_SOURCES
+    enhancement/bilateralfilter.cc
+    enhancement/bilateralfilter.hpp
     enhancement/enhancement.cc
     enhancement/enhancement.hpp
     enhancement/gaussianblur.cc
     enhancement/gaussianblur.hpp
     enhancement/histogramequalization.cc
     enhancement/histogramequalization.hpp
+    enhancement/medianblur.cc
+    enhancement/medianblur.hpp
+    opencvobject.cc
+    opencvobject.hpp
     opencvutils.cc
     opencvutils.hpp
     qopencv_global.hpp

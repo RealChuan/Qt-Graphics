@@ -3,6 +3,7 @@
 #include <examples/common/imagelistmodel.h>
 #include <graphics/imageview.h>
 #include <utils/utils.h>
+#include <qopencv/opencvutils.hpp>
 #include <qopencv/qopencv.hpp>
 
 #include <QtWidgets>
@@ -25,7 +26,14 @@ public:
         algorithmComboBox = new QComboBox(q_ptr);
 
         applyButton = new QToolButton(q_ptr);
+        auto sizePolicy = applyButton->sizePolicy();
+        sizePolicy.setHorizontalPolicy(QSizePolicy ::Preferred);
+        applyButton->setSizePolicy(sizePolicy);
         applyButton->setText(OpenCVWidget::tr("Apply"));
+
+        originalButton = new QToolButton(q_ptr);
+        originalButton->setSizePolicy(sizePolicy);
+        originalButton->setText(OpenCVWidget::tr("Original Image"));
     }
 
     OpenCVWidget *q_ptr;
@@ -39,6 +47,7 @@ public:
     QScopedPointer<OpenCVUtils::OpenCVOBject> currentOpenCVOBjectPtr;
 
     QImage image;
+    QToolButton *originalButton;
 };
 
 OpenCVWidget::OpenCVWidget(QWidget *parent)
@@ -65,6 +74,15 @@ void OpenCVWidget::onOpenImage()
 void OpenCVWidget::onChangedImage(int index)
 {
     d_ptr->imageView->createScene(m_thumbnailList.at(index).fileInfo().absoluteFilePath());
+}
+
+void OpenCVWidget::onShowOriginalImage()
+{
+    if (d_ptr->image.isNull()) {
+        return;
+    }
+
+    d_ptr->imageView->setPixmap(QPixmap::fromImage(d_ptr->image));
 }
 
 void OpenCVWidget::onTypeChanged()
@@ -115,6 +133,9 @@ void OpenCVWidget::onApply()
     });
 
     if (d_ptr->currentOpenCVOBjectPtr.isNull() || !d_ptr->currentOpenCVOBjectPtr->canApply()) {
+        QMessageBox::warning(this,
+                             OpenCVWidget::tr("Warning"),
+                             OpenCVWidget::tr("Please select a valid algorithm first!"));
         return;
     }
 
@@ -122,6 +143,9 @@ void OpenCVWidget::onApply()
         d_ptr->image = d_ptr->imageView->pixmap().toImage();
     }
     if (d_ptr->image.isNull()) {
+        QMessageBox::warning(this,
+                             OpenCVWidget::tr("Warning"),
+                             OpenCVWidget::tr("Please open an image first!"));
         return;
     }
     auto mat = Utils::asynchronous<cv::Mat>(
@@ -152,6 +176,7 @@ auto OpenCVWidget::toolWidget() -> QWidget *
     d_ptr->toolLayout->addWidget(m_openButton);
     d_ptr->toolLayout->addWidget(m_infoBox);
     d_ptr->toolLayout->addStretch();
+    d_ptr->toolLayout->addWidget(d_ptr->originalButton);
     d_ptr->toolLayout->addWidget(d_ptr->typeComboBox);
     d_ptr->toolLayout->addWidget(d_ptr->algorithmComboBox);
     d_ptr->toolLayout->addWidget(d_ptr->applyButton);
@@ -190,5 +215,7 @@ void OpenCVWidget::buildConnect()
             &QComboBox::currentIndexChanged,
             this,
             &OpenCVWidget::onAlgorithmChanged);
+
+    connect(d_ptr->originalButton, &QToolButton::clicked, this, &OpenCVWidget::onShowOriginalImage);
     connect(d_ptr->applyButton, &QToolButton::clicked, this, &OpenCVWidget::onApply);
 }

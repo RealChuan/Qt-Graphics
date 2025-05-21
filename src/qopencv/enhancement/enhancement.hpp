@@ -1,8 +1,6 @@
 #pragma once
 
-#include <qopencv/opencvutils.hpp>
-
-class QWidget;
+#include <qopencv/opencvobject.hpp>
 
 namespace OpenCVUtils {
 
@@ -17,10 +15,6 @@ public:
     virtual ~Enhancement();
 
     auto paramWidget() -> QWidget *;
-
-    // cv::GaussianBlur;
-    // cv::bilateralFilter;
-    // cv::medianBlur
 
 private:
     class EnhancementPrivate;

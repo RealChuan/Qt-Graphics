@@ -16,7 +16,7 @@ public:
     {
         groupBox = new QGroupBox(GaussianBlur::tr("Gaussian Blur"));
 
-        kWidthLabel = new QLabel(GaussianBlur::tr("Kernel Width:"), groupBox);
+        kWidthLabel = new QLabel(groupBox);
         kWidthSlider = new QSlider(Qt::Horizontal, groupBox);
         kWidthSlider->setRange(1, 99);
         kWidthSlider->setTickPosition(QSlider::TicksBelow);
@@ -106,7 +106,11 @@ cv::Mat GaussianBlur::apply(const cv::Mat &src)
     return Utils::asynchronous<cv::Mat>(
         [src, ksize, sigmaX, sigmaY, borderType, algoHint]() -> cv::Mat {
             cv::Mat dst;
-            cv::GaussianBlur(src, dst, ksize, sigmaX, sigmaY, borderType, algoHint);
+            try {
+                cv::GaussianBlur(src, dst, ksize, sigmaX, sigmaY, borderType, algoHint);
+            } catch (const cv::Exception &e) {
+                qWarning() << "GaussianBlur:" << e.what();
+            }
             return dst;
         });
 }
@@ -126,9 +130,11 @@ void GaussianBlur::buildConnect()
     connect(d_ptr->kWidthSlider, &QSlider::valueChanged, this, [this](int value) {
         d_ptr->kWidthLabel->setText(tr("Kernel Width: %1").arg(value));
     });
+    d_ptr->kWidthSlider->setValue(3);
     connect(d_ptr->kHeightSlider, &QSlider::valueChanged, this, [this](int value) {
         d_ptr->kHeightLabel->setText(tr("Kernel Height: %1").arg(value));
     });
+    d_ptr->kHeightSlider->setValue(3);
 }
 
 } // namespace OpenCVUtils
