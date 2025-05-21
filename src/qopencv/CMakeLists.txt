@@ -19,6 +19,8 @@ set(PROJECT_SOURCES
     enhancement/medianblur.hpp
     enhancement/sharpen.cc
     enhancement/sharpen.hpp
+    enhancement/superresolution.cc
+    enhancement/superresolution.hpp
     opencvobject.cc
     opencvobject.hpp
     opencvutils.cc

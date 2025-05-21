@@ -8,6 +8,8 @@
 
 #include <QtWidgets>
 
+#include <opencv2/core/utility.hpp>
+
 class OpenCVWidget::OpenCVWidgetPrivate
 {
 public:
@@ -54,6 +56,8 @@ OpenCVWidget::OpenCVWidget(QWidget *parent)
     : Viewer{parent}
     , d_ptr{new OpenCVWidgetPrivate(this)}
 {
+    qInfo().noquote() << cv::getBuildInformation();
+
     setupUI();
     buildConnect();
 
