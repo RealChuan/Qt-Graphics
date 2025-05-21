@@ -79,7 +79,7 @@ void MedianBlur::buildConnect()
     connect(d_ptr->kSizeSlider, &QSlider::valueChanged, this, [this](int value) {
         d_ptr->kSizeLabel->setText(MedianBlur::tr("Kernel Size: %1").arg(value));
     });
-    d_ptr->kSizeSlider->setValue(5);
+    d_ptr->kSizeLabel->setText(MedianBlur::tr("Kernel Size: %1").arg(d_ptr->kSizeSlider->value()));
 }
 
 } // namespace OpenCVUtils

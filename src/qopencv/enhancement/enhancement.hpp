@@ -8,7 +8,15 @@ class QOPENCV_EXPORT Enhancement : public OpenCVOBject
 {
     Q_OBJECT
 public:
-    enum Type : int { HistogramEqualization = 0, GaussianBlur, BilateralFilter, MedianBlur };
+    enum Type : int {
+        HistogramEqualization = 0,
+        GaussianBlur,
+        BilateralFilter,
+        MedianBlur,
+        LinearContrast,
+        GammaCorrection,
+        LogTransformation
+    };
     Q_ENUM(Type);
 
     explicit Enhancement(QObject *parent = nullptr);
