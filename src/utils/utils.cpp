@@ -416,3 +416,13 @@ auto Utils::calculateDirectoryStats(const QString &path) -> DirectoryStats
 
     return stats;
 }
+
+QWidget *Utils::getTopParentWidget(QWidget *child)
+{
+    Q_ASSERT(child);
+    auto *widget = child;
+    while (widget->parentWidget()) {
+        widget = widget->parentWidget();
+    }
+    return widget;
+}

@@ -9,6 +9,7 @@
 #include <qopencv/enhancement/logtransformation.hpp>
 #include <qopencv/enhancement/medianblur.hpp>
 #include <qopencv/enhancement/sharpen.hpp>
+#include <qopencv/enhancement/superresolution.hpp>
 
 namespace OpenCVUtils {
 
@@ -24,6 +25,7 @@ auto createOpenCVOBject(Enhancement::Type type) -> OpenCVOBject *
     case Enhancement::Type::LogTransformation: return new LogTransformation;
     case Enhancement::Type::Sharpen: return new Sharpen;
     case Enhancement::Type::Dehazed: return new Dehazed;
+    case Enhancement::Type::SuperResolution: return new SuperResolution;
     default: break;
     }
     return nullptr;

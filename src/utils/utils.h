@@ -28,6 +28,7 @@ auto asynchronous(std::function<T()> &&func) -> T
     return future.result();
 }
 
+UTILS_EXPORT QWidget *getTopParentWidget(QWidget *child);
 UTILS_EXPORT QRect desktopGeometry();
 UTILS_EXPORT QPixmap grabFullWindow();
 

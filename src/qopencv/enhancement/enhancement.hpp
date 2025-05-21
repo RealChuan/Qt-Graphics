@@ -17,7 +17,8 @@ public:
         GammaCorrection,
         LogTransformation,
         Sharpen,
-        Dehazed
+        Dehazed,
+        SuperResolution
     };
     Q_ENUM(Type);
 

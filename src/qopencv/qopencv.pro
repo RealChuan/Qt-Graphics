@@ -6,6 +6,8 @@ QT += widgets concurrent
 DEFINES += QOPENCV_LIBRARY
 TARGET = $$replaceLibName(qopencv)
 
+LIBS += -l$$replaceLibName(utils)
+
 include(enhancement/enhancement.pri)
 
 HEADERS += \
