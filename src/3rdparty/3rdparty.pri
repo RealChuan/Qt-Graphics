@@ -37,7 +37,7 @@ CONFIG(debug, debug|release) {
 LIBS += -llibbreakpad_client$$suffix -llibbreakpad$$suffix
 LIBS += -lvcpkg_crashpad_client_common -lvcpkg_crashpad_client -lvcpkg_crashpad_util -lvcpkg_crashpad_base
 LIBS += -lgif
-LIBS += -lopencv_imgproc4$$suffix -lopencv_core4$$suffix
+LIBS += -lopencv_ximgproc4$$suffix -lopencv_imgproc4$$suffix -lopencv_core4$$suffix
 
 INCLUDEPATH += \
     $$vcpkg_path/include \

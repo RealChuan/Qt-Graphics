@@ -69,11 +69,13 @@ void OpenCVWidget::onOpenImage()
         return;
     }
     d_ptr->imageView->createScene(filename);
+    d_ptr->image = {};
 }
 
 void OpenCVWidget::onChangedImage(int index)
 {
     d_ptr->imageView->createScene(m_thumbnailList.at(index).fileInfo().absoluteFilePath());
+    d_ptr->image = {};
 }
 
 void OpenCVWidget::onShowOriginalImage()
@@ -173,12 +175,17 @@ void OpenCVWidget::setupUI()
 
 auto OpenCVWidget::toolWidget() -> QWidget *
 {
+    auto *gridLayout = new QGridLayout;
+    gridLayout->addWidget(new QLabel(tr("Type:"), this), 0, 0);
+    gridLayout->addWidget(d_ptr->typeComboBox, 0, 1);
+    gridLayout->addWidget(new QLabel(tr("Algorithm:"), this), 1, 0);
+    gridLayout->addWidget(d_ptr->algorithmComboBox, 1, 1);
+
     d_ptr->toolLayout->addWidget(m_openButton);
     d_ptr->toolLayout->addWidget(m_infoBox);
     d_ptr->toolLayout->addStretch();
     d_ptr->toolLayout->addWidget(d_ptr->originalButton);
-    d_ptr->toolLayout->addWidget(d_ptr->typeComboBox);
-    d_ptr->toolLayout->addWidget(d_ptr->algorithmComboBox);
+    d_ptr->toolLayout->addLayout(gridLayout);
     d_ptr->toolLayout->addWidget(d_ptr->applyButton);
     d_ptr->toolLayout->addStretch();
 

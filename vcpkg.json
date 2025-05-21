@@ -10,6 +10,7 @@
     {
       "name": "opencv",
       "features": [
+        "contrib",
         "thread",
         {
           "name": "openmp",

@@ -15,7 +15,9 @@ public:
         MedianBlur,
         LinearContrast,
         GammaCorrection,
-        LogTransformation
+        LogTransformation,
+        Sharpen,
+        Dehazed
     };
     Q_ENUM(Type);
 
