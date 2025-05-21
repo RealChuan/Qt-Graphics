@@ -10,6 +10,7 @@
     {
       "name": "opencv",
       "features": [
+        "contrib",
         "thread",
         {
           "name": "openmp",
@@ -22,5 +23,5 @@
       ]
     }
   ],
-  "builtin-baseline": "d8ad13c401b30c2836d00b8923c9127f05f591c7"
+  "builtin-baseline": "a9eee3b18df395dbb8be71a31bd78ea441056e42"
 }

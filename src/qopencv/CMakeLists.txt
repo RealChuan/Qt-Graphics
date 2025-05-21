@@ -1,6 +1,8 @@
 set(PROJECT_SOURCES
     enhancement/bilateralfilter.cc
     enhancement/bilateralfilter.hpp
+    enhancement/dehazed.cc
+    enhancement/dehazed.hpp
     enhancement/enhancement.cc
     enhancement/enhancement.hpp
     enhancement/gammacorrection.cc
@@ -15,6 +17,8 @@ set(PROJECT_SOURCES
     enhancement/logtransformation.hpp
     enhancement/medianblur.cc
     enhancement/medianblur.hpp
+    enhancement/sharpen.cc
+    enhancement/sharpen.hpp
     opencvobject.cc
     opencvobject.hpp
     opencvutils.cc
