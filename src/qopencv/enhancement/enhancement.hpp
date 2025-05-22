@@ -10,9 +10,6 @@ class QOPENCV_EXPORT Enhancement : public OpenCVOBject
 public:
     enum Type : int {
         HistogramEqualization = 0,
-        GaussianBlur,
-        BilateralFilter,
-        MedianBlur,
         LinearContrast,
         GammaCorrection,
         LogTransformation,
@@ -24,14 +21,7 @@ public:
     };
     Q_ENUM(Type);
 
-    explicit Enhancement(QObject *parent = nullptr);
-    virtual ~Enhancement();
-
-    auto paramWidget() -> QWidget *;
-
-private:
-    class EnhancementPrivate;
-    QScopedPointer<EnhancementPrivate> d_ptr;
+    using OpenCVOBject::OpenCVOBject;
 };
 
 } // namespace OpenCVUtils

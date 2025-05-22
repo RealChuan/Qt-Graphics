@@ -1,26 +1,28 @@
 set(PROJECT_SOURCES
-    enhancement/bilateralfilter.cc
-    enhancement/bilateralfilter.hpp
     enhancement/dehazed.cc
     enhancement/dehazed.hpp
     enhancement/enhancement.cc
     enhancement/enhancement.hpp
     enhancement/gammacorrection.cc
     enhancement/gammacorrection.hpp
-    enhancement/gaussianblur.cc
-    enhancement/gaussianblur.hpp
     enhancement/histogramequalization.cc
     enhancement/histogramequalization.hpp
     enhancement/linearcontrast.cc
     enhancement/linearcontrast.hpp
     enhancement/logtransformation.cc
     enhancement/logtransformation.hpp
-    enhancement/medianblur.cc
-    enhancement/medianblur.hpp
     enhancement/sharpen.cc
     enhancement/sharpen.hpp
     enhancement/superresolution.cc
     enhancement/superresolution.hpp
+    filter/bilateralfilter.cc
+    filter/bilateralfilter.hpp
+    filter/filter.cc
+    filter/filter.hpp
+    filter/gaussianblur.cc
+    filter/gaussianblur.hpp
+    filter/medianblur.cc
+    filter/medianblur.hpp
     opencvobject.cc
     opencvobject.hpp
     opencvutils.cc

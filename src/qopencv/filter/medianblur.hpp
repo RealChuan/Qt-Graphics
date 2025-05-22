@@ -1,10 +1,10 @@
 #pragma once
 
-#include "enhancement.hpp"
+#include "filter.hpp"
 
 namespace OpenCVUtils {
 
-class MedianBlur : public Enhancement
+class MedianBlur : public Filter
 {
     Q_OBJECT
 public:

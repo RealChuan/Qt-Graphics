@@ -80,7 +80,7 @@ public:
 };
 
 GaussianBlur::GaussianBlur(QObject *parent)
-    : Enhancement(parent)
+    : Filter(parent)
     , d_ptr(new GaussianBlurPrivate(this))
 {
     d_ptr->setupUI();

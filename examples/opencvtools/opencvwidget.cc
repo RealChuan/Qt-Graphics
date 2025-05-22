@@ -104,6 +104,14 @@ void OpenCVWidget::onTypeChanged()
         }
         break;
     }
+    case OpenCVUtils::OpenCVOBject::AlgorithmType::Filter: {
+        d_ptr->algorithmComboBox->clear();
+        auto metaEnum = QMetaEnum::fromType<OpenCVUtils::Filter::Type>();
+        for (int i = 0; i < metaEnum.keyCount(); ++i) {
+            d_ptr->algorithmComboBox->addItem(metaEnum.key(i), metaEnum.value(i));
+        }
+        break;
+    }
     default: break;
     }
 }
@@ -115,6 +123,12 @@ void OpenCVWidget::onAlgorithmChanged()
     switch (type) {
     case OpenCVUtils::OpenCVOBject::AlgorithmType::Enhancement: {
         auto algo = static_cast<OpenCVUtils::Enhancement::Type>(
+            d_ptr->algorithmComboBox->currentData().toInt());
+        d_ptr->currentOpenCVOBjectPtr.reset(OpenCVUtils::createOpenCVOBject(algo));
+        break;
+    }
+    case OpenCVUtils::OpenCVOBject::AlgorithmType::Filter: {
+        auto algo = static_cast<OpenCVUtils::Filter::Type>(
             d_ptr->algorithmComboBox->currentData().toInt());
         d_ptr->currentOpenCVOBjectPtr.reset(OpenCVUtils::createOpenCVOBject(algo));
         break;
