@@ -14,18 +14,22 @@ class QOPENCV_EXPORT OpenCVOBject : public QObject
 {
     Q_OBJECT
 public:
-    enum AlgorithmType : int { Enhancement = 0 };
+    enum AlgorithmType : int { Enhancement = 0, Filter };
     Q_ENUM(AlgorithmType);
 
-    using QObject::QObject;
+    explicit OpenCVOBject(QObject *parent = nullptr);
+    virtual ~OpenCVOBject() override;
 
-    virtual auto paramWidget() -> QWidget * = 0;
+    auto paramWidget() -> QWidget *;
 
     virtual auto canApply() const -> bool = 0;
     virtual auto apply(const cv::Mat &src) -> cv::Mat = 0;
 
 protected:
     virtual auto createParamWidget() -> QWidget * = 0;
+
+    class OpenCVOBjectPrivate;
+    QScopedPointer<OpenCVOBjectPrivate> d_ptr;
 };
 
 } // namespace OpenCVUtils

@@ -37,7 +37,7 @@ public:
 };
 
 MedianBlur::MedianBlur(QObject *parent)
-    : Enhancement(parent)
+    : Filter(parent)
     , d_ptr(new MedianBlurPrivate(this))
 {
     d_ptr->setupUI();

@@ -65,7 +65,7 @@ public:
 };
 
 BilateralFilter::BilateralFilter(QObject *parent)
-    : Enhancement(parent)
+    : Filter(parent)
     , d_ptr(new BilateralFilterPrivate(this))
 {
     d_ptr->setupUI();

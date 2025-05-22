@@ -1,10 +1,10 @@
 #pragma once
 
-#include "enhancement.hpp"
+#include "filter.hpp"
 
 namespace OpenCVUtils {
 
-class GaussianBlur : public Enhancement
+class GaussianBlur : public Filter
 {
     Q_OBJECT
 public:

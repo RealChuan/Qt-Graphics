@@ -1,10 +1,10 @@
 #pragma once
 
-#include "enhancement.hpp"
+#include "filter.hpp"
 
 namespace OpenCVUtils {
 
-class BilateralFilter : public Enhancement
+class BilateralFilter : public Filter
 {
     Q_OBJECT
 public:

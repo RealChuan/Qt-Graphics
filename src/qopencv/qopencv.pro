@@ -9,6 +9,7 @@ TARGET = $$replaceLibName(qopencv)
 LIBS += -l$$replaceLibName(utils)
 
 include(enhancement/enhancement.pri)
+include(filter/filter.pri)
 
 HEADERS += \
     opencvobject.hpp \
