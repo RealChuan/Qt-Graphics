@@ -32,6 +32,7 @@ set(PROJECT_SOURCES
 add_custom_library(qopencv ${PROJECT_SOURCES})
 target_link_libraries(qopencv PRIVATE utils Qt::Concurrent Qt::Widgets
                                       ${OpenCV_LIBS})
+target_compile_definitions(qopencv PRIVATE "LINK_DNN_SUPERRES")
 
 if(CMAKE_HOST_WIN32)
   target_compile_definitions(qopencv PRIVATE "QOPENCV_LIBRARY")

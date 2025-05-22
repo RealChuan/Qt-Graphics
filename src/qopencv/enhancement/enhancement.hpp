@@ -18,7 +18,9 @@ public:
         LogTransformation,
         Sharpen,
         Dehazed,
+#ifdef LINK_DNN_SUPERRES
         SuperResolution
+#endif
     };
     Q_ENUM(Type);
 

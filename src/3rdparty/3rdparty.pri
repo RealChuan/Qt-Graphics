@@ -38,6 +38,7 @@ LIBS += -llibbreakpad_client$$suffix -llibbreakpad$$suffix
 LIBS += -lvcpkg_crashpad_client_common -lvcpkg_crashpad_client -lvcpkg_crashpad_util -lvcpkg_crashpad_base
 LIBS += -lgif
 LIBS += -lopencv_dnn_superres4$$suffix -lopencv_ximgproc4$$suffix -lopencv_dnn4$$suffix -lopencv_imgproc4$$suffix -lopencv_core4$$suffix
+# abseil 库链接过于复杂，部分功能不支持
 
 INCLUDEPATH += \
     $$vcpkg_path/include \

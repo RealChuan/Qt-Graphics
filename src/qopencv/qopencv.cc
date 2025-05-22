@@ -25,7 +25,9 @@ auto createOpenCVOBject(Enhancement::Type type) -> OpenCVOBject *
     case Enhancement::Type::LogTransformation: return new LogTransformation;
     case Enhancement::Type::Sharpen: return new Sharpen;
     case Enhancement::Type::Dehazed: return new Dehazed;
+#ifdef LINK_DNN_SUPERRES
     case Enhancement::Type::SuperResolution: return new SuperResolution;
+#endif
     default: break;
     }
     return nullptr;
