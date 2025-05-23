@@ -10,6 +10,7 @@ LIBS += -l$$replaceLibName(utils)
 
 include(enhancement/enhancement.pri)
 include(filter/filter.pri)
+include(edgedetection/edgedetection.pri)
 
 HEADERS += \
     opencvobject.hpp \

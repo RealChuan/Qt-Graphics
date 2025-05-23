@@ -17,12 +17,25 @@ set(PROJECT_SOURCES
     enhancement/superresolution.hpp
     filter/bilateralfilter.cc
     filter/bilateralfilter.hpp
+    filter/blur.cc
+    filter/blur.hpp
+    filter/boxfilter.cc
+    filter/boxfilter.hpp
     filter/filter.cc
     filter/filter.hpp
     filter/gaussianblur.cc
     filter/gaussianblur.hpp
     filter/medianblur.cc
     filter/medianblur.hpp
+    edgedetection/canny.cc edgedetection/canny.hpp
+    edgedetection/edgedetection.cc
+    edgedetection/edgedetection.hpp
+    edgedetection/laplacian.cc
+    edgedetection/laplacian.hpp
+    edgedetection/scharr.cc
+    edgedetection/scharr.hpp
+    edgedetection/sobel.cc
+    edgedetection/sobel.hpp
     opencvobject.cc
     opencvobject.hpp
     opencvutils.cc

@@ -4,11 +4,11 @@
 
 namespace OpenCVUtils {
 
-class QOPENCV_EXPORT Filter : public OpenCVOBject
+class QOPENCV_EXPORT EdgeDetection : public OpenCVOBject
 {
     Q_OBJECT
 public:
-    enum Type : int { Blur = 1, BoxFilter, BilateralFilter, GaussianBlur, MedianBlur };
+    enum Type : int { Canny = 1, Laplacian, Scharr, Sobel };
     Q_ENUM(Type);
 
     using OpenCVOBject::OpenCVOBject;

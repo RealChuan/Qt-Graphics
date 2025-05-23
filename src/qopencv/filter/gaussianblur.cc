@@ -38,21 +38,21 @@ public:
         sigmaYSpinBox->setValue(1.5);
 
         borderTypeComboBox = new QComboBox(groupBox);
-        borderTypeComboBox->addItem(GaussianBlur::tr("CONSTANT"), cv::BORDER_CONSTANT);
-        borderTypeComboBox->addItem(GaussianBlur::tr("REPLICATE"), cv::BORDER_REPLICATE);
-        borderTypeComboBox->addItem(GaussianBlur::tr("REFLECT"), cv::BORDER_REFLECT);
-        borderTypeComboBox->addItem(GaussianBlur::tr("WRAP"), cv::BORDER_WRAP);
-        borderTypeComboBox->addItem(GaussianBlur::tr("REFLECT_1010"), cv::BORDER_REFLECT_101);
-        borderTypeComboBox->addItem(GaussianBlur::tr("TRANSPARENT"), cv::BORDER_TRANSPARENT);
-        borderTypeComboBox->addItem(GaussianBlur::tr("REFLECT101"), cv::BORDER_REFLECT_101);
-        borderTypeComboBox->addItem(GaussianBlur::tr("DEFAULT"), cv::BORDER_DEFAULT);
-        borderTypeComboBox->addItem(GaussianBlur::tr("ISOLATED"), cv::BORDER_ISOLATED);
-        borderTypeComboBox->setCurrentText(GaussianBlur::tr("DEFAULT"));
+        borderTypeComboBox->addItem("CONSTANT", cv::BORDER_CONSTANT);
+        borderTypeComboBox->addItem("REPLICATE", cv::BORDER_REPLICATE);
+        borderTypeComboBox->addItem("REFLECT", cv::BORDER_REFLECT);
+        borderTypeComboBox->addItem("WRAP", cv::BORDER_WRAP);
+        borderTypeComboBox->addItem("REFLECT_1010", cv::BORDER_REFLECT_101);
+        borderTypeComboBox->addItem("TRANSPARENT", cv::BORDER_TRANSPARENT);
+        borderTypeComboBox->addItem("REFLECT101", cv::BORDER_REFLECT_101);
+        borderTypeComboBox->addItem("DEFAULT", cv::BORDER_DEFAULT);
+        borderTypeComboBox->addItem("ISOLATED", cv::BORDER_ISOLATED);
+        borderTypeComboBox->setCurrentText("DEFAULT");
 
         hintComboBox = new QComboBox(groupBox);
-        hintComboBox->addItem(GaussianBlur::tr("DEFAULT"), cv::ALGO_HINT_DEFAULT);
-        hintComboBox->addItem(GaussianBlur::tr("ACCURATE"), cv::ALGO_HINT_ACCURATE);
-        hintComboBox->addItem(GaussianBlur::tr("APPROX"), cv::ALGO_HINT_APPROX);
+        hintComboBox->addItem("DEFAULT", cv::ALGO_HINT_DEFAULT);
+        hintComboBox->addItem("ACCURATE", cv::ALGO_HINT_ACCURATE);
+        hintComboBox->addItem("APPROX", cv::ALGO_HINT_APPROX);
     }
 
     void setupUI()
