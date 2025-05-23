@@ -143,11 +143,10 @@ public:
     {
         groupBox = new QGroupBox(Dehazed::tr("Dehazed"));
 
-        patchSizeLabel = new QLabel(groupBox);
-        patchSizeSlider = new QSlider(Qt::Horizontal, groupBox);
-        patchSizeSlider->setRange(3, 25);
-        patchSizeSlider->setTickPosition(QSlider::TicksBelow);
-        patchSizeSlider->setTickInterval(2);
+        patchSizeComboBox = new QComboBox(groupBox);
+        for (int i = 3; i <= 25; i += 2) {
+            patchSizeComboBox->addItem(QString::number(i), i);
+        }
 
         omegaSpinBox = new QDoubleSpinBox(groupBox);
         omegaSpinBox->setRange(0.0, 1.0);
@@ -164,16 +163,15 @@ public:
     void setupUI()
     {
         auto *fromLayout = new QFormLayout(groupBox);
-        fromLayout->addRow(patchSizeLabel, patchSizeSlider);
-        fromLayout->addRow(tr("Omega:"), omegaSpinBox);
-        fromLayout->addRow(tr("Top Percent:"), topPercentSpinBox);
+        fromLayout->addRow(Dehazed::tr("Patch Size:"), patchSizeComboBox);
+        fromLayout->addRow(Dehazed::tr("Omega:"), omegaSpinBox);
+        fromLayout->addRow(Dehazed::tr("Top Percent:"), topPercentSpinBox);
     }
 
     Dehazed *q_ptr;
 
     QGroupBox *groupBox;
-    QLabel *patchSizeLabel;
-    QSlider *patchSizeSlider;
+    QComboBox *patchSizeComboBox;
     QDoubleSpinBox *omegaSpinBox;
     QDoubleSpinBox *topPercentSpinBox;
 };
@@ -183,7 +181,6 @@ Dehazed::Dehazed(QObject *parent)
     , d_ptr(new DehazedPrivate(this))
 {
     d_ptr->setupUI();
-    buildConnect();
 }
 
 Dehazed::~Dehazed() {}
@@ -195,10 +192,7 @@ auto Dehazed::canApply() const -> bool
 
 auto Dehazed::apply(const cv::Mat &src) -> cv::Mat
 {
-    auto patchSize = d_ptr->patchSizeSlider->value();
-    if (patchSize % 2 == 0) {
-        patchSize += 1;
-    }
+    auto patchSize = d_ptr->patchSizeComboBox->currentData().toInt();
     auto omega = d_ptr->omegaSpinBox->value();
     auto topPercent = d_ptr->topPercentSpinBox->value();
 
@@ -220,14 +214,6 @@ auto Dehazed::apply(const cv::Mat &src) -> cv::Mat
 auto Dehazed::createParamWidget() -> QWidget *
 {
     return d_ptr->groupBox;
-}
-
-void Dehazed::buildConnect()
-{
-    connect(d_ptr->patchSizeSlider, &QSlider::valueChanged, this, [this](int value) {
-        d_ptr->patchSizeLabel->setText(tr("Patch Size: %1").arg(value));
-    });
-    d_ptr->patchSizeSlider->setValue(15);
 }
 
 } // namespace OpenCVUtils

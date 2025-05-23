@@ -18,8 +18,6 @@ protected:
     auto createParamWidget() -> QWidget * override;
 
 private:
-    void buildConnect();
-
     class GaussianBlurPrivate;
     QScopedPointer<GaussianBlurPrivate> d_ptr;
 };

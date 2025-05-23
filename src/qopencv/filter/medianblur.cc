@@ -16,24 +16,22 @@ public:
     {
         groupBox = new QGroupBox(MedianBlur::tr("Median Blur"));
 
-        kSizeLabel = new QLabel(groupBox);
-        kSizeSlider = new QSlider(Qt::Horizontal, groupBox);
-        kSizeSlider->setRange(3, 15);
-        kSizeSlider->setTickPosition(QSlider::TicksBelow);
-        kSizeSlider->setTickInterval(2);
+        kSizeComboBox = new QComboBox(groupBox);
+        for (int i = 3; i <= 21; i += 2) {
+            kSizeComboBox->addItem(QString::number(i), i);
+        }
     }
 
     void setupUI()
     {
         auto *fromLayout = new QFormLayout(groupBox);
-        fromLayout->addRow(kSizeLabel, kSizeSlider);
+        fromLayout->addRow(MedianBlur::tr("Kernel Size:"), kSizeComboBox);
     }
 
     MedianBlur *q_ptr;
 
     QGroupBox *groupBox;
-    QLabel *kSizeLabel;
-    QSlider *kSizeSlider;
+    QComboBox *kSizeComboBox;
 };
 
 MedianBlur::MedianBlur(QObject *parent)
@@ -41,7 +39,6 @@ MedianBlur::MedianBlur(QObject *parent)
     , d_ptr(new MedianBlurPrivate(this))
 {
     d_ptr->setupUI();
-    buildConnect();
 }
 
 MedianBlur::~MedianBlur() {}
@@ -53,10 +50,7 @@ auto MedianBlur::canApply() const -> bool
 
 auto MedianBlur::apply(const cv::Mat &src) -> cv::Mat
 {
-    auto ksize = d_ptr->kSizeSlider->value();
-    if (ksize % 2 == 0) {
-        ksize += 1;
-    }
+    auto ksize = d_ptr->kSizeComboBox->currentData().toInt();
 
     return Utils::asynchronous<cv::Mat>([src, ksize]() -> cv::Mat {
         cv::Mat dst;
@@ -72,14 +66,6 @@ auto MedianBlur::apply(const cv::Mat &src) -> cv::Mat
 auto MedianBlur::createParamWidget() -> QWidget *
 {
     return d_ptr->groupBox;
-}
-
-void MedianBlur::buildConnect()
-{
-    connect(d_ptr->kSizeSlider, &QSlider::valueChanged, this, [this](int value) {
-        d_ptr->kSizeLabel->setText(MedianBlur::tr("Kernel Size: %1").arg(value));
-    });
-    d_ptr->kSizeLabel->setText(MedianBlur::tr("Kernel Size: %1").arg(d_ptr->kSizeSlider->value()));
 }
 
 } // namespace OpenCVUtils

@@ -120,6 +120,14 @@ void OpenCVWidget::onTypeChanged()
         }
         break;
     }
+    case OpenCVUtils::OpenCVOBject::AlgorithmType::Segmentation: {
+        d_ptr->algorithmComboBox->clear();
+        auto metaEnum = QMetaEnum::fromType<OpenCVUtils::Segmentation::Type>();
+        for (int i = 0; i < metaEnum.keyCount(); ++i) {
+            d_ptr->algorithmComboBox->addItem(metaEnum.key(i), metaEnum.value(i));
+        }
+        break;
+    }
     default: break;
     }
 }
@@ -143,6 +151,12 @@ void OpenCVWidget::onAlgorithmChanged()
     }
     case OpenCVUtils::OpenCVOBject::AlgorithmType::EdgeDetection: {
         auto algo = static_cast<OpenCVUtils::EdgeDetection::Type>(
+            d_ptr->algorithmComboBox->currentData().toInt());
+        d_ptr->currentOpenCVOBjectPtr.reset(OpenCVUtils::createOpenCVOBject(algo));
+        break;
+    }
+    case OpenCVUtils::OpenCVOBject::AlgorithmType::Segmentation: {
+        auto algo = static_cast<OpenCVUtils::Segmentation::Type>(
             d_ptr->algorithmComboBox->currentData().toInt());
         d_ptr->currentOpenCVOBjectPtr.reset(OpenCVUtils::createOpenCVOBject(algo));
         break;

@@ -16,25 +16,21 @@ public:
     {
         groupBox = new QGroupBox(BoxFilter::tr("Box Filter"));
 
-        kWidthLabel = new QLabel(groupBox);
-        kWidthSlider = new QSlider(Qt::Horizontal, groupBox);
-        kWidthSlider->setRange(3, 21);
-        kWidthSlider->setTickPosition(QSlider::TicksBelow);
-        kWidthSlider->setTickInterval(2);
-
-        kHeightLabel = new QLabel(groupBox);
-        kHeightSlider = new QSlider(Qt::Horizontal, groupBox);
-        kHeightSlider->setRange(3, 21);
-        kHeightSlider->setTickPosition(QSlider::TicksBelow);
-        kHeightSlider->setTickInterval(2);
+        kWidthComboBox = new QComboBox(groupBox);
+        kHeightComboBox = new QComboBox(groupBox);
+        for (int i = 3; i <= 21; i += 2) {
+            kWidthComboBox->addItem(QString::number(i), i);
+            kHeightComboBox->addItem(QString::number(i), i);
+        }
 
         kNormalizeCheckBox = new QCheckBox(tr("Normalize"), groupBox);
+        kNormalizeCheckBox->setChecked(true);
 
         borderTypeComboBox = new QComboBox(groupBox);
         borderTypeComboBox->addItem("CONSTANT", cv::BORDER_CONSTANT);
         borderTypeComboBox->addItem("REPLICATE", cv::BORDER_REPLICATE);
         borderTypeComboBox->addItem("REFLECT", cv::BORDER_REFLECT);
-        borderTypeComboBox->addItem("WRAP", cv::BORDER_WRAP);
+        // borderTypeComboBox->addItem("WRAP", cv::BORDER_WRAP);
         borderTypeComboBox->addItem("REFLECT_1010", cv::BORDER_REFLECT_101);
         borderTypeComboBox->addItem("TRANSPARENT", cv::BORDER_TRANSPARENT);
         borderTypeComboBox->addItem("REFLECT101", cv::BORDER_REFLECT_101);
@@ -46,9 +42,8 @@ public:
     void setupUI()
     {
         auto *fromLayout = new QFormLayout(groupBox);
-
-        fromLayout->addRow(kWidthLabel, kWidthSlider);
-        fromLayout->addRow(kHeightLabel, kHeightSlider);
+        fromLayout->addRow(BoxFilter::tr("Kernel Width:"), kWidthComboBox);
+        fromLayout->addRow(BoxFilter::tr("Kernel Height:"), kHeightComboBox);
         fromLayout->addWidget(kNormalizeCheckBox);
         fromLayout->addRow(BoxFilter::tr("Border Type:"), borderTypeComboBox);
     }
@@ -56,10 +51,8 @@ public:
     BoxFilter *q_ptr;
 
     QGroupBox *groupBox;
-    QLabel *kWidthLabel;
-    QSlider *kWidthSlider;
-    QLabel *kHeightLabel;
-    QSlider *kHeightSlider;
+    QComboBox *kWidthComboBox;
+    QComboBox *kHeightComboBox;
     QCheckBox *kNormalizeCheckBox;
     QComboBox *borderTypeComboBox;
 };
@@ -69,7 +62,6 @@ BoxFilter::BoxFilter(QObject *parent)
     , d_ptr(new BoxFilterPrivate(this))
 {
     d_ptr->setupUI();
-    buildConnect();
 }
 
 BoxFilter::~BoxFilter() {}
@@ -81,14 +73,8 @@ auto BoxFilter::canApply() const -> bool
 
 auto BoxFilter::apply(const cv::Mat &src) -> cv::Mat
 {
-    auto kWidth = d_ptr->kWidthSlider->value();
-    if (kWidth % 2 == 0) {
-        kWidth++;
-    }
-    auto kHeight = d_ptr->kHeightSlider->value();
-    if (kHeight % 2 == 0) {
-        kHeight++;
-    }
+    auto kWidth = d_ptr->kWidthComboBox->currentData().toInt();
+    auto kHeight = d_ptr->kHeightComboBox->currentData().toInt();
     auto kNormalize = d_ptr->kNormalizeCheckBox->isChecked();
     auto borderType = d_ptr->borderTypeComboBox->currentData().toInt();
 
@@ -112,18 +98,6 @@ auto BoxFilter::apply(const cv::Mat &src) -> cv::Mat
 auto BoxFilter::createParamWidget() -> QWidget *
 {
     return d_ptr->groupBox;
-}
-
-void BoxFilter::buildConnect()
-{
-    connect(d_ptr->kWidthSlider, &QSlider::valueChanged, this, [this](int value) {
-        d_ptr->kWidthLabel->setText(tr("Width: %1").arg(value));
-    });
-    connect(d_ptr->kHeightSlider, &QSlider::valueChanged, this, [this](int value) {
-        d_ptr->kHeightLabel->setText(tr("Height: %1").arg(value));
-    });
-    d_ptr->kWidthLabel->setText(tr("Width: %1").arg(d_ptr->kWidthSlider->value()));
-    d_ptr->kHeightLabel->setText(tr("Height: %1").arg(d_ptr->kHeightSlider->value()));
 }
 
 } // namespace OpenCVUtils

@@ -16,6 +16,8 @@
 #include <qopencv/filter/boxfilter.hpp>
 #include <qopencv/filter/gaussianblur.hpp>
 #include <qopencv/filter/medianblur.hpp>
+#include <qopencv/segmentation/adaptivethreshold.hpp>
+#include <qopencv/segmentation/threshold.hpp>
 
 namespace OpenCVUtils {
 
@@ -56,6 +58,16 @@ auto createOpenCVOBject(EdgeDetection::Type type) -> OpenCVOBject *
     case EdgeDetection::Type::Laplacian: return new Laplacian;
     case EdgeDetection::Type::Scharr: return new Scharr;
     case EdgeDetection::Type::Sobel: return new Sobel;
+    default: break;
+    }
+    return nullptr;
+}
+
+auto createOpenCVOBject(Segmentation::Type type) -> OpenCVOBject *
+{
+    switch (type) {
+    case Segmentation::Type::Threshold: return new Threshold;
+    case Segmentation::Type::AdaptiveThreshold: return new AdaptiveThreshold;
     default: break;
     }
     return nullptr;
