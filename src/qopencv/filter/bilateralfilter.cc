@@ -33,16 +33,16 @@ public:
         sigmaSpaceSpinBox->setValue(25.0);
 
         borderTypeComboBox = new QComboBox(groupBox);
-        borderTypeComboBox->addItem(BilateralFilter::tr("CONSTANT"), cv::BORDER_CONSTANT);
-        borderTypeComboBox->addItem(BilateralFilter::tr("REPLICATE"), cv::BORDER_REPLICATE);
-        borderTypeComboBox->addItem(BilateralFilter::tr("REFLECT"), cv::BORDER_REFLECT);
-        borderTypeComboBox->addItem(BilateralFilter::tr("WRAP"), cv::BORDER_WRAP);
-        borderTypeComboBox->addItem(BilateralFilter::tr("REFLECT_1010"), cv::BORDER_REFLECT_101);
-        borderTypeComboBox->addItem(BilateralFilter::tr("TRANSPARENT"), cv::BORDER_TRANSPARENT);
-        borderTypeComboBox->addItem(BilateralFilter::tr("REFLECT101"), cv::BORDER_REFLECT_101);
-        borderTypeComboBox->addItem(BilateralFilter::tr("DEFAULT"), cv::BORDER_DEFAULT);
-        borderTypeComboBox->addItem(BilateralFilter::tr("ISOLATED"), cv::BORDER_ISOLATED);
-        borderTypeComboBox->setCurrentText(BilateralFilter::tr("DEFAULT"));
+        borderTypeComboBox->addItem("CONSTANT", cv::BORDER_CONSTANT);
+        borderTypeComboBox->addItem("REPLICATE", cv::BORDER_REPLICATE);
+        borderTypeComboBox->addItem("REFLECT", cv::BORDER_REFLECT);
+        borderTypeComboBox->addItem("WRAP", cv::BORDER_WRAP);
+        borderTypeComboBox->addItem("REFLECT_1010", cv::BORDER_REFLECT_101);
+        borderTypeComboBox->addItem("TRANSPARENT", cv::BORDER_TRANSPARENT);
+        borderTypeComboBox->addItem("REFLECT101", cv::BORDER_REFLECT_101);
+        borderTypeComboBox->addItem("DEFAULT", cv::BORDER_DEFAULT);
+        borderTypeComboBox->addItem("ISOLATED", cv::BORDER_ISOLATED);
+        borderTypeComboBox->setCurrentText("DEFAULT");
     }
 
     void setupUI()
