@@ -1,15 +1,15 @@
 #pragma once
 
-#include "edgedetection.hpp"
+#include "segmentation.hpp"
 
 namespace OpenCVUtils {
 
-class Sobel : public EdgeDetection
+class Threshold : public Segmentation
 {
     Q_OBJECT
 public:
-    explicit Sobel(QObject *parent = nullptr);
-    ~Sobel() override;
+    explicit Threshold(QObject *parent = nullptr);
+    ~Threshold() override;
 
     auto canApply() const -> bool override;
     auto apply(const cv::Mat &src) -> cv::Mat override;
@@ -18,8 +18,10 @@ protected:
     auto createParamWidget() -> QWidget * override;
 
 private:
-    class SobelPrivate;
-    QScopedPointer<SobelPrivate> d_ptr;
+    void buildConnect();
+
+    class ThresholdPrivate;
+    QScopedPointer<ThresholdPrivate> d_ptr;
 };
 
 } // namespace OpenCVUtils

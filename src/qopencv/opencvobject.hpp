@@ -14,7 +14,7 @@ class QOPENCV_EXPORT OpenCVOBject : public QObject
 {
     Q_OBJECT
 public:
-    enum AlgorithmType : int { Enhancement = 0, Filter, EdgeDetection };
+    enum AlgorithmType : int { Enhancement = 0, Filter, EdgeDetection, Segmentation };
     Q_ENUM(AlgorithmType);
 
     explicit OpenCVOBject(QObject *parent = nullptr);

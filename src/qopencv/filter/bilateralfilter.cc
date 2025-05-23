@@ -22,15 +22,17 @@ public:
         diameterSlider->setTickPosition(QSlider::TicksBelow);
         diameterSlider->setTickInterval(1);
 
-        sigmaColorSpinBox = new QDoubleSpinBox(groupBox);
-        sigmaColorSpinBox->setRange(0.0, 200.0);
-        sigmaColorSpinBox->setSingleStep(0.5);
-        sigmaColorSpinBox->setValue(25.0);
+        sigmaColorLabel = new QLabel(groupBox);
+        sigmaColorSlider = new QSlider(Qt::Horizontal, groupBox);
+        sigmaColorSlider->setRange(0, 200);
+        sigmaColorSlider->setTickPosition(QSlider::TicksBelow);
+        sigmaColorSlider->setTickInterval(1);
 
-        sigmaSpaceSpinBox = new QDoubleSpinBox(groupBox);
-        sigmaSpaceSpinBox->setRange(0.0, 200.0);
-        sigmaSpaceSpinBox->setSingleStep(0.5);
-        sigmaSpaceSpinBox->setValue(25.0);
+        sigmaSpaceLabel = new QLabel(groupBox);
+        sigmaSpaceSlider = new QSlider(Qt::Horizontal, groupBox);
+        sigmaSpaceSlider->setRange(0, 200);
+        sigmaSpaceSlider->setTickPosition(QSlider::TicksBelow);
+        sigmaSpaceSlider->setTickInterval(1);
 
         borderTypeComboBox = new QComboBox(groupBox);
         borderTypeComboBox->addItem("CONSTANT", cv::BORDER_CONSTANT);
@@ -49,8 +51,8 @@ public:
     {
         auto *fromLayout = new QFormLayout(groupBox);
         fromLayout->addRow(diameterLabel, diameterSlider);
-        fromLayout->addRow(BilateralFilter::tr("Sigma Color:"), sigmaColorSpinBox);
-        fromLayout->addRow(BilateralFilter::tr("Sigma Space:"), sigmaSpaceSpinBox);
+        fromLayout->addRow(sigmaColorLabel, sigmaColorSlider);
+        fromLayout->addRow(sigmaSpaceLabel, sigmaSpaceSlider);
         fromLayout->addRow(BilateralFilter::tr("Border Type:"), borderTypeComboBox);
     }
 
@@ -59,8 +61,10 @@ public:
     QGroupBox *groupBox;
     QLabel *diameterLabel;
     QSlider *diameterSlider;
-    QDoubleSpinBox *sigmaColorSpinBox;
-    QDoubleSpinBox *sigmaSpaceSpinBox;
+    QLabel *sigmaColorLabel;
+    QSlider *sigmaColorSlider;
+    QLabel *sigmaSpaceLabel;
+    QSlider *sigmaSpaceSlider;
     QComboBox *borderTypeComboBox;
 };
 
@@ -82,8 +86,8 @@ auto BilateralFilter::canApply() const -> bool
 auto BilateralFilter::apply(const cv::Mat &src) -> cv::Mat
 {
     auto diameter = d_ptr->diameterSlider->value();
-    auto sigmaColor = d_ptr->sigmaColorSpinBox->value();
-    auto sigmaSpace = d_ptr->sigmaSpaceSpinBox->value();
+    auto sigmaColor = d_ptr->sigmaColorSlider->value();
+    auto sigmaSpace = d_ptr->sigmaSpaceSlider->value();
     auto borderType = d_ptr->borderTypeComboBox->currentData().toInt();
 
     return Utils::asynchronous<cv::Mat>(
@@ -108,7 +112,16 @@ void BilateralFilter::buildConnect()
     connect(d_ptr->diameterSlider, &QSlider::valueChanged, this, [this](int value) {
         d_ptr->diameterLabel->setText(tr("Diameter: %1").arg(value));
     });
-    d_ptr->diameterSlider->setValue(5);
+    d_ptr->diameterSlider->setValue(9);
+
+    connect(d_ptr->sigmaColorSlider, &QSlider::valueChanged, this, [this](int value) {
+        d_ptr->sigmaColorLabel->setText(tr("Sigma Color: %1").arg(value));
+    });
+    connect(d_ptr->sigmaSpaceSlider, &QSlider::valueChanged, this, [this](int value) {
+        d_ptr->sigmaSpaceLabel->setText(tr("Sigma Space: %1").arg(value));
+    });
+    d_ptr->sigmaColorSlider->setValue(50);
+    d_ptr->sigmaSpaceSlider->setValue(50);
 }
 
 } // namespace OpenCVUtils

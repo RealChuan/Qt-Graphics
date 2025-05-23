@@ -27,7 +27,8 @@ set(PROJECT_SOURCES
     filter/gaussianblur.hpp
     filter/medianblur.cc
     filter/medianblur.hpp
-    edgedetection/canny.cc edgedetection/canny.hpp
+    edgedetection/canny.cc
+    edgedetection/canny.hpp
     edgedetection/edgedetection.cc
     edgedetection/edgedetection.hpp
     edgedetection/laplacian.cc
@@ -36,6 +37,12 @@ set(PROJECT_SOURCES
     edgedetection/scharr.hpp
     edgedetection/sobel.cc
     edgedetection/sobel.hpp
+    segmentation/adaptivethreshold.cc
+    segmentation/adaptivethreshold.hpp
+    segmentation/segmentation.cc
+    segmentation/segmentation.hpp
+    segmentation/threshold.cc
+    segmentation/threshold.hpp
     opencvobject.cc
     opencvobject.hpp
     opencvutils.cc

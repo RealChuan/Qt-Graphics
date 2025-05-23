@@ -85,7 +85,7 @@ auto Canny::apply(const cv::Mat &src) -> cv::Mat
             try {
                 cv::Canny(src, dst, lowThreshold, highThreshold, apertureSize, l2Gradient);
             } catch (const std::exception &e) {
-                qDebug() << "Canny Edge Detection Error:" << e.what();
+                qWarning() << "Canny Edge Detection Error:" << e.what();
             }
             return dst;
         });

@@ -18,8 +18,6 @@ protected:
     auto createParamWidget() -> QWidget * override;
 
 private:
-    void buildConnect();
-
     class MedianBlurPrivate;
     QScopedPointer<MedianBlurPrivate> d_ptr;
 };

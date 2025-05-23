@@ -16,32 +16,27 @@ public:
     {
         groupBox = new QGroupBox(GaussianBlur::tr("Gaussian Blur"));
 
-        kWidthLabel = new QLabel(groupBox);
-        kWidthSlider = new QSlider(Qt::Horizontal, groupBox);
-        kWidthSlider->setRange(1, 99);
-        kWidthSlider->setTickPosition(QSlider::TicksBelow);
-        kWidthSlider->setTickInterval(2);
-
-        kHeightLabel = new QLabel(GaussianBlur::tr("Kernel Height:"), groupBox);
-        kHeightSlider = new QSlider(Qt::Horizontal, groupBox);
-        kHeightSlider->setRange(1, 99);
-        kHeightSlider->setTickPosition(QSlider::TicksBelow);
-        kHeightSlider->setTickInterval(2);
+        kWidthComboBox = new QComboBox(groupBox);
+        kHeightComboBox = new QComboBox(groupBox);
+        for (int i = 3; i <= 21; i += 2) {
+            kWidthComboBox->addItem(QString::number(i), i);
+            kHeightComboBox->addItem(QString::number(i), i);
+        }
 
         sigmaXSpinBox = new QDoubleSpinBox(groupBox);
         sigmaXSpinBox->setRange(0.0, 20.0);
         sigmaXSpinBox->setSingleStep(0.5);
-        sigmaXSpinBox->setValue(1.5);
+        sigmaXSpinBox->setValue(3);
         sigmaYSpinBox = new QDoubleSpinBox(groupBox);
         sigmaYSpinBox->setRange(0.0, 20.0);
         sigmaYSpinBox->setSingleStep(0.5);
-        sigmaYSpinBox->setValue(1.5);
+        sigmaYSpinBox->setValue(3);
 
         borderTypeComboBox = new QComboBox(groupBox);
         borderTypeComboBox->addItem("CONSTANT", cv::BORDER_CONSTANT);
         borderTypeComboBox->addItem("REPLICATE", cv::BORDER_REPLICATE);
         borderTypeComboBox->addItem("REFLECT", cv::BORDER_REFLECT);
-        borderTypeComboBox->addItem("WRAP", cv::BORDER_WRAP);
+        // borderTypeComboBox->addItem("WRAP", cv::BORDER_WRAP);
         borderTypeComboBox->addItem("REFLECT_1010", cv::BORDER_REFLECT_101);
         borderTypeComboBox->addItem("TRANSPARENT", cv::BORDER_TRANSPARENT);
         borderTypeComboBox->addItem("REFLECT101", cv::BORDER_REFLECT_101);
@@ -58,8 +53,8 @@ public:
     void setupUI()
     {
         auto *fromLayout = new QFormLayout(groupBox);
-        fromLayout->addRow(kWidthLabel, kWidthSlider);
-        fromLayout->addRow(kHeightLabel, kHeightSlider);
+        fromLayout->addRow(GaussianBlur::tr("Kernel Width:"), kWidthComboBox);
+        fromLayout->addRow(GaussianBlur::tr("Kernel Height:"), kHeightComboBox);
         fromLayout->addRow(GaussianBlur::tr("Sigma X:"), sigmaXSpinBox);
         fromLayout->addRow(GaussianBlur::tr("Sigma Y:"), sigmaYSpinBox);
         fromLayout->addRow(GaussianBlur::tr("Border Type:"), borderTypeComboBox);
@@ -69,10 +64,8 @@ public:
     GaussianBlur *q_ptr;
 
     QGroupBox *groupBox;
-    QLabel *kWidthLabel;
-    QSlider *kWidthSlider;
-    QLabel *kHeightLabel;
-    QSlider *kHeightSlider;
+    QComboBox *kWidthComboBox;
+    QComboBox *kHeightComboBox;
     QDoubleSpinBox *sigmaXSpinBox;
     QDoubleSpinBox *sigmaYSpinBox;
     QComboBox *borderTypeComboBox;
@@ -84,20 +77,14 @@ GaussianBlur::GaussianBlur(QObject *parent)
     , d_ptr(new GaussianBlurPrivate(this))
 {
     d_ptr->setupUI();
-    buildConnect();
 }
 
 GaussianBlur::~GaussianBlur() {}
 
 cv::Mat GaussianBlur::apply(const cv::Mat &src)
 {
-    cv::Size ksize(d_ptr->kWidthSlider->value(), d_ptr->kHeightSlider->value());
-    if (ksize.width % 2 == 0) {
-        ksize.width += 1;
-    }
-    if (ksize.height % 2 == 0) {
-        ksize.height += 1;
-    }
+    cv::Size ksize(d_ptr->kWidthComboBox->currentData().toInt(),
+                   d_ptr->kHeightComboBox->currentData().toInt());
     auto sigmaX = d_ptr->sigmaXSpinBox->value();
     auto sigmaY = d_ptr->sigmaYSpinBox->value();
     auto borderType = d_ptr->borderTypeComboBox->currentData().toInt();
@@ -123,18 +110,6 @@ auto GaussianBlur::canApply() const -> bool
 auto GaussianBlur::createParamWidget() -> QWidget *
 {
     return d_ptr->groupBox;
-}
-
-void GaussianBlur::buildConnect()
-{
-    connect(d_ptr->kWidthSlider, &QSlider::valueChanged, this, [this](int value) {
-        d_ptr->kWidthLabel->setText(tr("Kernel Width: %1").arg(value));
-    });
-    d_ptr->kWidthSlider->setValue(3);
-    connect(d_ptr->kHeightSlider, &QSlider::valueChanged, this, [this](int value) {
-        d_ptr->kHeightLabel->setText(tr("Kernel Height: %1").arg(value));
-    });
-    d_ptr->kHeightSlider->setValue(3);
 }
 
 } // namespace OpenCVUtils

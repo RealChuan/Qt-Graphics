@@ -18,8 +18,6 @@ protected:
     auto createParamWidget() -> QWidget * override;
 
 private:
-    void buildConnect();
-
     class BoxFilterPrivate;
     QScopedPointer<BoxFilterPrivate> d_ptr;
 };
