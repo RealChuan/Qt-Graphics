@@ -43,6 +43,8 @@ set(PROJECT_SOURCES
     segmentation/segmentation.hpp
     segmentation/threshold.cc
     segmentation/threshold.hpp
+    segmentation/watershed.cc
+    segmentation/watershed.hpp
     opencvobject.cc
     opencvobject.hpp
     opencvutils.cc

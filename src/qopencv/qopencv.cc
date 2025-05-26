@@ -18,6 +18,7 @@
 #include <qopencv/filter/medianblur.hpp>
 #include <qopencv/segmentation/adaptivethreshold.hpp>
 #include <qopencv/segmentation/threshold.hpp>
+#include <qopencv/segmentation/watershed.hpp>
 
 namespace OpenCVUtils {
 
@@ -68,6 +69,7 @@ auto createOpenCVOBject(Segmentation::Type type) -> OpenCVOBject *
     switch (type) {
     case Segmentation::Type::Threshold: return new Threshold;
     case Segmentation::Type::AdaptiveThreshold: return new AdaptiveThreshold;
+    case Segmentation::Type::Watershed: return new Watershed;
     default: break;
     }
     return nullptr;
