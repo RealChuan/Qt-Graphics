@@ -8,7 +8,7 @@
 class RecordWidget::RecordWidgetPrivate
 {
 public:
-    RecordWidgetPrivate(QWidget *q)
+    explicit RecordWidgetPrivate(QWidget *q)
         : q_ptr(q)
     {
         frameRateSpinBox = new QSpinBox(q_ptr);
@@ -58,6 +58,7 @@ RecordWidget::RecordWidget(QWidget *parent)
     setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_DeleteOnClose);
+
     setupUI();
     buildConnect();
     resize(1000, 618);
@@ -156,7 +157,7 @@ void RecordWidget::paintEvent(QPaintEvent *event)
 
 void RecordWidget::setupUI()
 {
-    auto titleLayout = new QHBoxLayout(d_ptr->titleWidget);
+    auto *titleLayout = new QHBoxLayout(d_ptr->titleWidget);
     titleLayout->addWidget(new QLabel(tr("Frame rate: "), this));
     titleLayout->addWidget(d_ptr->frameRateSpinBox);
     titleLayout->addWidget(new QLabel(tr("Width: "), this));
@@ -167,7 +168,7 @@ void RecordWidget::setupUI()
     titleLayout->addStretch();
     titleLayout->addWidget(d_ptr->closeButton);
 
-    auto layout = new QGridLayout(this);
+    auto *layout = new QGridLayout(this);
     layout->setContentsMargins({});
     layout->setSpacing(0);
     layout->addWidget(d_ptr->titleWidget, 0, 0);
@@ -212,11 +213,14 @@ void RecordWidget::finish()
                     .value(0, QDir::homePath());
     const auto time = QDateTime::currentDateTime().toString("yyyy-MM-dd HH-mm-ss");
     path = path + "/" + time + ".gif";
-    const QString filename = QFileDialog::getSaveFileName(this,
-                                                          tr("Save Image"),
-                                                          path,
-                                                          tr("Images (*.gif)"));
+    const auto filename = QFileDialog::getSaveFileName(this,
+                                                       tr("Save Image"),
+                                                       path,
+                                                       tr("Images (*.gif)"));
     if (!d_ptr->recordGifThreadPtr.isNull()) {
-        d_ptr->recordGifThreadPtr->stop(filename);
+        connect(d_ptr->recordGifThreadPtr.data(), &RecordGifThread::finished, this, [filename]() {
+            QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(filename).absolutePath()));
+        });
+        d_ptr->recordGifThreadPtr->startStop(filename);
     }
 }

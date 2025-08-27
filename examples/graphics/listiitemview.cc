@@ -23,7 +23,9 @@ public:
         auto imageSize = image.size();
         image = image.scaled(widgetSize, Qt::KeepAspectRatio /*, Qt::SmoothTransformation*/);
         QMetaObject::invokeMethod(
-            m_viewPtr.data(), [=] { m_viewPtr->setImage(image, imageSize); }, Qt::QueuedConnection);
+            m_viewPtr.data(),
+            [this, image, imageSize] { m_viewPtr->setImage(image, imageSize); },
+            Qt::QueuedConnection);
     }
 
 private:
@@ -92,7 +94,7 @@ void ListItemView::setImage(const QImage &image, const QSize &size)
     d_ptr->imageSize = size;
     QMetaObject::invokeMethod(
         this,
-        [=] {
+        [this, image] {
             setPixmap(QPixmap::fromImage(image));
             fitToScreen();
             setImageAfter();

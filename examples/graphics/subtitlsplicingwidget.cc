@@ -7,8 +7,8 @@
 class GenerateTask : public QRunnable
 {
 public:
-    GenerateTask(const QVector<StitchingImageInfo> &infos,
-                 SubtitlSplicingWidget *subtitlSplicingWidget)
+    explicit GenerateTask(const QVector<StitchingImageInfo> &infos,
+                          SubtitlSplicingWidget *subtitlSplicingWidget)
         : m_infos(infos)
         , m_subtitlSplicingWidgetPtr(subtitlSplicingWidget)
     {
@@ -44,15 +44,15 @@ public:
     }
 
 private:
-    QVector<StitchingImageInfo> m_infos;
+    StitchingImageInfoList m_infos;
     QPointer<SubtitlSplicingWidget> m_subtitlSplicingWidgetPtr;
 };
 
 class SubtitlSplicingWidget::SubtitlSplicingWidgetPrivate
 {
 public:
-    SubtitlSplicingWidgetPrivate(QWidget *parnet)
-        : q_ptr(parnet)
+    explicit SubtitlSplicingWidgetPrivate(SubtitlSplicingWidget *q)
+        : q_ptr(q)
     {
         listWidget = new QListWidget(q_ptr);
         listWidget->setSpacing(10);
@@ -61,7 +61,7 @@ public:
         generateButton = new QPushButton(QObject::tr("Generate", "SubtitlSplicingWidget"), q_ptr);
     }
 
-    QWidget *q_ptr;
+    SubtitlSplicingWidget *q_ptr;
 
     QListWidget *listWidget;
     Graphics::ImageView *imageView;
@@ -81,7 +81,7 @@ void SubtitlSplicingWidget::setImage(const QImage &image)
 {
     QMetaObject::invokeMethod(
         this,
-        [=] {
+        [this, image] {
             d_ptr->imageView->setPixmap(QPixmap::fromImage(image));
             d_ptr->generateButton->setEnabled(true);
         },
@@ -93,8 +93,8 @@ void SubtitlSplicingWidget::onOpenImage()
     QString imageFilters(tr("Images (*.bmp *.gif *.jpg *.jpeg *.png *.svg *.tiff *.webp *.icns "
                             "*.bitmap *.graymap *.pixmap *.tga *.xbitmap *.xpixmap)"));
     //qDebug() << imageFilters;
-    const QString path = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation)
-                             .value(0, QDir::homePath());
+    const auto path = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation)
+                          .value(0, QDir::homePath());
     auto paths = QFileDialog::getOpenFileNames(this, tr("Open Image"), path, imageFilters);
     if (paths.isEmpty()) {
         return;
@@ -102,9 +102,9 @@ void SubtitlSplicingWidget::onOpenImage()
 
     d_ptr->listWidget->clear();
     for (const auto &path : std::as_const(paths)) {
-        auto item = new QListWidgetItem;
+        auto *item = new QListWidgetItem;
         item->setSizeHint(QSize(1, 300));
-        auto view = new SectionalSubtitlesView(this);
+        auto *view = new SectionalSubtitlesView(this);
         view->setImagePath(path);
         d_ptr->listWidget->addItem(item);
         d_ptr->listWidget->setItemWidget(item, view);
@@ -119,11 +119,11 @@ void SubtitlSplicingWidget::onGenerated()
 {
     d_ptr->generateButton->setEnabled(false);
 
-    QVector<StitchingImageInfo> infos;
+    StitchingImageInfoList infos;
     for (int i = 0; i < d_ptr->listWidget->count(); i++) {
-        auto item = d_ptr->listWidget->item(i);
-        auto widget = d_ptr->listWidget->itemWidget(item);
-        auto view = qobject_cast<SectionalSubtitlesView *>(widget);
+        auto *item = d_ptr->listWidget->item(i);
+        auto *widget = d_ptr->listWidget->itemWidget(item);
+        auto *view = qobject_cast<SectionalSubtitlesView *>(widget);
         auto info = view->info();
         infos.append(info);
     }
@@ -190,8 +190,8 @@ void SubtitlSplicingWidget::onUp(int index)
     auto size = d_ptr->listWidget->count();
     Q_ASSERT(index > 0 && index < size);
 
-    auto item = d_ptr->listWidget->item(index);
-    auto view = qobject_cast<SectionalSubtitlesView *>(d_ptr->listWidget->itemWidget(item));
+    auto *item = d_ptr->listWidget->item(index);
+    auto *view = qobject_cast<SectionalSubtitlesView *>(d_ptr->listWidget->itemWidget(item));
     auto imagePath = view->imagePath();
 
     item = d_ptr->listWidget->takeItem(index);
@@ -215,7 +215,7 @@ void SubtitlSplicingWidget::onDown(int index)
 
 void SubtitlSplicingWidget::onLine1Changed()
 {
-    auto view = qobject_cast<SectionalSubtitlesView *>(sender());
+    auto *view = qobject_cast<SectionalSubtitlesView *>(sender());
     if (!view) {
         return;
     }
@@ -233,7 +233,7 @@ void SubtitlSplicingWidget::onLine1Changed()
 
 void SubtitlSplicingWidget::onLine2Changed()
 {
-    auto view = qobject_cast<SectionalSubtitlesView *>(sender());
+    auto *view = qobject_cast<SectionalSubtitlesView *>(sender());
     if (!view) {
         return;
     }
@@ -243,26 +243,26 @@ void SubtitlSplicingWidget::onLine2Changed()
 
     auto radoi = view->line2RatioOfHeight();
     for (int i = 1; i < d_ptr->listWidget->count(); i++) {
-        auto item = d_ptr->listWidget->item(i);
-        auto view = qobject_cast<SectionalSubtitlesView *>(d_ptr->listWidget->itemWidget(item));
+        auto *item = d_ptr->listWidget->item(i);
+        auto *view = qobject_cast<SectionalSubtitlesView *>(d_ptr->listWidget->itemWidget(item));
         view->setLine2RatioOfHeight(radoi);
     }
 }
 
 void SubtitlSplicingWidget::setupUI()
 {
-    auto openButton = new QPushButton(tr("Open Image"), this);
+    auto *openButton = new QPushButton(tr("Open Image"), this);
     connect(openButton, &QPushButton::clicked, this, &SubtitlSplicingWidget::onOpenImage);
-    auto saveButton = new QPushButton(tr("Save"), this);
+    auto *saveButton = new QPushButton(tr("Save"), this);
     connect(saveButton, &QPushButton::clicked, this, &SubtitlSplicingWidget::onSave);
     connect(d_ptr->generateButton, &QPushButton::clicked, this, &SubtitlSplicingWidget::onGenerated);
 
-    auto buttonLayout = new QVBoxLayout;
+    auto *buttonLayout = new QVBoxLayout;
     buttonLayout->addWidget(openButton);
     buttonLayout->addWidget(d_ptr->generateButton);
     buttonLayout->addWidget(saveButton);
 
-    auto layout = new QHBoxLayout(this);
+    auto *layout = new QHBoxLayout(this);
     layout->addWidget(d_ptr->listWidget);
     layout->addLayout(buttonLayout);
     layout->addWidget(d_ptr->imageView);

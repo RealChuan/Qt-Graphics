@@ -7,6 +7,8 @@
 
 #include <QPixmap>
 
+namespace {
+
 auto tempPath(const QString &name) -> QString
 {
     auto path = QDir::tempPath();
@@ -22,24 +24,34 @@ void copy(const QString &srcPath, const QString &dstPath)
     if (QFile::exists(dstPath)) {
         QFile::remove(dstPath);
     }
+
     QFile::copy(srcPath, dstPath);
 }
 
-struct RecordGifThread::RecordGifThreadPrivate
+} // namespace
+
+class RecordGifThread::RecordGifThreadPrivate
 {
+public:
+    explicit RecordGifThreadPrivate(RecordGifThread *q)
+        : q_ptr(q)
+    {}
+
+    RecordGifThread *q_ptr;
+
     QPointer<RecordWidget> recordWidgetPtr;
     int interval = -1; // ms
     QSize size;
     QString savePath;
     QMutex mutex;
     QWaitCondition waitCondition;
-    volatile bool runing = false;
-    volatile bool capture = false;
+    std::atomic_bool running = false;
+    std::atomic_bool capture = false;
 };
 
 RecordGifThread::RecordGifThread(QObject *parent)
     : QThread{parent}
-    , d_ptr(new RecordGifThreadPrivate)
+    , d_ptr(new RecordGifThreadPrivate(this))
 {}
 
 RecordGifThread::~RecordGifThread()
@@ -53,27 +65,32 @@ void RecordGifThread::startCapture(RecordWidget *recordWidget, int interval)
     d_ptr->recordWidgetPtr = recordWidget;
     d_ptr->interval = interval;
     d_ptr->size = recordWidget->recordRect().size();
-    d_ptr->runing = true;
-    d_ptr->capture = true;
+    d_ptr->running.store(true);
+    d_ptr->capture.store(true);
     start();
 }
 
 void RecordGifThread::stopCapture()
 {
-    d_ptr->capture = false;
+    d_ptr->capture.store(false);
 }
 
-void RecordGifThread::stop(const QString &savePath)
+void RecordGifThread::startStop(const QString &savePath)
 {
     d_ptr->savePath = savePath;
-    d_ptr->runing = false;
-    d_ptr->capture = false;
+    d_ptr->running.store(false);
+    d_ptr->capture.store(false);
     if (isRunning()) {
         d_ptr->waitCondition.wakeAll();
         quit();
     }
-    while (isRunning()) {
-        qApp->processEvents();
+}
+
+void RecordGifThread::stop(const QString &savePath)
+{
+    startStop(savePath);
+    if (isRunning()) {
+        wait();
     }
 }
 
@@ -209,14 +226,14 @@ void RecordGifThread::encode1()
 
     QElapsedTimer timer;
     timer.start();
-    while (d_ptr->runing) {
+    while (d_ptr->running.load()) {
         auto delay = d_ptr->interval - timer.elapsed();
         if (delay > 0) { // use QTimer better
             QMutexLocker locker(&d_ptr->mutex);
             d_ptr->waitCondition.wait(&d_ptr->mutex, d_ptr->interval);
         }
         timer.restart();
-        if (!d_ptr->capture) {
+        if (!d_ptr->capture.load()) {
             continue;
         }
         auto pixmap = Utils::grabFullWindow();
@@ -247,7 +264,7 @@ void RecordGifThread::encode2()
     QStringList imagePaths;
     QScopedPointer<QTimer> timer(new QTimer);
     connect(timer.data(), &QTimer::timeout, timer.data(), [&] {
-        if (!d_ptr->capture) {
+        if (!d_ptr->capture.load()) {
             return;
         }
         auto pixmap = Utils::grabFullWindow();

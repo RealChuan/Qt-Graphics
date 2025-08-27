@@ -1,5 +1,4 @@
-#ifndef RECORDGIFTHREAD_HPP
-#define RECORDGIFTHREAD_HPP
+#pragma once
 
 #include <QThread>
 
@@ -17,6 +16,7 @@ public:
 
     void startCapture(RecordWidget *recordWidget, int interval);
     void stopCapture();
+    void startStop(const QString &savePath);
     void stop(const QString &savePath = {});
 
 protected:
@@ -41,8 +41,6 @@ private:
     void encode1();
     void encode2();
 
-    struct RecordGifThreadPrivate;
+    class RecordGifThreadPrivate;
     QScopedPointer<RecordGifThreadPrivate> d_ptr;
 };
-
-#endif // RECORDGIFTHREAD_HPP

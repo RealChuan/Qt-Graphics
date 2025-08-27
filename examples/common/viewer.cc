@@ -21,10 +21,11 @@ Viewer::~Viewer()
 
 bool Viewer::setThumbnail(const Thumbnail &thumbnail, const qint64 taskCount)
 {
-    if (taskCount != (m_taskCount.load(std::memory_order_acquire) - 1)) {
+    if (taskCount != (m_taskCount.load() - 1)) {
         return false;
     }
-    QMetaObject::invokeMethod(this, [=] { appendThumbnail(thumbnail); }, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(
+        this, [this, thumbnail] { appendThumbnail(thumbnail); }, Qt::QueuedConnection);
     return true;
 }
 
@@ -64,15 +65,14 @@ QString Viewer::openImage()
     const QString imageFilters(
         tr("Images (*.bmp *.gif *.jpg *.jpeg *.png *.svg *.tiff *.webp *.icns "
            "*.bitmap *.graymap *.pixmap *.tga *.xbitmap *.xpixmap)"));
-    const QString path = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation)
-                             .value(0, QDir::homePath());
+    const auto path = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation)
+                          .value(0, QDir::homePath());
     return QFileDialog::getOpenFileName(this, tr("Open Image"), path, imageFilters);
 }
 
 void Viewer::startImageLoadThread(const QString &url)
 {
-    QThreadPool::globalInstance()->start(
-        new ImageLoadRunnable(url, this, m_taskCount.fetch_add(1, std::memory_order_seq_cst)));
+    QThreadPool::globalInstance()->start(new ImageLoadRunnable(url, this, m_taskCount.fetch_add(1)));
 }
 
 void Viewer::appendThumbnail(const Thumbnail &thumbnail)
@@ -129,7 +129,7 @@ public:
 
     QPointer<Viewer> viewPtr;
     QString fileUrl;
-    qint64 taskCount;
+    std::atomic_llong taskCount;
 
     static std::atomic_bool running;
 };
@@ -141,7 +141,7 @@ ImageLoadRunnable::ImageLoadRunnable(const QString &fileUrl, Viewer *view, qint6
 {
     d_ptr->viewPtr = view;
     d_ptr->fileUrl = fileUrl;
-    d_ptr->taskCount = taskCount;
+    d_ptr->taskCount.store(taskCount);
 
     setAutoDelete(true);
 }
@@ -186,7 +186,7 @@ void ImageLoadRunnable::run()
         }
         if (d_ptr->viewPtr.isNull()
             || !ImageLoadRunnablePrivate::running.load(std::memory_order_acquire)
-            || !d_ptr->viewPtr->setThumbnail(thumbnail, d_ptr->taskCount)) {
+            || !d_ptr->viewPtr->setThumbnail(thumbnail, d_ptr->taskCount.load())) {
             return;
         }
     }

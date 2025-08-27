@@ -1,5 +1,4 @@
-#ifndef SECTIONALSUBTITLESVIEW_HPP
-#define SECTIONALSUBTITLESVIEW_HPP
+#pragma once
 
 #include "listiitemview.hpp"
 
@@ -8,6 +7,8 @@ struct StitchingImageInfo
     QString imagePath;
     QRect imageRect;
 };
+
+using StitchingImageInfoList = QList<StitchingImageInfo>;
 
 class SectionalSubtitlesView : public ListItemView
 {
@@ -39,5 +40,3 @@ private:
     class SectionalSubtitlesViewPrivate;
     QScopedPointer<SectionalSubtitlesViewPrivate> d_ptr;
 };
-
-#endif // SECTIONALSUBTITLESVIEW_HPP

@@ -1,5 +1,4 @@
-#ifndef LISTIITEMVIEW_HPP
-#define LISTIITEMVIEW_HPP
+#pragma once
 
 #include <graphics/imageview.h>
 
@@ -36,5 +35,3 @@ private:
     class ListItemViewPrivate;
     QScopedPointer<ListItemViewPrivate> d_ptr;
 };
-
-#endif // LISTIITEMVIEW_HPP
