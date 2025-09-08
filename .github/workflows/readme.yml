@@ -12,9 +12,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
       # ISO Langusge Codes: https://cloud.google.com/translate/docs/languages  
       - name: Adding README - English
         uses: dephraiim/translate-readme@main

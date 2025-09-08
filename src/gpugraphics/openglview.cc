@@ -30,6 +30,7 @@ public:
         q_ptr->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         q_ptr->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         q_ptr->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        q_ptr->glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     void uploadTexture()
@@ -47,6 +48,7 @@ public:
                             GL_UNSIGNED_BYTE,
                             image.bits());
         q_ptr->glGenerateMipmap(GL_TEXTURE_2D);
+        q_ptr->glBindTexture(GL_TEXTURE_2D, 0);
         programPtr->release();
         q_ptr->doneCurrent();
     }

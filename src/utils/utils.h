@@ -13,10 +13,10 @@ class QMenu;
 namespace Utils {
 
 template<typename T>
-auto asynchronous(std::function<T()> &&func) -> T
+auto asynchronous(std::function<T()> &&func)
 {
-    if (!func) {
-        return T();
+    if (nullptr == func) {
+        return T{};
     }
     QEventLoop loop;
     QFutureWatcher<T> watcher;
