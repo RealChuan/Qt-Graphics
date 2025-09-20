@@ -1,7 +1,9 @@
 #include "mainwindow.h"
 #include "capturewidget.hpp"
 #include "drawwidget.h"
+#include "icoconverterwidget.hpp"
 #include "imageviewer.h"
+#include "multiimagefileviewer.hpp"
 #include "openglviewer.hpp"
 #include "recordwidget.hpp"
 #include "subtitlsplicingwidget.hpp"
@@ -19,14 +21,15 @@ public:
     explicit MainWindowPrivate(MainWindow *q)
         : q_ptr(q)
     {
-        drawWidget = new DrawWidget(q_ptr);
         imageViewer = new ImageViewer(q_ptr);
         openglViewer = new OpenglViewer(q_ptr);
+        multiImageFileViewer = new MultiImageFileViewer(q_ptr);
+        icoConverterWidget = new IcoConverterWidget(q_ptr);
         subtitlSplicingWidget = new SubtitlSplicingWidget(q_ptr);
+        drawWidget = new DrawWidget(q_ptr);
+
         stackedWidget = new QStackedWidget(q_ptr);
         stackedWidget->addWidget(imageViewer);
-        stackedWidget->addWidget(drawWidget);
-        stackedWidget->addWidget(subtitlSplicingWidget);
         stackedWidget->addWidget(openglViewer);
 #ifdef BUILD_VULKAN
         if (VulkanViewer::isSupported()) {
@@ -34,18 +37,24 @@ public:
             stackedWidget->addWidget(vulkanViewer);
         }
 #endif
+        stackedWidget->addWidget(multiImageFileViewer);
+        stackedWidget->addWidget(icoConverterWidget);
+        stackedWidget->addWidget(subtitlSplicingWidget);
+        stackedWidget->addWidget(drawWidget);
     }
     ~MainWindowPrivate() {}
 
     MainWindow *q_ptr;
 
-    DrawWidget *drawWidget;
     ImageViewer *imageViewer;
     OpenglViewer *openglViewer;
 #ifdef BUILD_VULKAN
     VulkanViewer *vulkanViewer = nullptr;
 #endif
+    MultiImageFileViewer *multiImageFileViewer;
+    IcoConverterWidget *icoConverterWidget;
     SubtitlSplicingWidget *subtitlSplicingWidget;
+    DrawWidget *drawWidget;
     QStackedWidget *stackedWidget;
 };
 
@@ -107,11 +116,17 @@ void MainWindow::initMenuBar()
         }));
     }
 #endif
-    setCheckable(menu->addAction(tr("Draw"), this, [this] {
-        d_ptr->stackedWidget->setCurrentWidget(d_ptr->drawWidget);
+    setCheckable(menu->addAction(tr("Multi Image File Viewer"), this, [this] {
+        d_ptr->stackedWidget->setCurrentWidget(d_ptr->multiImageFileViewer);
+    }));
+    setCheckable(menu->addAction(tr("ICO Converter"), this, [this] {
+        d_ptr->stackedWidget->setCurrentWidget(d_ptr->icoConverterWidget);
     }));
     setCheckable(menu->addAction(tr("Subtitle Splicing"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->subtitlSplicingWidget);
+    }));
+    setCheckable(menu->addAction(tr("Draw"), this, [this] {
+        d_ptr->stackedWidget->setCurrentWidget(d_ptr->drawWidget);
     }));
     menuBar()->addMenu(menu);
     menuBar()->addAction(tr("Screenshots"), this, [this] {

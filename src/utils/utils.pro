@@ -9,6 +9,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     hostosinfo.cpp \
+    icowriter.cc \
     imagecache.cc \
     logasync.cpp \
     logfile.cc \
@@ -17,6 +18,7 @@ SOURCES += \
 
 HEADERS += \
     hostosinfo.h \
+    icowriter.hpp \
     imagecache.hpp \
     logasync.h \
     logfile.hpp \

@@ -11,7 +11,7 @@ public:
 
 private slots:
     void onOpenImage();
-    void onChangedImage(int);
+    void onChangedImage(int index);
 
 private:
     void setupUI();

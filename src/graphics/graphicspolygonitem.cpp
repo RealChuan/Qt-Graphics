@@ -32,7 +32,7 @@ GraphicsPolygonItem::~GraphicsPolygonItem() {}
 
 inline auto checkPolygon(const QPolygonF &ply, const double margin) -> bool
 {
-    QRectF rect = ply.boundingRect();
+    auto rect = ply.boundingRect();
     return ply.size() >= PolygonMinPointSize && rect.width() > margin && rect.height() > margin;
 }
 

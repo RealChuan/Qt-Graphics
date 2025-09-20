@@ -12,6 +12,27 @@
 #endif
 // clang-format on
 
+auto Utils::readImages(const QString &path) -> QList<QImage>
+{
+    QList<QImage> list;
+    QImageReader reader(path);
+    if (!reader.canRead()) {
+        qWarning() << QString("Cannot read image %1: %2").arg(path, reader.errorString());
+        return list;
+    }
+    for (int i = 0; i < reader.imageCount(); ++i) {
+        reader.jumpToImage(i);
+        auto image = reader.read();
+        if (image.isNull()) {
+            qWarning() << QString("Failed to read image %1 in %2: %3")
+                              .arg(QString::number(i), path, reader.errorString());
+            continue;
+        }
+        list.append(image);
+    }
+    return list;
+}
+
 auto Utils::desktopGeometry() -> QRect
 {
     QRect geometry;

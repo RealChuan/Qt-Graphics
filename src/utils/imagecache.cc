@@ -12,7 +12,9 @@ static QImage syncLoadImage(const QString &absoluteFilePath)
     QEventLoop loop;
     QFutureWatcher<QImage> watcher;
     QObject::connect(&watcher, &QFutureWatcher<QImage>::finished, &loop, &QEventLoop::quit);
-    watcher.setFuture(QtConcurrent::run([absoluteFilePath]() { return QImage{absoluteFilePath}; }));
+    watcher.setFuture(QtConcurrent::run([absoluteFilePath]() {
+        return absoluteFilePath.isEmpty() ? QImage{} : QImage{absoluteFilePath};
+    }));
     loop.exec();
     return watcher.result();
 }

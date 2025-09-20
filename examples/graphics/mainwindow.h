@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 
@@ -17,4 +16,3 @@ private:
     class MainWindowPrivate;
     QScopedPointer<MainWindowPrivate> d_ptr;
 };
-#endif // MAINWINDOW_H

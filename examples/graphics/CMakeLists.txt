@@ -15,6 +15,8 @@ set(PROJECT_SOURCES
     drawscene.hpp
     drawwidget.cpp
     drawwidget.h
+    icoconverterwidget.cc
+    icoconverterwidget.hpp
     imagecaptureview.cc
     imagecaptureview.hpp
     imageviewer.cpp
@@ -26,6 +28,8 @@ set(PROJECT_SOURCES
     mainwindow.h
     maskdialog.cpp
     maskdialog.h
+    multiimagefileviewer.cc
+    multiimagefileviewer.hpp
     openglviewer.cc
     openglviewer.hpp
     recordgifthread.cc
@@ -38,6 +42,8 @@ set(PROJECT_SOURCES
     sectionalsubtitlesview.hpp
     selectionwidget.cc
     selectionwidget.hpp
+    sizeselectorwidget.cc
+    sizeselectorwidget.hpp
     stretchparamssettingdailog.cc
     stretchparamssettingdailog.hpp
     subtitlsplicingwidget.cc

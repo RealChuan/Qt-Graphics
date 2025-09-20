@@ -4,7 +4,7 @@ inputs:
   vcpkg_libs:
     description: 'vcpkg libraries'
     required: false
-    default: 'breakpad crashpad giflib opencv[contrib,thread]'
+    default: 'breakpad crashpad freeimage giflib opencv[contrib,thread]'
     type: string
   qt_modules:
     description: 'qt modules'

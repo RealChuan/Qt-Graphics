@@ -40,10 +40,13 @@ LIBS += -lgif
 LIBS += -lopencv_dnn_superres4$$suffix -lopencv_ximgproc4$$suffix -lopencv_dnn4$$suffix -lopencv_imgproc4$$suffix -lopencv_core4$$suffix
 # abseil 库链接过于复杂，部分功能不支持
 
+LIBS += -lFreeImage$$suffix
+
 INCLUDEPATH += \
     $$vcpkg_path/include \
     $$vcpkg_path/include/crashpad \
-    $$vcpkg_path/include/opencv4
+    $$vcpkg_path/include/opencv4 \
+#    $$vcpkg_path/include/GraphicsMagick
 
 win32 {
     LIBS += -lzlib$$suffix

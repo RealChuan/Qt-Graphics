@@ -1,6 +1,8 @@
 set(PROJECT_SOURCES
     hostosinfo.cpp
     hostosinfo.h
+    icowriter.cc
+    icowriter.hpp
     imagecache.cc
     imagecache.hpp
     logasync.cpp

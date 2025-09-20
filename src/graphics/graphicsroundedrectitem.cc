@@ -11,7 +11,7 @@ namespace Graphics {
 
 inline auto checkRect(const QRectF &rect, const double margin) -> bool
 {
-    return rect.isValid() && rect.x() > 0 && rect.y() > 0 && rect.width() > margin
+    return rect.isValid() && rect.x() >= 0 && rect.y() >= 0 && rect.width() > margin
            && rect.height() > margin;
 }
 

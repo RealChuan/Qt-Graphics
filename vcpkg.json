@@ -6,6 +6,7 @@
   "dependencies": [
     "breakpad",
     "crashpad",
+    "freeimage",
     "giflib",
     {
       "name": "opencv",

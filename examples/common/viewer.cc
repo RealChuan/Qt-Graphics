@@ -49,6 +49,7 @@ void Viewer::onImageSizeChanged(const QSize &size)
 void Viewer::onImageChanged(const QString &url)
 {
     m_urlLabel->setText(url);
+    m_urlLabel->setToolTip(url);
     m_fileSizeLabel->setText(Utils::formatBytes(QFile(url).size()));
 
     for (const auto &data : std::as_const(m_thumbnailList)) {
@@ -101,6 +102,9 @@ void Viewer::setupUI()
     m_infoBox = new QGroupBox(tr("Image Information"), this);
     m_urlLabel = new QLabel("-", this);
     m_urlLabel->setWordWrap(true);
+    sizePolicy = m_urlLabel->sizePolicy();
+    sizePolicy.setVerticalPolicy(QSizePolicy::MinimumExpanding);
+    m_urlLabel->setSizePolicy(sizePolicy);
     m_sizeLabel = new QLabel("-", this);
     m_fileSizeLabel = new QLabel("-", this);
     m_scaleLabel = new QLabel("-", this);

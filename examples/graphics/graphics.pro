@@ -26,18 +26,21 @@ SOURCES += \
     customlineitem.cc \
     drawscene.cc \
     drawwidget.cpp \
+    icoconverterwidget.cc \
     imagecaptureview.cc \
     imageviewer.cpp \
     listiitemview.cc \
     main.cpp \
     mainwindow.cpp \
     maskdialog.cpp \
+    multiimagefileviewer.cc \
     openglviewer.cc \
     recordgifthread.cc \
     recordwidget.cc \
     rounddialog.cc \
     sectionalsubtitlesview.cc \
     selectionwidget.cc \
+    sizeselectorwidget.cc \
     stretchparamssettingdailog.cc \
     subtitlsplicingwidget.cc
 
@@ -50,17 +53,20 @@ HEADERS += \
     customlineitem.hpp \
     drawscene.hpp \
     drawwidget.h \
+    icoconverterwidget.hpp \
     imagecaptureview.hpp \
     imageviewer.h \
     listiitemview.hpp \
     mainwindow.h \
     maskdialog.h \
+    multiimagefileviewer.hpp \
     openglviewer.hpp \
     recordgifthread.hpp \
     recordwidget.hpp \
     rounddialog.hpp \
     sectionalsubtitlesview.hpp \
     selectionwidget.hpp \
+    sizeselectorwidget.hpp \
     stretchparamssettingdailog.hpp \
     subtitlsplicingwidget.hpp
 

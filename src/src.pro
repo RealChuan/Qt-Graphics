@@ -7,4 +7,5 @@ SUBDIRS += \
     3rdparty \
     gpugraphics \
     graphics \
-    qopencv 
+    qopencv \
+    qfreeimage

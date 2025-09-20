@@ -3,75 +3,111 @@
 - [简体中文](README.md)
 - [English](README.en.md)
 
-## 效果图更新会不太及时
+> **注意**：效果图更新可能不够及时。
 
-## 支持更多图片格式，请参考[kimageformats-binaries](https://github.com/RealChuan/kimageformats-binaries/tree/dev)
+## 支持更多图片格式
 
-1. 下载`Actions`中的`Artifacts`文件夹，把`kimg_*`的库文件解压到`Qt`打包目录下的`imageformats`文件夹中；
-2. 其余部分库文件，需要放在主程序同级目录下，或者主程序可以加载到的地方。
+如需支持更多图像格式，请参考 [kimageformats-binaries](https://github.com/RealChuan/kimageformats-binaries/tree/dev)：
 
-## 使用`QRhiWidget`，`QVulkanWindow`和`QOpenGLWidget`窗口，用GPU渲染2D纹理的优缺点
+1. 从 `Actions` 中下载 `Artifacts` 文件夹，将 `kimg_*` 库文件解压到 Qt 打包目录下的 `imageformats` 文件夹中；
+2. 其他依赖库文件需放置在主程序同级目录或主程序可加载的位置。
+
+---
+
+## 使用 GPU 渲染 2D 纹理的优缺点（QRhiWidget、QVulkanWindow、QOpenGLWidget）
 
 ### 优点
 
-1. 性能比使用QGraphicsView的看图界面要好很多，非常流畅，占用极少的CPU资源；
+- **性能优异**：相比基于 QGraphicsView 的图片查看界面，GPU 渲染更加流畅，CPU 占用极低。
 
 ### 缺点
 
-1. 在旋转任意角度的时候，纹理的宽高比会变化，导致显示不正常；
-   1. 这个问题在[openglview](src/gpugraphics/openglview.cc)中有一种不太完美的解决方法，可以在任意旋转角度的时候，保持原图的宽高比不变，但是旋转时，需要舍弃原来的缩放比例，调整为适应窗口或者原图大小。
-   2. 具体实现见[openglview](src/gpugraphics/openglview.cc)中的`rotatedTextureSize`，`rotateNinetieth`和`anti_rotateNinetieth`函数。
+- **旋转显示问题**：在任意角度旋转时，纹理宽高比可能发生变化，导致显示异常。
+  - [openglview](src/gpugraphics/openglview.cc) 中提供了一种临时解决方案，可在旋转时维持原图宽高比，但需舍弃原有缩放比例，调整为适应窗口或原图大小。
+  - 具体实现请参考 `rotatedTextureSize`、`rotateNinetieth` 和 `anti_rotateNinetieth` 函数。
 
-## QVulkanWindow
+---
 
-### 编译问题
+## QVulkanWindow 编译说明
 
-1. [cmake](.github/workflows/cmake.yml)：在MacOS下会找不到QVulkanWindow相关的头文件，编译无法通过；
-2. [qmake](.github/workflows/qmake.yml)：
-    1. 在MacOS下会找不到QVulkanWindowRenderer相关的头文件，编译无法通过；
-    2. 在Ubuntu下会找不到QVulkanInstance相关的头文件，编译无法通过：
-3. 暂时禁止上述情况的编译过程；
+### 已知编译问题
 
-## 看图界面
+1. **CMake（MacOS）**：无法找到 QVulkanWindow 相关头文件，编译失败。
+2. **qmake**：
+   - **MacOS**：缺少 QVulkanWindowRenderer 头文件，编译失败。
+   - **Ubuntu**：缺少 QVulkanInstance 头文件，编译失败。
+3. 目前已暂时禁用上述环境的编译。
+
+---
+
+## 多图像文件查看器
+
+- 支持从单个文件（如 `ico`、`gif` 等）中读取多个图像并显示。
+- 其他格式需依赖 `kimageformats-binaries` 插件支持。
+
+---
+
+## ICO 文件制作
+
+### 已知问题
+
+- **[FreeImage](https://github.com/danoli3/FreeImage)** 在生成含 `256x256` 图像的 ICO 文件时存在缺陷：它会错误地将宽高字段直接设为 `256`，而非格式规范要求的 `0` 或 `255`，导致 Windows 资源管理器无法正确识别该分辨率。
+- **解决方案**：
+  - 使用基于 [QtIcoHandler](https://github.com/qt/qtbase/blob/dev/src/plugins/imageformats/ico/qicohandler.h) 修改的 [icowriter](/src/utils/icowriter.hpp)。
+- **推荐分辨率**：`256x256`、`128x128`、`64x64`、`48x48`、`32x32`、`16x16`。
+
+---
+
+## 功能界面示例
+
+### 1. 图片查看界面
 
 <div align=center>
 <img src="docs/ImageView.png" width="90%" height="90%">
 </div>
 
-## 马赛克绘制界面（橡皮擦效果）
+---
+
+### 2. 马赛克绘制（橡皮擦效果）
 
 <div align=center>
 <img src="docs/MaskEdit.png" width="90%" height="90%">
 </div>
 
-## 圆角编辑窗口（也可编辑成圆形图标）
+---
 
-1. 一定要保存为PNG，不然圆角处会变成黑色；
-
+### 3. 圆角/圆形图标编辑
+>
+> **注意**：请保存为 PNG 格式，否则圆角区域可能显示为黑色。
 <div align=center>
 <img src="docs/RoundEdit.jpg" width="90%" height="90%">
 </div>
 
-## 简单图形绘制界面
+---
+
+### 4. 简单图形绘制
 
 <div align=center>
 <img src="docs/DrawScene.png" width="90%" height="90%">
 </div>
 
-## 电影字幕拼接界面
+---
 
-1. 左侧图片为载入后快速缩放的图片，显示不清晰，主要是为了节省占用内存；
-2. 右侧图片是展示的原图，由于QImageView缩放不清晰，可以调整到原图大小查看（左侧双击），看起来就很舒服；
-3. 虽然第一眼看起来模糊，但是实际生成的时候都是重新载入左侧原图剪切生成，保存后可用其他图片查看工具验证，或者按照上一点（2）查看；
+### 5. 电影字幕拼接
+
+- 左侧为快速缩放预览（可能模糊），右侧为原图展示。
+- 实际生成时基于原图裁剪，保存后可验证清晰度。
 
 <div align=center>
 <img src="docs/FilmSubTiltleSplicing.png" width="90%" height="90%">
 </div>
 
-## GIF录制（egif和gif-h库）和截图功能
+---
 
-1. 以下为用GIF录制功能，录制截图功能使用；
-2. 截屏之后可以使用（4）绘制图形；
+### 6. GIF 录制（egif/gif-h 库）与截图功能
+
+- 下图使用 GIF 录制功能演示截图过程：
+- 截图后可使用（4）中的图形绘制功能进行编辑。
 
 <div align=center>
 <img src="docs/Record_Screenshot.gif" width="90%" height="90%">
