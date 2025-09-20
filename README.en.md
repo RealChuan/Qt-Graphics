@@ -3,75 +3,112 @@
 -   [Simplified Chinese](README.md)
 -   [English](README.en.md)
 
-## The renderings will be updated in time
+> **Notice**: The renderings may not be updated in time.
 
-## Support more image formats, please refer to[kimageformats-binaries](https://github.com/RealChuan/kimageformats-binaries/tree/dev)
+## 支持更多图片格式
 
-1.  download`Actions`In-house`Artifacts`Folder, put`kimg_*`The library file is unzipped to`Qt`In the package directory`imageformats`in folder;
-2.  The remaining library files need to be placed in the same directory as the main program, or where the main program can be loaded.
+For more image formats, please refer to[kimageformats-binaries](https://github.com/RealChuan/kimageformats-binaries/tree/dev)：
 
-## use`QRhiWidget`，`QVulkanWindow`and`QOpenGLWidget`Pros and cons of rendering 2D textures with GPU
+1.  from`Actions`Download in`Artifacts`folder,`kimg_*`Unzip the library file to the Qt packaged directory`imageformats`in folder;
+2.  Other dependent library files need to be placed in the directory at the same level of the main program or where the main program can load.
+
+* * *
+
+## Pros and cons of rendering 2D textures with GPU (QRhiWidget, QVulkanWindow, QOpenGLWidget)
 
 ### advantage
 
-1.  The performance is much better than the image viewing interface using QGraphicsView, it is very smooth and takes up very little CPU resources;
+-   **Excellent performance**: Compared with the image viewing interface based on QGraphicsView, GPU rendering is smoother and the CPU occupies extremely low.
 
 ### shortcoming
 
-1.  When rotating any angle, the aspect ratio of the texture will change, resulting in abnormal display;
-    1.  This problem is[openglview](src/gpugraphics/openglview.cc)There is an incomplete solution in this. You can keep the aspect ratio of the original image unchanged at any rotation angle, but when rotating, you need to discard the original zoom ratio and adjust it to adapt to the window or the original image size.
-    2.  See details for implementation[openglview](src/gpugraphics/openglview.cc)In-house`rotatedTextureSize`，`rotateNinetieth`and`anti_rotateNinetieth`function.
+-   **Rotate display problem**: When rotating at any angle, the texture aspect ratio may change, resulting in abnormal display.
+    -   [openglview](src/gpugraphics/openglview.cc)A temporary solution is provided in this article to maintain the aspect ratio of the original image when rotated, but the original zoom ratio needs to be discarded and adjusted to adapt to the window or original image size.
+    -   Please refer to the specific implementation`rotatedTextureSize`、`rotateNinetieth`and`anti_rotateNinetieth`function.
 
-## QVulkanWindow
+* * *
 
-### Compilation issues
+## QVulkanWindow Compilation Instructions
 
-1.  [cmake](.github/workflows/cmake.yml): The QVulkanWindow-related header files will not be found under MacOS, and the compilation will not be passed;
-2.  [qmake](.github/workflows/qmake.yml)：
-    1.  In MacOS, the header file related to QVulkanWindowRenderer cannot be found, and the compilation cannot be passed;
-    2.  In Ubuntu, the QVulkanInstance-related header file cannot be found, and the compilation cannot be passed:
-3.  The compilation process of the above situation is temporarily prohibited;
+### Known compilation issues
 
-## Image view interface
+1.  **CMake（MacOS）**: The QVulkanWindow related header file cannot be found, and the compilation failed.
+2.  **qmake**：
+    -   **MacOS**: The QVulkanWindowRenderer header file is missing, and the compilation failed.
+    -   **Ubuntu**: The QVulkanInstance header file is missing, and the compilation failed.
+3.  Compilation of the above environment has been temporarily disabled.
+
+* * *
+
+## Multi-image file viewer
+
+-   Support from single files (e.g.`ico`、`gif`Read multiple images in, etc.) and display them.
+-   Other formats need to be dependent`kimageformats-binaries` 插件支持。
+
+* * *
+
+## ICO file production
+
+### Known issues
+
+-   **[FreeImage](https://github.com/danoli3/FreeImage)**Generate inclusion`256x256`The image has a flaw in its ICO file: it will incorrectly set the width and height field directly to`256`, not the format specification required`0`or`255`, causing Windows Explorer to fail to correctly recognize the resolution.
+-   **Solution**：
+    -   Used based[QtIcoHandler](https://github.com/qt/qtbase/blob/dev/src/plugins/imageformats/ico/qicohandler.h)Modified[icowriter](/src/utils/icowriter.hpp)。
+-   **Recommended resolution**：`256x256`、`128x128`、`64x64`、`48x48`、`32x32`、`16x16`。
+
+* * *
+
+## Functional interface example
+
+### 1. Image viewing interface
 
 <div align=center>
 <img src="docs/ImageView.png" width="90%" height="90%">
 </div>
 
-## Mosaic drawing interface (eraser effect)
+* * *
+
+### 2. Mosaic drawing (eraser effect)
 
 <div align=center>
 <img src="docs/MaskEdit.png" width="90%" height="90%">
 </div>
 
-## Round corner editing window (can also be edited into circular icons)
+* * *
 
-1.  Be sure to save it as PNG, otherwise the rounded corners will turn black;
+### 3. Rounded corners/circular icon editing
 
-<div align=center>
-<img src="docs/RoundEdit.jpg" width="90%" height="90%">
-</div>
+> **Notice**: Please save it in PNG format, otherwise the rounded area may appear in black.
+>
+> <div align=center>
+> <img src="docs/RoundEdit.jpg" width="90%" height="90%">
+> </div>
 
-## Simple graphical drawing interface
+* * *
+
+### 4. Simple graphic drawing
 
 <div align=center>
 <img src="docs/DrawScene.png" width="90%" height="90%">
 </div>
 
-## Movie subtitle splicing interface
+* * *
 
-1.  The picture on the left is a picture that is quickly scaled after loading, and the display is not clear, mainly to save memory usage;
-2.  The picture on the right is the original picture displayed. Since the QImageView is not zoomed clearly, you can adjust the size of the original picture to view (double-click on the left), which looks very comfortable;
-3.  Although it looks blurry at first glance, when it is actually generated, it is reloaded and cut into the original image on the left. After saving, you can use other image viewing tools to verify, or view according to the previous point (2);
+### 5. Movie subtitles
+
+-   The left side is a quick zoom preview (may be blurry), and the right side is the original image.
+-   When actually generated, it is cropped based on the original image, and the clarity can be verified after saving.
 
 <div align=center>
 <img src="docs/FilmSubTiltleSplicing.png" width="90%" height="90%">
 </div>
 
-## GIF recording (egif and gif-h libraries) and screenshot functions
+* * *
 
-1.  The following is the use of GIF recording function and the recording screenshot recording function;
-2.  After taking the screenshot, you can use (4) to draw the graphics;
+### 6. GIF recording (egif/gif-h library) and screenshot functions
+
+-   The following image uses the GIF recording function to demonstrate the screenshot process:
+-   After taking a screenshot, you can use the graphics drawing function in (4) to edit it.
 
 <div align=center>
 <img src="docs/Record_Screenshot.gif" width="90%" height="90%">
