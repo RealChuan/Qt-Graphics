@@ -1,22 +1,36 @@
 name: CodeQL
 
-on: 
+on:
   push:
     paths-ignore:
-        - 'docs/**'
-        - '.clang-format'
-        - '.gitignore'
-        - 'LICENSE'
-        - 'README*'
+      - 'docs/**'
+      - 'packaging/**'
+      - 'qmake/**'
+      - 'translations/**'
+      - '**/*.md'
+      - '**/*.txt'
+      - '**/.clang-*'
+      - '**/.gitignore'
+      - '**/*.pri'
+      - '**/LICENSE*'
+      - '**/*.pro'
+      - '**/README*'
     branches-ignore:
         - 'dependabot/**'
   pull_request:
     paths-ignore:
-        - 'docs/**'
-        - '.clang-format'
-        - '.gitignore'
-        - 'LICENSE'
-        - 'README*'
+      - 'docs/**'
+      - 'packaging/**'
+      - 'qmake/**'
+      - 'translations/**'
+      - '**/*.md'
+      - '**/*.txt'
+      - '**/.clang-*'
+      - '**/.gitignore'
+      - '**/*.pri'
+      - '**/LICENSE*'
+      - '**/*.pro'
+      - '**/README*'
     branches-ignore:
         - 'dependabot/**'
         
@@ -24,9 +38,6 @@ on:
     - cron: '0 0 1 * *'
   workflow_dispatch:
   
-env:
-  MACOSX_DEPLOYMENT_TARGET: 12.0
-
 jobs:
   CodeQL:
     runs-on: ubuntu-latest

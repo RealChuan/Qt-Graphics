@@ -3,7 +3,7 @@
 
 #include <graphics/imageview.h>
 #include <utils/icowriter.hpp>
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 
 #include <QtWidgets>
 

@@ -5,6 +5,8 @@
 
 #include "utilstr.h"
 
+#include <QDir>
+
 #if !defined(QT_NO_OPENGL) && defined(QT_GUI_LIB)
 #include <QOpenGLContext>
 #endif
@@ -21,46 +23,32 @@
 #include <sys/sysctl.h>
 #endif
 
-using namespace Utils;
+namespace Utils {
 
 Qt::CaseSensitivity HostOsInfo::m_overrideFileNameCaseSensitivity = Qt::CaseSensitive;
 bool HostOsInfo::m_useOverrideFileNameCaseSensitivity = false;
 
-#ifdef Q_OS_WIN
-static auto hostProcessorArchitecture() -> WORD
+OsArch HostOsInfo::hostArchitecture()
 {
-    SYSTEM_INFO info;
-    GetNativeSystemInfo(&info);
-    return info.wProcessorArchitecture;
-}
-#endif
+#ifdef Q_OS_WIN
+    // Workaround for Creator running in x86 emulation mode on ARM machines
+    static const OsArch arch = []() {
+        const HANDLE procHandle = GetCurrentProcess();
+        ushort processMachine;
+        ushort nativeMachine;
+        if (IsWow64Process2(procHandle, &processMachine, &nativeMachine)
+            && nativeMachine == IMAGE_FILE_MACHINE_ARM64) {
+            return OsArchArm64;
+        }
 
-auto HostOsInfo::hostArchitecture() -> HostOsInfo::HostArchitecture
-{
-#ifdef Q_OS_WIN
-    static const WORD processorArchitecture = hostProcessorArchitecture();
-    switch (processorArchitecture) {
-    case PROCESSOR_ARCHITECTURE_AMD64: return HostOsInfo::HostArchitectureAMD64;
-    case PROCESSOR_ARCHITECTURE_INTEL: return HostOsInfo::HostArchitectureX86;
-    case PROCESSOR_ARCHITECTURE_IA64: return HostOsInfo::HostArchitectureItanium;
-    case PROCESSOR_ARCHITECTURE_ARM: return HostOsInfo::HostArchitectureArm;
-    case PROCESSOR_ARCHITECTURE_ARM64: return HostOsInfo::HostArchitectureArm64;
-    default: return HostOsInfo::HostArchitectureUnknown;
-    }
+        return osArchFromString(QSysInfo::currentCpuArchitecture()).value_or(OsArchUnknown);
+    }();
 #else
-    return HostOsInfo::HostArchitectureUnknown;
+    static const OsArch arch = osArchFromString(QSysInfo::currentCpuArchitecture())
+                                   .value_or(OsArchUnknown);
 #endif
-}
 
-auto HostOsInfo::isRunningUnderRosetta() -> bool
-{
-#ifdef Q_OS_MACOS
-    int translated = 0;
-    auto size = sizeof(translated);
-    if (sysctlbyname("sysctl.proc_translated", &translated, &size, nullptr, 0) == 0)
-        return translated;
-#endif
-    return false;
+    return arch;
 }
 
 void HostOsInfo::setOverrideFileNameCaseSensitivity(Qt::CaseSensitivity sensitivity)
@@ -74,19 +62,6 @@ void HostOsInfo::unsetOverrideFileNameCaseSensitivity()
     m_useOverrideFileNameCaseSensitivity = false;
 }
 
-auto HostOsInfo::canCreateOpenGLContext(QString *errorMessage) -> bool
-{
-#if defined(QT_NO_OPENGL) || !defined(QT_GUI_LIB)
-    Q_UNUSED(errorMessage)
-    return false;
-#else
-    static const bool canCreate = QOpenGLContext().create();
-    if (!canCreate)
-        *errorMessage = Tr::tr("Cannot create OpenGL context.");
-    return canCreate;
-#endif
-}
-
 std::optional<quint64> HostOsInfo::totalMemoryInstalledInBytes()
 {
 #ifdef Q_OS_LINUX
@@ -97,7 +72,7 @@ std::optional<quint64> HostOsInfo::totalMemoryInstalledInBytes()
 #elif defined(Q_OS_WIN)
     MEMORYSTATUSEX statex;
     statex.dwLength = sizeof statex;
-    if (GlobalMemoryStatusEx(&statex) == 0)
+    if (!GlobalMemoryStatusEx(&statex))
         return {};
     return statex.ullTotalPhys;
 #elif defined(Q_OS_MACOS)
@@ -110,3 +85,5 @@ std::optional<quint64> HostOsInfo::totalMemoryInstalledInBytes()
 #endif
     return {};
 }
+
+} // namespace Utils

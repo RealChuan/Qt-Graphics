@@ -1,4 +1,4 @@
-include(../../common.pri)
+include(../../qmake/PlatformLibraries.pri)
 
 QT       += core gui network openglwidgets widgets core5compat concurrent
 
@@ -13,9 +13,9 @@ LIBS += \
     -l$$replaceLibName(dump) \
     -l$$replaceLibName(utils)
 
-include(../../src/3rdparty/3rdparty.pri)
+include(../../qmake/InstallCrashpad.pri)
 
-DESTDIR = $$APP_OUTPUT_PATH
+DESTDIR = $$RUNTIME_OUTPUT_DIRECTORY
 
 SOURCES += \
     ../common/thumbnailcache.cc \
@@ -77,3 +77,5 @@ win32{
 
 #    DEFINES += BUILD_VULKAN
 }
+
+QMAKE_POST_LINK += $$setup_crashpad_handler($$RUNTIME_OUTPUT_DIRECTORY)

@@ -27,7 +27,7 @@ set(PROJECT_SOURCES
     imageview.cpp
     imageview.h)
 
-add_custom_library(graphics ${PROJECT_SOURCES})
+add_platform_library(graphics ${PROJECT_SOURCES})
 target_link_libraries(graphics PRIVATE utils Qt::Concurrent Qt::Widgets)
 
 if(CMAKE_HOST_WIN32)

@@ -1,10 +1,11 @@
 #include "mainwindow.hpp"
 
 #include <3rdparty/qtsingleapplication/qtsingleapplication.h>
-#include <dump/breakpad.hpp>
+#include <dump/crashpad.hpp>
 #include <examples/appinfo.hpp>
+#include <utils/hostosinfo.h>
 #include <utils/logasync.h>
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 
 #include <QApplication>
 #include <QDir>
@@ -37,26 +38,37 @@ int main(int argc, char *argv[])
         }
     }
 
-#ifndef Q_OS_WIN
-    Q_INIT_RESOURCE(shader);
-#endif
+    if (Utils::HostOsInfo::isWindowsHost()) {
+        // The Windows 11 default style (Qt 6.7) has major issues, therefore
+        // set the previous default style: "windowsvista"
+        // FIXME: check newer Qt Versions
+        QApplication::setStyle(QLatin1String("windowsvista"));
 
-#ifdef Q_OS_WIN
-    if (!qFuzzyCompare(app.devicePixelRatio(), 1.0)
-        && QApplication::style()->objectName().startsWith(QLatin1String("windows"),
-                                                          Qt::CaseInsensitive)) {
-        QApplication::setStyle(QLatin1String("fusion"));
+        // On scaling different than 100% or 200% use the "fusion" style
+        qreal tmp;
+        const bool fractionalDpi = !qFuzzyIsNull(std::modf(qApp->devicePixelRatio(), &tmp));
+        if (fractionalDpi) {
+            QApplication::setStyle(QLatin1String("fusion"));
+        }
     }
-#endif
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     app.setAttribute(Qt::AA_UseHighDpiPixmaps);
     app.setAttribute(Qt::AA_DisableWindowContextHelpButton);
 #endif
+
+#ifndef Q_OS_WIN
+    Q_INIT_RESOURCE(shader);
+#endif
+
     setAppInfo();
-    Dump::BreakPad::instance()->setDumpPath(Utils::crashPath());
+
+    Dump::CrashPad crashpad(Utils::crashPath(), app.applicationDirPath(), "", true);
+    // auto *breakPad = Dump::BreakPad::instance();
+    // breakPad->setDumpPath(Utils::crashPath());
+    // QObject::connect(breakPad, &Dump::BreakPad::crash, [] { Dump::openCrashReporter(); });
+
     QDir::setCurrent(app.applicationDirPath());
 
-    // 异步日志
     auto *log = Utils::LogAsync::instance();
     log->setLogPath(Utils::logPath());
     log->setAutoDelFile(true);
@@ -64,6 +76,9 @@ int main(int argc, char *argv[])
     log->setOrientation(Utils::LogAsync::Orientation::StandardAndFile);
     log->setLogLevel(QtDebugMsg);
     log->startWork();
+
+    qInfo().noquote() << "\n\n" + Utils::systemInfo() + "\n\n";
+    Utils::setPixmapCacheLimit();
 
     // Make sure we honor the system's proxy settings
     QNetworkProxyFactory::setUseSystemConfiguration(true);

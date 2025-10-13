@@ -1,4 +1,5 @@
 set(PROJECT_SOURCES
+    expected.h
     hostosinfo.cpp
     hostosinfo.h
     icowriter.cc
@@ -10,16 +11,23 @@ set(PROJECT_SOURCES
     logfile.cc
     logfile.hpp
     osspecificaspects.h
+    qtcassert.cpp
+    qtcassert.h
+    result.cpp
+    result.h
     singleton.hpp
+    threadutils.cpp
+    threadutils.h
     utils_global.h
-    utils.cpp
-    utils.h
+    utils.cc
+    utils.hpp
     utilstr.h
     validator.cc
     validator.hpp)
 
-add_custom_library(utils ${PROJECT_SOURCES})
-target_link_libraries(utils PRIVATE Qt::Concurrent Qt::Widgets Qt::Core5Compat)
+add_platform_library(utils ${PROJECT_SOURCES})
+target_link_libraries(utils PRIVATE Qt::Concurrent Qt::Widgets Qt::Core5Compat
+                                    tl::expected)
 
 if(CMAKE_HOST_WIN32)
   target_compile_definitions(utils PRIVATE "UTILS_LIBRARY")

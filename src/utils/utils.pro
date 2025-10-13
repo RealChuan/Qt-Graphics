@@ -1,11 +1,11 @@
-include(../slib.pri)
+include(../../qmake/PlatformLibraries.pri)
 
 QT += widgets core5compat concurrent
 
 DEFINES += UTILS_LIBRARY
-TARGET = $$replaceLibName(utils)
+TARGET = $$add_platform_library(utils)
 
-DEFINES += QT_DEPRECATED_WARNINGS
+include(../../qmake/VcpkgToolchain.pri)
 
 SOURCES += \
     hostosinfo.cpp \
@@ -13,17 +13,24 @@ SOURCES += \
     imagecache.cc \
     logasync.cpp \
     logfile.cc \
-    utils.cpp \
+    qtcassert.cpp \
+    result.cpp \
+    threadutils.cpp \
+    utils.cc \
     validator.cc
 
 HEADERS += \
+    expected.h \
     hostosinfo.h \
     icowriter.hpp \
     imagecache.hpp \
     logasync.h \
     logfile.hpp \
     osspecificaspects.h \
+    qtcassert.h \
+    result.h \
     singleton.hpp \
+    threadutils.h \
     utils_global.h \
-    utils.h \
+    utils.hpp \
     validator.hpp

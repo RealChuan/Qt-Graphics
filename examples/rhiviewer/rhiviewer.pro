@@ -1,4 +1,4 @@
-include(../../common.pri)
+include(../../qmake/PlatformLibraries.pri)
 
 QT       += core gui gui-private widgets network core5compat concurrent
 
@@ -12,9 +12,9 @@ LIBS += \
     -l$$replaceLibName(dump) \
     -l$$replaceLibName(utils)
 
-include(../../src/3rdparty/3rdparty.pri)
+include(../../qmake/InstallCrashpad.pri)
 
-DESTDIR = $$APP_OUTPUT_PATH
+DESTDIR = $$RUNTIME_OUTPUT_DIRECTORY
 
 SOURCES += \
     ../common/thumbnailcache.cc \
@@ -32,3 +32,5 @@ HEADERS += \
     ../common/imagelistmodel.h \
     mainwindow.hpp \
     rhiviewer.hpp
+
+QMAKE_POST_LINK += $$setup_crashpad_handler($$RUNTIME_OUTPUT_DIRECTORY)

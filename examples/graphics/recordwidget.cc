@@ -1,7 +1,7 @@
 #include "recordwidget.hpp"
 #include "recordgifthread.hpp"
 
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 
 #include <QtWidgets>
 

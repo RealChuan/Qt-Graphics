@@ -1,7 +1,7 @@
 #include "mainwindow.hpp"
 #include "rhiviewer.hpp"
 
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)

@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 3.25.1)
 
-include(cmake/vcpkg.cmake)
-include(cmake/qt.cmake)
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(utils)
-include(qt_utils)
+include(cmake/macOSDeploymentTarget.cmake)
+include(cmake/VcpkgToolchain.cmake)
+include(cmake/QtSetup.cmake)
 
 project(
   Qt-Graphics
@@ -16,15 +13,24 @@ project(
 
 option(BUILD_VULKAN "build vulkan" OFF)
 
-include(cmake/common.cmake)
+include(cmake/ProjectSettings.cmake)
+include(cmake/InstallConfig.cmake)
+include(cmake/PlatformLibraries.cmake)
+include(cmake/InstallCrashpad.cmake)
 
-find_package(Qt6 REQUIRED COMPONENTS Gui Widgets Network Core5Compat Concurrent
-                                     OpenGLWidgets)
+find_package(
+  Qt6 REQUIRED
+  COMPONENTS Gui
+             GuiPrivate
+             Widgets
+             Network
+             Core5Compat
+             Concurrent
+             OpenGLWidgets)
 
 qt_standard_project_setup()
-# qt_standard_project_setup will set CMAKE_RUNTIME_OUTPUT_DIRECTORY, we need to
-# set it back, and use EXECUTABLE_OUTPUT_PATH
-unset(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+
+include(cmake/QtUtilities.cmake)
 
 find_package(unofficial-breakpad CONFIG REQUIRED)
 if(unofficial-breakpad_FOUND)
@@ -33,6 +39,10 @@ endif()
 find_package(crashpad CONFIG REQUIRED)
 if(crashpad_FOUND)
   message(STATUS "found crashpad")
+endif()
+find_package(tl-expected CONFIG REQUIRED)
+if(tl-expected_FOUND)
+  message(STATUS "found tl-expected")
 endif()
 find_package(freeimage CONFIG REQUIRED)
 if(freeimage_FOUND)
@@ -55,6 +65,8 @@ if(BUILD_VULKAN)
   endif()
 endif()
 
-include_directories(src)
+include_directories(${PROJECT_SOURCE_DIR} src)
 add_subdirectory(src)
 add_subdirectory(examples)
+
+include(cmake/CMakeDebugInfo.cmake)

@@ -1,12 +1,13 @@
-include(../3rdparty/3rdparty.pri)
-include(../slib.pri)
+include(../../qmake/PlatformLibraries.pri)
 
 QT += widgets concurrent
 
 DEFINES += QGRAPHICSMAGICK_LIBRARY
-TARGET = $$replaceLibName(qgraphicsmagick)
+TARGET = $$add_platform_library(qgraphicsmagick)
 
 LIBS += -l$$replaceLibName(utils)
+
+include(../../qmake/VcpkgToolchain.pri)
 
 HEADERS += \
     freeimageutils.hpp \

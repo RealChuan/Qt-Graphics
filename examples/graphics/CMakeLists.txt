@@ -69,5 +69,8 @@ target_link_libraries(
           Qt::OpenGLWidgets
           Qt::Network
           Qt::Concurrent
-          egif)
+          egif
+          tl::expected)
 qt_finalize_executable(Qt-Graphics)
+
+setup_crashpad_handler("${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")

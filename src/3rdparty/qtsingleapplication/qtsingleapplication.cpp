@@ -5,6 +5,7 @@
 #include "qtlocalpeer.h"
 
 #include <3rdparty/ui_watchdog/uiwatchdog.h>
+#include <utils/utils.hpp>
 
 #include <QDir>
 #include <QFileOpenEvent>
@@ -170,9 +171,7 @@ QWidget *QtSingleApplication::activationWindow() const
 void QtSingleApplication::activateWindow()
 {
     if (actWin) {
-        actWin->setWindowState(actWin->windowState() & ~Qt::WindowMinimized);
-        actWin->raise();
-        actWin->activateWindow();
+        Utils::restoreAndActivate(actWin);
     }
 }
 

@@ -1,18 +1,29 @@
 # C++ objects and libs
-*.slo
-*.lo
 *.o
 *.a
-*.la
-*.lai
 *.so
 *.so.*
 *.dll
 *.dylib
 *.lib
 *.exp
+*.slo
+*.lo
+*.la
+*.lai
 
-# Qt-es
+# Qt generated files
+*.moc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.qmlc
+*.jsc
+*.qm
+*.prl
+
+# Qt build files and configurations
 object_script.*.Release
 object_script.*.Debug
 *_plugin_import.cpp
@@ -22,42 +33,81 @@ object_script.*.Debug
 *.pro.user.*
 *.qbs.user
 *.qbs.user.*
-*.moc
-moc_*.cpp
-moc_*.h
-qrc_*.cpp
-ui_*.h
-*.qmlc
-*.jsc
 Makefile*
 *build-*
-*.qm
-*.prl
-
-# Qt unit tests
 target_wrapper.*
 
-# QtCreator
+# QtCreator generated files
 *.autosave
-
-# QtCreator Qml
 *.qmlproject.user
 *.qmlproject.user.*
-
-# QtCreator CMake
 CMakeLists.txt.user*
-
-# QtCreator 4.8< compilation database 
 compile_commands.json
-
-# QtCreator local machine specific files for imported projects
 *creator.user*
 
-# Others
-bin-*/
-.vscode/
+# Temporary and machine-specific files
+*~
+*.autosave
+*.core
+*.flc
+.*.swp
+*.ib_pdb_index
+*.idb
+*.ilk
+*.pdb
+*.sln
+*.suo
+*.vcproj
+*vcproj.*.*
+*.ncb
+*.sdf
+*.opensdf
+*.vcxproj
+*vcxproj.*
+*.Debug
+*.Release
+*.pyc
+
+# System and editor files
+core
+!core/
+tags
+.DS_Store
+.directory
+*.*#
+.#*
+
+# Visual Studio generated files
+*.sln
+*.suo
+
+# MinGW generated files
+*.o
+
+# Binaries
+*.dll
+*.exe
+
+# 编译 & 打包产出
 build/
-build*/
-lib-*/
-.cache/
+debian/tmp/
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/files
+debian/*.log
+debian/*.substvars
+*.deb
+*.changes
+*.buildinfo
+*.upload
+obj-x86_64-linux-gnu/
+
+# Others
+.cache
+.vscode
+binaries
+output
+packet
+releases
+install
 *.spv
