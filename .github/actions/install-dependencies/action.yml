@@ -1,20 +1,21 @@
-name: 'Install Dependencies'
-description: 'Install vcpkg libraries and qt environment'
+name: 'Install Build Dependencies'
+description: 'Install vcpkg libraries and Qt environment for cross-platform builds'
+
 inputs:
   vcpkg_libs:
-    description: 'vcpkg libraries'
+    description: 'vcpkg libraries to install'
     required: false
-    default: 'breakpad crashpad freeimage giflib opencv[contrib,thread]'
+    default: 'breakpad crashpad freeimage giflib opencv[contrib,thread] tl-expected'
     type: string
   qt_modules:
-    description: 'qt modules'
+    description: 'Qt modules to install'
     required: false
     default: 'qt5compat qtnetworkauth qtimageformats'
     type: string
   qt_ver:
-    description: 'qt version'
+    description: 'Qt version to install'
     required: false
-    default: '6.9.2'
+    default: '6.10.0'
     type: string
 
 runs:
@@ -37,7 +38,7 @@ runs:
         key: ${{ runner.os }}-vcpkg-installed-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-vcpkg-installed-
-          ${{ runner.os }}-
+          ${{ runner.os }}-vcpkg-
 
     - name: Cache macos or linux vcpkg
       if: runner.os == 'macOS' || runner.os == 'Linux'
@@ -46,26 +47,27 @@ runs:
         path: /usr/local/share/vcpkg/installed
         key: ${{ runner.os }}-vcpkg-installed-${{ github.sha }}
         restore-keys: |
-           ${{ runner.os }}-vcpkg-installed-
-           ${{ runner.os }}-
+          ${{ runner.os }}-vcpkg-installed-
+          ${{ runner.os }}-vcpkg-
 
     - name: Install dependencies on windows
       if: runner.os == 'Windows'
       shell: bash
       run: |
-        choco install ninja
         ninja --version
         cmake --version
         vcpkg install ${{ inputs.vcpkg_libs }} --triplet x64-windows || (cat C:/vcpkg/installed/vcpkg/issue_body.md && exit 1)
+        # vcpkg install ${{ inputs.vcpkg_libs }} --triplet x64-windows-static-md || (cat C:/vcpkg/installed/vcpkg/issue_body.md && exit 1)
 
     - name: Install dependencies on macos
       if: runner.os == 'macOS'
       shell: bash
       run: |
-        brew install python-setuptools
+        brew install python-setuptools tree
         ninja --version
         cmake --version
         clang --version
+        vcpkg install ${{ inputs.vcpkg_libs }} --triplet x64-osx || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
         vcpkg install ${{ inputs.vcpkg_libs }} --triplet arm64-osx || (cat /usr/local/share/vcpkg/installed/vcpkg/issue_body.md && exit 1)
 
     - name: Install dependencies on linux
@@ -85,4 +87,4 @@ runs:
       with:
         version: ${{ inputs.qt_ver }}
         modules: ${{ inputs.qt_modules }}
-        cache: 'true'  
+        cache: true

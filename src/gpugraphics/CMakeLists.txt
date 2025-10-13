@@ -17,7 +17,7 @@ endif()
 
 qt_add_resources(SOURCES shader.qrc)
 
-add_custom_library(gpugraphics ${PROJECT_SOURCES} ${SOURCES})
+add_platform_library(gpugraphics ${PROJECT_SOURCES} ${SOURCES})
 target_link_libraries(gpugraphics PRIVATE utils Qt::Concurrent Qt::GuiPrivate
                                           Qt::Gui Qt::Widgets Qt::OpenGLWidgets)
 
@@ -49,8 +49,8 @@ if(BUILD_VULKAN)
     TARGET gpugraphics
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory
-            "${EXECUTABLE_OUTPUT_PATH}/vulkan_shader/"
+            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/vulkan_shader/"
     COMMAND
       ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/shaders/vulkan"
-      "${EXECUTABLE_OUTPUT_PATH}/vulkan_shader")
+      "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/vulkan_shader")
 endif()

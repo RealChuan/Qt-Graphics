@@ -2,7 +2,7 @@
 #include "thumbnail.hpp"
 
 #include <utils/imagecache.hpp>
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 
 #include <QCache>
 #include <QMutex>

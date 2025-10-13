@@ -1,4 +1,4 @@
-include(../../common.pri)
+include(../../qmake/PlatformLibraries.pri)
 
 QT       += core gui network widgets core5compat concurrent
 
@@ -13,9 +13,9 @@ LIBS += \
     -l$$replaceLibName(dump) \
     -l$$replaceLibName(utils)
 
-include(../../src/3rdparty/3rdparty.pri)
+include(../../qmake/InstallCrashpad.pri)
 
-DESTDIR = $$APP_OUTPUT_PATH
+DESTDIR = $$RUNTIME_OUTPUT_DIRECTORY
 
 SOURCES += \
     ../common/imagelistmodel.cpp \
@@ -33,3 +33,13 @@ HEADERS += \
     ../common/viewer.hpp \
     mainwindow.hpp \
     opencvwidget.hpp
+
+win32 | unix:!macx {
+    CRASHPAD_TARGET_DIR = $$RUNTIME_OUTPUT_DIRECTORY
+}
+
+macx {
+    CRASHPAD_TARGET_DIR = $$RUNTIME_OUTPUT_DIRECTORY/$$member(TARGET, 0).app/Contents/MacOS
+}
+
+QMAKE_POST_LINK += $$setup_crashpad_handler($$CRASHPAD_TARGET_DIR)

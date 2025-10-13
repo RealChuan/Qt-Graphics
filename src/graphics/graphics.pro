@@ -1,9 +1,9 @@
-include(../slib.pri)
+include(../../qmake/PlatformLibraries.pri)
 
 QT += widgets concurrent
 
 DEFINES += GRAPHICS_LIBRARY
-TARGET = $$replaceLibName(graphics)
+TARGET = $$add_platform_library(graphics)
 
 LIBS += -l$$replaceLibName(utils)
 

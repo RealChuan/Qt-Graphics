@@ -1,6 +1,6 @@
 #include "logasync.h"
 #include "logfile.hpp"
-#include "utils.h"
+#include "utils.hpp"
 
 #include <semaphore>
 #include <QDateTime>
@@ -164,13 +164,12 @@ auto LogAsync::maxConsoleLineSize() -> int
 void LogAsync::startWork()
 {
     start();
-    d_ptr->semaphore.acquire();
+    d_ptr->semaphore.acquire(); // 等待线程启动完成
 }
 
 void LogAsync::stop()
 {
-    // 可能有部分日志未写入文件，异步信号槽机制问题
-    if (isRunning()) {
+    if (isRunning()) { // 可能有部分日志未写入文件，异步信号槽机制问题
         quit();
         wait();
     }

@@ -3,7 +3,7 @@
 
 #include <3rdparty/gif/egif/GifEncoder.h>
 #include <3rdparty/gif/gif-h/gif.h>
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 
 #include <QPixmap>
 

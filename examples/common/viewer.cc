@@ -1,7 +1,7 @@
 #include "viewer.hpp"
 #include "thumbnailcache.hpp"
 
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 
 #include <QDir>
 #include <QPointer>

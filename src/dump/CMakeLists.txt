@@ -1,6 +1,6 @@
 set(PROJECT_SOURCES breakpad.hpp breakpad.cc crashpad.hpp crashpad.cc
                     dump_global.hpp)
-add_custom_library(dump ${PROJECT_SOURCES})
+add_platform_library(dump ${PROJECT_SOURCES})
 target_link_libraries(
   dump
   PRIVATE utils Qt::Concurrent Qt::Widgets unofficial::breakpad::libbreakpad

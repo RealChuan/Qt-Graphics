@@ -2,7 +2,7 @@
 
 #include <examples/common/imagelistmodel.h>
 #include <gpugraphics/openglview.hpp>
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 
 #include <QtWidgets>
 

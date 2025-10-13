@@ -24,5 +24,8 @@ target_link_libraries(
           Qt::Gui
           Qt::Widgets
           Qt::Network
-          Qt::Concurrent)
+          Qt::Concurrent
+          tl::expected)
 qt_finalize_executable(Qt-RhiViewer)
+
+setup_crashpad_handler("${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")

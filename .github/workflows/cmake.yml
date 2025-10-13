@@ -1,23 +1,37 @@
 name: CMake Build
 
-on: 
+on:
   push:
     paths-ignore:
-        - 'docs/**'
-        - '.clang-format'
-        - '.gitignore'
-        - 'LICENSE'
-        - 'README*'
+      - 'docs/**'
+      - 'qmake/**'
+      - 'translations/**'
+      - '**/*.md'
+      - '**/*.txt'
+      - '**/.clang-*'
+      - '**/.gitignore'
+      - '**/*.pri'
+      - '**/LICENSE*'
+      - '**/*.pro'
+      - '**/README*'
   pull_request:
     paths-ignore:
-        - 'docs/**'
-        - '.clang-format'
-        - '.gitignore'
-        - 'LICENSE'
-        - 'README*'
+      - 'docs/**'
+      - 'qmake/**'
+      - 'translations/**'
+      - '**/*.md'
+      - '**/*.txt'
+      - '**/.clang-*'
+      - '**/.gitignore'
+      - '**/*.pri'
+      - '**/LICENSE*'
+      - '**/*.pro'
+      - '**/README*'
 
 env:
-  MACOSX_DEPLOYMENT_TARGET: 12.0
+  MACOSX_DEPLOYMENT_TARGET: '13.0'
+  BUILD_DIR: build
+  BUILD_TYPE: RelWithDebInfo
 
 jobs:
   build:
@@ -28,12 +42,16 @@ jobs:
       matrix:
         os:
           - windows-latest
-          - macos-latest
           - ubuntu-latest
-        build_type:
-          - "RelWithDebInfo"
+          - macos-latest
         generators:
           - "Ninja"
+        arch:
+          - x86_64
+        include:
+          - os: macos-latest
+            generators: "Ninja"
+            arch: arm64
 
     steps:
       - uses: actions/checkout@v5
@@ -42,35 +60,51 @@ jobs:
           
       - uses: ./.github/actions/install-dependencies
 
-      - name: Configure and build on windows
+      - name: Configure and build windows
         if: startsWith(matrix.os, 'windows')
         shell: pwsh
         run: |
           .\packaging\windows\Enter-VsDevShell.ps1
           cmake `
             -S . `
-            -B ./build `
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+            -B "${{ env.BUILD_DIR }}" `
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
             -G "${{ matrix.generators }}"
-          cmake --build ./build --config ${{ matrix.build_type }}
-      - name: Configure and build on macos
-        if: startsWith(matrix.os, 'macos')
-        shell: bash
-        run: |
-          cmake \
-            -S . \
-            -B ./build \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-            -G "${{ matrix.generators }}"
-          cmake --build ./build --config ${{ matrix.build_type }}
-      - name: Configure and build on ubuntu
+          cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
+
+      - name: Configure and build ubuntu
         if: startsWith(matrix.os, 'ubuntu')
         shell: bash
         run: |
           cmake \
             -S . \
-            -B ./build \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -B "${{ env.BUILD_DIR }}" \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
             -G "${{ matrix.generators }}"
-          cmake --build ./build --config ${{ matrix.build_type }}
+          cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
+
+      - name: Configure and build macos
+        if: startsWith(matrix.os, 'macos')
+        shell: bash
+        run: |
+          cmake \
+            -S . \
+            -B "${{ env.BUILD_DIR }}" \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_OSX_ARCHITECTURES="${{ matrix.arch }}" \
+            -G "${{ matrix.generators }}"
+          cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
           
+      - name: Display binary directory tree (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cd binaries/
+          cmd /c tree /f
+
+      - name: Display binary directory tree (Unix-like)
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        shell: bash
+        run: |
+          cd binaries/
+          tree

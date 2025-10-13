@@ -1,9 +1,9 @@
-include(../slib.pri)
+include(../../qmake/PlatformLibraries.pri)
 
 QT += gui-private gui widgets openglwidgets concurrent
 
 DEFINES += GPUGRAPHICS_LIBRARY
-TARGET = $$replaceLibName(gpugraphics)
+TARGET = $$add_platform_library(gpugraphics)
 
 LIBS += -l$$replaceLibName(utils)
 
@@ -24,7 +24,7 @@ SOURCES += \
 RESOURCES += \
     shader.qrc
 
-win32{
+win32 {
 #    HEADERS += \
 #        vulkanrenderer.hpp \
 #        vulkanview.hpp

@@ -2,7 +2,7 @@
 
 #include <examples/common/imagelistmodel.h>
 #include <graphics/imageview.h>
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 #include <qopencv/opencvutils.hpp>
 #include <qopencv/qopencv.hpp>
 

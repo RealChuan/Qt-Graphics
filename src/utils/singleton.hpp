@@ -27,7 +27,7 @@ auto Singleton<T>::getInstance() -> T *
 
 #define SINGLETON(Class) \
 private: \
-    Q_DISABLE_COPY_MOVE(Class); \
+    Q_DISABLE_COPY_MOVE(Class) \
     friend class Utils::Singleton<Class>; \
 \
 public: \

@@ -53,7 +53,7 @@ set(PROJECT_SOURCES
     qopencv.cc
     qopencv.hpp)
 
-add_custom_library(qopencv ${PROJECT_SOURCES})
+add_platform_library(qopencv ${PROJECT_SOURCES})
 target_link_libraries(qopencv PRIVATE utils Qt::Concurrent Qt::Widgets
                                       ${OpenCV_LIBS})
 target_compile_definitions(qopencv PRIVATE "LINK_DNN_SUPERRES")

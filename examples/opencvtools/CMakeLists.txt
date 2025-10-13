@@ -27,5 +27,8 @@ target_link_libraries(
           Qt::OpenGLWidgets
           Qt::Network
           Qt::Concurrent
-          ${OpenCV_LIBS})
+          ${OpenCV_LIBS}
+          tl::expected)
 qt_finalize_executable(Qt-OpenCV)
+
+setup_crashpad_handler("${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")

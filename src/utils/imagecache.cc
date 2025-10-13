@@ -1,5 +1,6 @@
 #include "imagecache.hpp"
-#include "utils.h"
+#include "threadutils.h"
+#include "utils.hpp"
 
 #include <QCache>
 #include <QImage>

@@ -1,6 +1,6 @@
 #include "breakpad.hpp"
 
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 
 #include <QDebug>
 #include <QDesktopServices>
@@ -33,7 +33,7 @@ auto callback(const wchar_t *dump_path,
     if (succeeded) {
         qInfo() << "Create dump file success:" << QString::fromWCharArray(dump_path)
                 << QString::fromWCharArray(id);
-        emit BreakPad::instance()->crash();
+        emit BreakPad::instance() -> crash();
     } else {
         qWarning() << "Create dump file failed";
     }
@@ -44,7 +44,7 @@ bool callback(const char *dump_dir, const char *minidump_id, void *, bool succee
 {
     if (succeeded) {
         qInfo() << "Create dump file success:" << dump_dir << minidump_id;
-        emit BreakPad::instance()->crash();
+        emit BreakPad::instance() -> crash();
     } else {
         qWarning() << "Create dump file failed";
     }
@@ -56,7 +56,7 @@ bool callback(const google_breakpad::MinidumpDescriptor &descriptor, void *conte
     Q_UNUSED(context)
     if (succeeded) {
         qInfo() << "Create dump file success:" << QString::fromLocal8Bit(descriptor.path());
-        emit BreakPad::instance()->crash();
+        emit BreakPad::instance() -> crash();
     } else {
         qWarning() << "Create dump file failed";
     }

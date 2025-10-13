@@ -1,6 +1,6 @@
 #include "canny.hpp"
 
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 
 #include <QtWidgets>
 

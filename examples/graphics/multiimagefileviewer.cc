@@ -1,7 +1,7 @@
 #include "multiimagefileviewer.hpp"
 
 #include <graphics/imageview.h>
-#include <utils/utils.h>
+#include <utils/utils.hpp>
 
 #include <QtWidgets>
 

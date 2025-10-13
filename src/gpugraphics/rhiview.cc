@@ -31,7 +31,7 @@ public:
         scene.vbuf.reset(rhi->newBuffer(QRhiBuffer::Immutable,
                                         QRhiBuffer::VertexBuffer,
                                         sizeof(GpuGraphics::vertices)));
-        scene.vbuf->create();
+        qInfo() << "vbuf create:" << scene.vbuf->create();
 
         scene.resourceUpdates = rhi->nextResourceUpdateBatch();
         scene.resourceUpdates->uploadStaticBuffer(scene.vbuf.get(), GpuGraphics::vertices);
@@ -39,19 +39,19 @@ public:
         scene.ibuf.reset(rhi->newBuffer(QRhiBuffer::Immutable,
                                         QRhiBuffer::IndexBuffer,
                                         sizeof(GpuGraphics::indices)));
-        scene.ibuf->create();
+        qInfo() << "ibuf create:" << scene.ibuf->create();
         scene.resourceUpdates->uploadStaticBuffer(scene.ibuf.get(), GpuGraphics::indices);
 
         scene.ubuf.reset(
             rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 16 * sizeof(float)));
-        scene.ubuf->create();
+        qInfo() << "ubuf create:" << scene.ubuf->create();
 
         scene.sampler.reset(rhi->newSampler(QRhiSampler::Linear,
                                             QRhiSampler::Linear,
                                             QRhiSampler::None,
                                             QRhiSampler::ClampToEdge,
                                             QRhiSampler::ClampToEdge));
-        scene.sampler->create();
+        qInfo() << "sampler create:" << scene.sampler->create();
 
         scene.ps.reset(rhi->newGraphicsPipeline());
         scene.ps->setDepthTest(true);

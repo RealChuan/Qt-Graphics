@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "utils.hpp"
 #include "hostosinfo.h"
 #include "utilstr.h"
 
@@ -12,7 +12,9 @@
 #endif
 // clang-format on
 
-auto Utils::readImages(const QString &path) -> QList<QImage>
+namespace Utils {
+
+auto readImages(const QString &path) -> QList<QImage>
 {
     QList<QImage> list;
     QImageReader reader(path);
@@ -33,7 +35,17 @@ auto Utils::readImages(const QString &path) -> QList<QImage>
     return list;
 }
 
-auto Utils::desktopGeometry() -> QRect
+QWidget *getTopParentWidget(QWidget *child)
+{
+    Q_ASSERT(child);
+    auto *widget = child;
+    while (widget->parentWidget()) {
+        widget = widget->parentWidget();
+    }
+    return widget;
+}
+
+auto desktopGeometry() -> QRect
 {
     QRect geometry;
     auto screens = QGuiApplication::screens();
@@ -46,7 +58,7 @@ auto Utils::desktopGeometry() -> QRect
     return geometry;
 }
 
-auto Utils::grabFullWindow() -> QPixmap
+auto grabFullWindow() -> QPixmap
 {
     // auto pixmap = screen()->grabWindow();
     // auto pixmap = QApplication::primaryScreen()->grabWindow();
@@ -63,12 +75,12 @@ auto Utils::grabFullWindow() -> QPixmap
     return pixmap;
 }
 
-void Utils::setUTF8Code()
+void setUTF8Code()
 {
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 }
 
-void Utils::setQSS(const QStringList &qssFilePaths)
+void setQSS(const QStringList &qssFilePaths)
 {
     QStringList qssFiles;
     for (const auto &path : std::as_const(qssFilePaths)) {
@@ -87,7 +99,7 @@ void Utils::setQSS(const QStringList &qssFilePaths)
     qApp->setStyleSheet(qssFiles.join("\n"));
 }
 
-void Utils::loadFonts(const QString &fontPath)
+void loadFonts(const QString &fontPath)
 {
     const QDir dir(fontPath);
     if (!dir.exists()) {
@@ -106,7 +118,7 @@ void Utils::loadFonts(const QString &fontPath)
     }
 }
 
-void Utils::windowCenter(QWidget *child, QWidget *parent)
+void windowCenter(QWidget *child, QWidget *parent)
 {
     const QSize size = parent->size() - child->size();
     int x = qMax(0, size.width() / 2);
@@ -114,7 +126,7 @@ void Utils::windowCenter(QWidget *child, QWidget *parent)
     child->move(x, y);
 }
 
-void Utils::windowCenter(QWidget *window)
+void windowCenter(QWidget *window)
 {
     const QRect rect = qApp->primaryScreen()->availableGeometry();
     int x = (rect.width() - window->width()) / 2 + rect.x();
@@ -138,12 +150,27 @@ auto compilerString() -> QString
     return QLatin1String("<unknown compiler>");
 }
 
-auto Utils::isMainThread() -> bool
+void restoreAndActivate(QWidget *window)
 {
-    return QThread::currentThread() == qApp->thread();
+    if (window->isMinimized()) {
+        window->setWindowState(window->windowState() & ~Qt::WindowMinimized);
+    }
+
+    window->show();
+    window->raise();
+    window->activateWindow();
 }
 
-auto Utils::systemInfo() -> QString
+void addGraphicsDropShadowEffect(QWidget *widget, int blurRadius)
+{
+    auto *effect = new QGraphicsDropShadowEffect(widget);
+    effect->setOffset(0, 0);
+    effect->setColor(Qt::gray);
+    effect->setBlurRadius(blurRadius);
+    widget->setGraphicsEffect(effect);
+}
+
+auto systemInfo() -> QString
 {
     auto text = QString("%1 (%2) on %3 (%4) with CPU Cores: %5")
                     .arg(QSysInfo::prettyProductName(),
@@ -157,7 +184,7 @@ auto Utils::systemInfo() -> QString
     return text;
 }
 
-void Utils::setHighDpiEnvironmentVariable()
+void setHighDpiEnvironmentVariable()
 {
 #ifdef Q_OS_WIN
 
@@ -178,7 +205,7 @@ void Utils::setHighDpiEnvironmentVariable()
 #endif // Q_OS_WIN
 }
 
-void Utils::reboot()
+void reboot()
 {
     QProcess::startDetached(QApplication::applicationFilePath(),
                             QApplication::arguments(),
@@ -186,12 +213,12 @@ void Utils::reboot()
     QApplication::exit();
 }
 
-auto Utils::createDirectoryRecursively(const QString &path) -> bool
+auto createDirectoryRecursively(const QString &path) -> bool
 {
     return QDir().mkpath(path);
 }
 
-auto Utils::removeDirectory(const QString &path) -> bool
+auto removeDirectory(const QString &path) -> bool
 {
     if (path.isEmpty()) { // QDir("") points to the working directory! We never want to remove that one.
         return false;
@@ -205,7 +232,7 @@ auto Utils::removeDirectory(const QString &path) -> bool
     return dir.removeRecursively();
 }
 
-auto Utils::removeFile(const QString &path) -> bool
+auto removeFile(const QString &path) -> bool
 {
     if (path.isEmpty()) {
         return false;
@@ -218,7 +245,7 @@ auto Utils::removeFile(const QString &path) -> bool
     return file.remove();
 }
 
-QString Utils::formatBytes(qint64 bytes, int precision)
+QString formatBytes(qint64 bytes, int precision)
 {
     const QStringList list = {"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
     const int unit = 1024;
@@ -232,7 +259,7 @@ QString Utils::formatBytes(qint64 bytes, int precision)
     return QString("%1 %2").arg(QString::number(size, 'f', precision)).arg(list.at(index));
 }
 
-auto Utils::jsonFromFile(const QString &filePath) -> QJsonObject
+auto jsonFromFile(const QString &filePath) -> QJsonObject
 {
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -244,7 +271,7 @@ auto Utils::jsonFromFile(const QString &filePath) -> QJsonObject
     return jsonFromBytes(buf);
 }
 
-auto Utils::jsonFromBytes(const QByteArray &bytes) -> QJsonObject
+auto jsonFromBytes(const QByteArray &bytes) -> QJsonObject
 {
     QJsonParseError jsonParseError;
     auto jsonDocument = QJsonDocument::fromJson(bytes, &jsonParseError);
@@ -256,7 +283,7 @@ auto Utils::jsonFromBytes(const QByteArray &bytes) -> QJsonObject
     return jsonDocument.object();
 }
 
-auto Utils::configLocation() -> QString
+auto configLocation() -> QString
 {
     static QString path;
     if (path.isEmpty()) {
@@ -266,37 +293,11 @@ auto Utils::configLocation() -> QString
         }
     }
     //qInfo() << path;
-    Utils::createDirectoryRecursively(path);
+    createDirectoryRecursively(path);
     return path;
 }
 
-auto Utils::execMenuAtWidget(QMenu *menu, QWidget *widget) -> QAction *
-{
-    QPoint p;
-    QRect screen = widget->screen()->availableGeometry();
-    QSize sh = menu->sizeHint();
-    QRect rect = widget->rect();
-    if (widget->isRightToLeft()) {
-        if (widget->mapToGlobal(QPoint(0, rect.bottom())).y() + sh.height() <= screen.height()) {
-            p = widget->mapToGlobal(rect.bottomRight());
-        } else {
-            p = widget->mapToGlobal(rect.topRight() - QPoint(0, sh.height()));
-        }
-        p.rx() -= sh.width();
-    } else {
-        if (widget->mapToGlobal(QPoint(0, rect.bottom())).y() + sh.height() <= screen.height()) {
-            p = widget->mapToGlobal(rect.bottomLeft());
-        } else {
-            p = widget->mapToGlobal(rect.topLeft() - QPoint(0, sh.height()));
-        }
-    }
-    p.rx() = qMax(screen.left(), qMin(p.x(), screen.right() - sh.width()));
-    p.ry() += 1;
-
-    return menu->exec(p);
-}
-
-auto Utils::getPidFromProcessName(const QString &processName) -> qint64
+auto getPidFromProcessName(const QString &processName) -> qint64
 {
 #if defined(Q_OS_WIN)
     auto *hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -344,7 +345,7 @@ auto Utils::getPidFromProcessName(const QString &processName) -> qint64
 #endif
 }
 
-auto Utils::killProcess(qint64 pid) -> bool
+auto killProcess(qint64 pid) -> bool
 {
     qWarning() << "kill process: " << pid;
 #if defined(Q_OS_WIN)
@@ -360,7 +361,7 @@ auto Utils::killProcess(qint64 pid) -> bool
 #endif
 }
 
-void Utils::setMacComboBoxStyle(QWidget *parent)
+void setMacComboBoxStyle(QWidget *parent)
 {
 #ifndef Q_OS_MACOS
     return;
@@ -371,79 +372,123 @@ void Utils::setMacComboBoxStyle(QWidget *parent)
     }
 }
 
-void Utils::quitApplication()
+void quitApplication()
 {
     QMetaObject::invokeMethod(qApp, &QApplication::quit, Qt::QueuedConnection);
 }
 
-auto Utils::crashPath() -> QString
+auto crashPath() -> QString
 {
     const auto path = configLocation() + "/crash";
     createDirectoryRecursively(path);
     return path;
 }
 
-auto Utils::logPath() -> QString
+auto logPath() -> QString
 {
     const auto path = configLocation() + "/log";
     createDirectoryRecursively(path);
     return path;
 }
 
-auto Utils::configPath() -> QString
+auto configPath() -> QString
 {
     const auto path = configLocation() + "/config";
     createDirectoryRecursively(path);
     return path;
 }
 
-auto Utils::configFilePath() -> QString
+auto configFilePath() -> QString
 {
     return (configPath() + "/config.ini");
 }
 
-auto Utils::cachePath() -> QString
+auto cachePath() -> QString
 {
     const auto path = configLocation() + "/cache";
     createDirectoryRecursively(path);
     return path;
 }
 
-auto Utils::calculateDirectoryStats(const QString &path) -> DirectoryStats
+auto calculateDirectoryStats(const QString &path) -> DirectoryStats
 {
     DirectoryStats stats;
     if (path.isEmpty() || !QDir(path).exists()) {
         return stats;
     }
 
-    QStack<QString> dirs;
-    dirs.push(path);
-
-    while (!dirs.isEmpty()) {
-        QString dirPath = dirs.pop();
-        QDirIterator it(dirPath, QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot);
-
-        while (it.hasNext()) {
-            const QFileInfo info(it.next());
-            if (info.isDir()) {
-                dirs.push(info.filePath());
-                stats.folders++;
-            } else {
-                stats.size += info.size();
-                stats.files++;
-            }
+    QDirIterator it(path,
+                    QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot,
+                    QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        const QFileInfo info(it.next());
+        if (info.isDir()) {
+            stats.folders++;
+        } else {
+            stats.size += info.size();
+            stats.files++;
         }
     }
-
     return stats;
 }
 
-QWidget *Utils::getTopParentWidget(QWidget *child)
+QByteArray generateRandomData(int size)
 {
-    Q_ASSERT(child);
-    auto *widget = child;
-    while (widget->parentWidget()) {
-        widget = widget->parentWidget();
-    }
-    return widget;
+    const int numWords = (size + sizeof(quint32) - 1) / sizeof(quint32);
+    QVector<quint32> buffer(numWords);
+    QRandomGenerator::global()->fillRange(buffer.data(), numWords);
+    QByteArray data(reinterpret_cast<const char *>(buffer.constData()), numWords * sizeof(quint32));
+    data.resize(size);
+    return data;
 }
+
+double cpuBenchOnce(int durationMs, QCryptographicHash::Algorithm algorithm, const QByteArray &data)
+{
+    QElapsedTimer timer;
+    timer.start();
+
+    int totalBytes = 0;
+    volatile char dummy = 0; // 防止编译器优化
+
+    while (timer.elapsed() < durationMs) {
+        QByteArray hashResult = QCryptographicHash::hash(data, algorithm);
+        if (!hashResult.isEmpty()) {
+            dummy = hashResult.constData()[0]; // 强制使用哈希结果
+        }
+        totalBytes += data.size();
+    }
+
+    double elapsedSeconds = timer.elapsed() / 1000.0;
+    if (elapsedSeconds <= 0.0) {
+        return 0.0;
+    }
+    return (totalBytes / elapsedSeconds) / (1024 * 1024); // MB/s
+}
+
+double cpuBench(int iterations,
+                int durationMs,
+                int dataSize,
+                QCryptographicHash::Algorithm algorithm)
+{
+    double maxSpeed = 0.0;
+
+    for (int i = 0; i < iterations; ++i) {
+        auto data = generateRandomData(dataSize);
+        double speed = cpuBenchOnce(durationMs, algorithm, data);
+        if (speed > maxSpeed) {
+            maxSpeed = speed;
+        }
+    }
+
+    return maxSpeed;
+}
+
+void setPixmapCacheLimit()
+{
+    const int originalLimit = QPixmapCache::cacheLimit();
+    const qreal dpr = qApp->devicePixelRatio();
+    const qreal multiplier = std::clamp(dpr * dpr, 1.0, 4.0);
+    QPixmapCache::setCacheLimit(originalLimit * multiplier);
+}
+
+} // namespace Utils

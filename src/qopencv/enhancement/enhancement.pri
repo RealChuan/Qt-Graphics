@@ -17,7 +17,7 @@ SOURCES += \
     $$PWD/sharpen.cc 
 
 # 由于 abseil 库链接过于复杂，所以只在windows下支持SuperResolution
-win32{
+win32 {
    HEADERS += $$PWD/superresolution.hpp
    SOURCES += $$PWD/superresolution.cc
    DEFINES += LINK_DNN_SUPERRES
