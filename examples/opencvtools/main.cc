@@ -2,7 +2,7 @@
 
 #include <3rdparty/qtsingleapplication/qtsingleapplication.h>
 #include <dump/crashpad.hpp>
-#include <examples/appinfo.hpp>
+#include <utils/appdata.hpp>
 #include <utils/hostosinfo.h>
 #include <utils/logasync.h>
 #include <utils/utils.hpp>
@@ -16,12 +16,12 @@
 
 void setAppInfo()
 {
-    qApp->setApplicationVersion(AppInfo::version);
+    qApp->setApplicationVersion(Utils::version);
     qApp->setApplicationDisplayName(AppName);
     qApp->setApplicationName(AppName);
     qApp->setDesktopFileName(AppName);
-    qApp->setOrganizationDomain(AppInfo::organizationDomain);
-    qApp->setOrganizationName(AppInfo::organzationName);
+    qApp->setOrganizationDomain(Utils::organizationDomain);
+    qApp->setOrganizationName(Utils::organzationName);
     qApp->setWindowIcon(qApp->style()->standardIcon(QStyle::SP_MediaPlay));
 }
 

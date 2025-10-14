@@ -30,6 +30,14 @@ MultiImageFileViewer::MultiImageFileViewer(QWidget *parent)
 
 MultiImageFileViewer::~MultiImageFileViewer() {}
 
+void MultiImageFileViewer::setImageUrl(const QString &url)
+{
+    if (url.isEmpty()) {
+        return;
+    }
+    d_ptr->imageView->createScene(url);
+}
+
 void MultiImageFileViewer::onOpenImage()
 {
     const QString imageFilters(tr("Images (*.ico *.gif)"));

@@ -9,6 +9,8 @@ public:
     explicit MultiImageFileViewer(QWidget *parent = nullptr);
     ~MultiImageFileViewer() override;
 
+    void setImageUrl(const QString &url);
+
 private slots:
     void onOpenImage();
     void onChangedImage(int index);

@@ -1,4 +1,5 @@
 set(PROJECT_SOURCES
+    appdata.hpp
     expected.h
     hostosinfo.cpp
     hostosinfo.h

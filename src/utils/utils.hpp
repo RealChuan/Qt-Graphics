@@ -21,11 +21,10 @@ auto asynchronous(std::function<T()> &&func)
     QEventLoop loop;
     QFutureWatcher<T> watcher;
     QObject::connect(&watcher, &QFutureWatcher<T>::finished, &loop, &QEventLoop::quit);
-    auto future = QtConcurrent::run([func = std::move(func)]() mutable { return func(); });
-    watcher.setFuture(future);
+    watcher.setFuture(QtConcurrent::run([func = std::move(func)]() mutable { return func(); }));
     loop.exec();
 
-    return future.result();
+    return watcher.result();
 }
 
 UTILS_EXPORT QList<QImage> readImages(const QString &path);

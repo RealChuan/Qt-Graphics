@@ -101,6 +101,10 @@ auto ImageView::pixmapItem() -> GraphicsPixmapItem *
 void ImageView::createScene(const QString &imageUrl)
 {
     qDebug() << imageUrl;
+    if (imageUrl.isEmpty()) {
+        return;
+    }
+
     QImageReader imageRender(imageUrl);
     if (!imageRender.canRead()) {
         QMessageBox::warning(this,
@@ -296,7 +300,7 @@ void ImageView::dragMoveEvent(QDragMoveEvent *event)
 void ImageView::dropEvent(QDropEvent *event)
 {
     QGraphicsView::dropEvent(event);
-    const QList<QUrl> urls = event->mimeData()->urls();
+    const auto urls = event->mimeData()->urls();
     if (urls.isEmpty()) {
         return;
     }
@@ -407,7 +411,7 @@ void ImageView::drawCrossLine(QPainter *painter)
 void ImageView::emitScaleFactor()
 {
     // get scale factor directly from the transform matrix
-    qreal factor = transform().m11();
+    qreal factor = transform().m11() * devicePixelRatioF();
     emit scaleFactorChanged(factor);
 }
 

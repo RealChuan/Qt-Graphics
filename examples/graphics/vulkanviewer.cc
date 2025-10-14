@@ -26,6 +26,7 @@ VulkanViewer::VulkanViewer(QWidget *parent)
 {
     setupUI();
     buildConnect();
+    setEnableJumpToMultiPage(true);
 }
 
 VulkanViewer::~VulkanViewer()
@@ -79,6 +80,7 @@ auto VulkanViewer::toolWidget() -> QWidget *
     auto *rightLayout = new QVBoxLayout(widget);
     rightLayout->addWidget(m_openButton);
     rightLayout->addWidget(m_infoBox);
+    rightLayout->addWidget(m_jumpToMultiPageButton);
     rightLayout->addStretch();
 
     return widget;

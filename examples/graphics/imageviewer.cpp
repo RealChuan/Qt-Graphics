@@ -24,9 +24,9 @@ public:
         for (int i = 0; i < imageFormat.keyCount(); i++) {
             formatBox->addItem(imageFormat.key(i), imageFormat.value(i));
         }
-        const auto Conversionflags = QMetaEnum::fromType<Qt::ImageConversionFlags>();
-        for (int i = 0; i < Conversionflags.keyCount(); i++) {
-            colorBox->addItem(Conversionflags.key(i), Conversionflags.value(i));
+        const auto conversionflags = QMetaEnum::fromType<Qt::ImageConversionFlags>();
+        for (int i = 0; i < conversionflags.keyCount(); i++) {
+            colorBox->addItem(conversionflags.key(i), conversionflags.value(i));
         }
     }
 
@@ -45,6 +45,7 @@ ImageViewer::ImageViewer(QWidget *parent)
 {
     setupUI();
     buildConnect();
+    setEnableJumpToMultiPage(true);
 }
 
 ImageViewer::~ImageViewer() {}
@@ -90,8 +91,8 @@ void ImageViewer::onChangedImage(int index)
 void ImageViewer::onFormatChecked(bool state)
 {
     d_ptr->formatBox->setVisible(state);
-    d_ptr->imageViewFormat->setVisible(state);
     d_ptr->colorBox->setVisible(state);
+    d_ptr->imageViewFormat->setVisible(state);
 }
 
 void ImageViewer::onFormatChanged(const QString &)
@@ -125,8 +126,8 @@ void ImageViewer::setupUI()
     layout->addWidget(m_imageListView);
 
     d_ptr->formatBox->hide();
-    d_ptr->imageViewFormat->hide();
     d_ptr->colorBox->hide();
+    d_ptr->imageViewFormat->hide();
 }
 
 QWidget *ImageViewer::toolWidget()
@@ -152,6 +153,7 @@ QWidget *ImageViewer::toolWidget()
     rightLayout->addLayout(formatLayout);
     rightLayout->addWidget(maskImageButton);
     rightLayout->addWidget(roundImageButton);
+    rightLayout->addWidget(m_jumpToMultiPageButton);
     rightLayout->addStretch();
 
     return widget;

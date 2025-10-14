@@ -57,6 +57,14 @@ public:
         scene.ps->setDepthTest(true);
         scene.ps->setDepthWrite(true);
         // scene.ps->setCullMode(QRhiGraphicsPipeline::Back);
+        QRhiGraphicsPipeline::TargetBlend blend;
+        blend.enable = true;
+        blend.srcColor = QRhiGraphicsPipeline::SrcAlpha;
+        blend.dstColor = QRhiGraphicsPipeline::OneMinusSrcAlpha;
+        blend.srcAlpha = QRhiGraphicsPipeline::One;
+        blend.dstAlpha = QRhiGraphicsPipeline::OneMinusSrcAlpha;
+        scene.ps->setTargetBlends({blend});
+
         scene.ps->setShaderStages(
             {{QRhiShaderStage::Vertex, getShader(QLatin1String("://shader/vulkan.vert.qsb"))},
              {QRhiShaderStage::Fragment, getShader(QLatin1String("://shader/vulkan.frag.qsb"))}});
@@ -75,8 +83,8 @@ public:
 
     void initTexture()
     {
-        scene.cubeTex.reset(rhi->newTexture(QRhiTexture::RGBA8, image.size()));
-        scene.cubeTex->create();
+        scene.texture.reset(rhi->newTexture(QRhiTexture::RGBA8, image.size()));
+        scene.texture->create();
 
         scene.srb.reset(rhi->newShaderResourceBindings());
         scene.srb->setBindings(
@@ -85,9 +93,9 @@ public:
                                                       scene.ubuf.get()),
              QRhiShaderResourceBinding::sampledTexture(1,
                                                        QRhiShaderResourceBinding::FragmentStage,
-                                                       scene.cubeTex.get(),
+                                                       scene.texture.get(),
                                                        scene.sampler.get())});
-        scene.srb->create();
+        qInfo() << "srb create:" << scene.srb->create();
 
         scene.ps->destroy();
         scene.ps->setShaderResourceBindings(scene.srb.get());
@@ -100,7 +108,7 @@ public:
     {
         if (!scene.resourceUpdates)
             scene.resourceUpdates = rhi->nextResourceUpdateBatch();
-        scene.resourceUpdates->uploadTexture(scene.cubeTex.get(), image);
+        scene.resourceUpdates->uploadTexture(scene.texture.get(), image);
     }
 
     void updateTransform()
@@ -125,7 +133,8 @@ public:
     void emitScaleFactor()
     {
         updateTransform();
-        auto factor = transform.toTransform().m11() * windowSize.width() / image.width();
+        auto factor = transform.toTransform().m11() * windowSize.width()
+                      * q_ptr->devicePixelRatioF() / image.width();
         emit q_ptr->scaleFactorChanged(factor);
     }
 
@@ -144,7 +153,7 @@ public:
         std::unique_ptr<QRhiShaderResourceBindings> srb;
         std::unique_ptr<QRhiGraphicsPipeline> ps;
         std::unique_ptr<QRhiSampler> sampler;
-        std::unique_ptr<QRhiTexture> cubeTex;
+        std::unique_ptr<QRhiTexture> texture;
         QMatrix4x4 mvp;
     } scene;
 
@@ -161,23 +170,27 @@ public:
 RhiView::RhiView(QWidget *parent)
     : QRhiWidget(parent)
     , d_ptr(new RhiViewPrivate(this))
-{}
+{
+    setCursor(Qt::CrossCursor);
+    setMouseTracking(true);
+    setAcceptDrops(true);
+}
 
 RhiView::~RhiView() {}
 
 void RhiView::setImageUrl(const QString &imageUrl)
 {
     QImage image;
-    if (!Utils::ImageCache::instance()->find(imageUrl, image)) {
-        if (!imageUrl.isEmpty()) {
-            QMessageBox::warning(this,
-                                 tr("WARNING"),
-                                 tr("Picture failed to open, Url: %1!").arg(imageUrl));
-        }
+    if (imageUrl.isEmpty()) {
         image = emptyImage();
+    } else if (!Utils::ImageCache::instance()->find(imageUrl, image)) {
+        QMessageBox::warning(this,
+                             tr("WARNING"),
+                             tr("Picture failed to open, Url: %1!").arg(imageUrl));
+        return;
     }
 
-    d_ptr->image = image.convertToFormat(QImage::Format_RGBA8888_Premultiplied);
+    d_ptr->image = image.convertToFormat(QImage::Format_RGBA8888);
     d_ptr->initTexture();
 
     auto size = d_ptr->image.size();
@@ -273,7 +286,8 @@ void RhiView::render(QRhiCommandBuffer *cb)
     cb->beginPass(renderTarget(), d_ptr->backgroundColor, {1.0f, 0}, resourceUpdates);
 
     cb->setGraphicsPipeline(d_ptr->scene.ps.get());
-    cb->setViewport(QRhiViewport(0, 0, width(), height()));
+    cb->setViewport(
+        QRhiViewport(0, 0, width() * devicePixelRatioF(), height() * devicePixelRatioF()));
     cb->setShaderResources();
 
     const QRhiCommandBuffer::VertexInput vbufBinding(d_ptr->scene.vbuf.get(), 0);
@@ -313,6 +327,28 @@ void RhiView::mouseDoubleClickEvent(QMouseEvent *event)
 {
     QRhiWidget::mouseDoubleClickEvent(event);
     fitToScreen();
+}
+
+void RhiView::dragEnterEvent(QDragEnterEvent *event)
+{
+    QRhiWidget::dragEnterEvent(event);
+    event->acceptProposedAction();
+}
+
+void RhiView::dragMoveEvent(QDragMoveEvent *event)
+{
+    QRhiWidget::dragMoveEvent(event);
+    event->acceptProposedAction();
+}
+
+void RhiView::dropEvent(QDropEvent *event)
+{
+    QRhiWidget::dropEvent(event);
+    const auto urls = event->mimeData()->urls();
+    if (urls.isEmpty()) {
+        return;
+    }
+    setImageUrl(urls.first().toLocalFile());
 }
 
 void RhiView::contextMenuEvent(QContextMenuEvent *event)

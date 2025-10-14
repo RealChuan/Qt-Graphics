@@ -29,6 +29,14 @@ bool Viewer::setThumbnail(const Thumbnail &thumbnail, const qint64 taskCount)
     return true;
 }
 
+void Viewer::setEnableJumpToMultiPage(bool enable)
+{
+    m_enableJumpToMultiPage = enable;
+    if (!enable) {
+        m_jumpToMultiPageButton->setVisible(false);
+    }
+}
+
 void Viewer::onScaleFactorChanged(qreal factor)
 {
     const auto text = QString::number(factor * 100, 'f', 2) + QLatin1Char('%');
@@ -52,6 +60,18 @@ void Viewer::onImageChanged(const QString &url)
     m_urlLabel->setToolTip(url);
     m_fileSizeLabel->setText(Utils::formatBytes(QFile(url).size()));
 
+    m_jumpToMultiPageButton->setVisible(m_enableJumpToMultiPage
+                                        && Utils::asynchronous<bool>([url]() {
+                                               if (url.isEmpty()) {
+                                                   return false;
+                                               }
+                                               QImageReader reader(url);
+                                               if (!reader.canRead()) {
+                                                   return false;
+                                               }
+                                               return reader.imageCount() > 1;
+                                           }));
+
     for (const auto &data : std::as_const(m_thumbnailList)) {
         if (data.fileInfo().absoluteFilePath() == url) {
             return;
@@ -61,11 +81,16 @@ void Viewer::onImageChanged(const QString &url)
     startImageLoadThread(url);
 }
 
+void Viewer::onJumpToMultiPage()
+{
+    emit jumpToMultiPage(m_urlLabel->text());
+}
+
 QString Viewer::openImage()
 {
     const QString imageFilters(
-        tr("Images (*.bmp *.gif *.jpg *.jpeg *.png *.svg *.tiff *.webp *.icns "
-           "*.bitmap *.graymap *.pixmap *.tga *.xbitmap *.xpixmap)"));
+        tr("Images (*.bmp *.gif *.jpg *.jpeg *.png *.svg *.tiff *.webp *.ico *.icns *.bitmap "
+           "*.graymap *.pixmap *.tga *.xbitmap *.xpixmap)"));
     const auto path = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation)
                           .value(0, QDir::homePath());
     return QFileDialog::getOpenFileName(this, tr("Open Image"), path, imageFilters);
@@ -120,6 +145,14 @@ void Viewer::setupUI()
     gridLayout->addWidget(m_sizeLabel, 2, 1, 1, 1);
     gridLayout->addWidget(new QLabel(tr("Scaling Ratio:"), this), 3, 0, 1, 1);
     gridLayout->addWidget(m_scaleLabel, 3, 1, 1, 1);
+
+    m_jumpToMultiPageButton = new QToolButton(this);
+    sizePolicy = m_jumpToMultiPageButton->sizePolicy();
+    sizePolicy.setHorizontalPolicy(QSizePolicy::Preferred);
+    m_jumpToMultiPageButton->setSizePolicy(sizePolicy);
+    m_jumpToMultiPageButton->setText(tr("Jump To Multi Page"));
+    m_jumpToMultiPageButton->hide();
+    connect(m_jumpToMultiPageButton, &QToolButton::clicked, this, &Viewer::onJumpToMultiPage);
 }
 
 class ImageLoadRunnable::ImageLoadRunnablePrivate

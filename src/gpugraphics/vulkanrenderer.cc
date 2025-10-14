@@ -438,15 +438,18 @@ VulkanRenderer::VulkanRenderer(QVulkanWindow *vulkanWindow)
 
 VulkanRenderer::~VulkanRenderer() = default;
 
-auto VulkanRenderer::createTexture(const QString &name, bool &img) -> bool
+auto VulkanRenderer::createTexture(const QString &imageUrl, bool &img) -> bool
 {
     QImage image;
-    img = Utils::ImageCache::instance()->find(name, image);
-    if (!img) {
-        if (!name.isEmpty()) {
-            qWarning("Failed to load image %s", qPrintable(name));
-        }
+    if (imageUrl.isEmpty()) {
         image = emptyImage();
+        img = true;
+    } else {
+        img = Utils::ImageCache::instance()->find(imageUrl, image);
+        if (!img) {
+            qWarning("Failed to load image %s", qPrintable(imageUrl));
+            return false;
+        }
     }
 
     // Convert to byte ordered RGBA8. Use premultiplied alpha, see

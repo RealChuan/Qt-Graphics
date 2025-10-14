@@ -20,6 +20,7 @@ SOURCES += \
     validator.cc
 
 HEADERS += \
+    appdata.hpp \
     expected.h \
     hostosinfo.h \
     icowriter.hpp \

@@ -1,5 +1,4 @@
-#ifndef VULKANRENDERER_HPP
-#define VULKANRENDERER_HPP
+#pragma once
 
 #include "gpugraphics_global.hpp"
 
@@ -38,7 +37,7 @@ private:
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffers();
-    auto createTexture(const QString &name, bool &img) -> bool;
+    auto createTexture(const QString &imageUrl, bool &img) -> bool;
     void createTextureImageView();
     void createDescriptorPool();
     void createDescriptorSets();
@@ -49,5 +48,3 @@ private:
 };
 
 } // namespace GpuGraphics
-
-#endif // VULKANRENDERER_HPP

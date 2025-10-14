@@ -17,13 +17,19 @@ public:
 
     virtual auto setThumbnail(const Thumbnail &thumbnail, const qint64 taskCount) -> bool;
 
+    void setEnableJumpToMultiPage(bool enable);
+
 signals:
     void imageReady(const QImage &image);
+    void jumpToMultiPage(const QString &imageUrl);
 
 protected slots:
     void onScaleFactorChanged(qreal factor);
     void onImageSizeChanged(const QSize &size);
     void onImageChanged(const QString &url);
+
+private slots:
+    void onJumpToMultiPage();
 
 protected:
     QString openImage();
@@ -38,6 +44,9 @@ protected:
     QLabel *m_fileSizeLabel;
     QLabel *m_sizeLabel;
     QLabel *m_scaleLabel;
+
+    QToolButton *m_jumpToMultiPageButton;
+
     ThumbnailList m_thumbnailList;
     ImageListView *m_imageListView;
 
@@ -45,6 +54,8 @@ protected:
 
 private:
     void setupUI();
+
+    bool m_enableJumpToMultiPage = false;
 };
 
 class ImageLoadRunnable : public QRunnable

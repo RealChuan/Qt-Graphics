@@ -83,7 +83,8 @@ public:
     void emitScaleFactor()
     {
         updateTransform();
-        auto factor = transform.toTransform().m11() * windowSize.width() / image.width();
+        auto factor = transform.toTransform().m11() * windowSize.width()
+                      * q_ptr->devicePixelRatioF() / image.width();
         emit q_ptr->scaleFactorChanged(factor);
     }
 
@@ -131,6 +132,10 @@ OpenglView::OpenglView(QWidget *parent)
 {
     auto format = this->format();
     qInfo() << "OpenGL Version:" << format.minorVersion() << "~" << format.majorVersion();
+
+    setCursor(Qt::CrossCursor);
+    setMouseTracking(true);
+    setAcceptDrops(true);
 }
 
 OpenglView::~OpenglView()
@@ -147,13 +152,13 @@ OpenglView::~OpenglView()
 void OpenglView::setImageUrl(const QString &imageUrl)
 {
     QImage image;
-    if (!Utils::ImageCache::instance()->find(imageUrl, image)) {
-        if (!imageUrl.isEmpty()) {
-            QMessageBox::warning(this,
-                                 tr("WARNING"),
-                                 tr("Picture failed to open, Url: %1!").arg(imageUrl));
-        }
+    if (imageUrl.isEmpty()) {
         image = emptyImage();
+    } else if (!Utils::ImageCache::instance()->find(imageUrl, image)) {
+        QMessageBox::warning(this,
+                             tr("WARNING"),
+                             tr("Picture failed to open, Url: %1!").arg(imageUrl));
+        return;
     }
 
     d_ptr->image = image.convertedTo(QImage::Format_RGBA8888_Premultiplied);
@@ -289,6 +294,28 @@ void OpenglView::mouseDoubleClickEvent(QMouseEvent *event)
 {
     QOpenGLWidget::mouseDoubleClickEvent(event);
     fitToScreen();
+}
+
+void OpenglView::dragEnterEvent(QDragEnterEvent *event)
+{
+    QOpenGLWidget::dragEnterEvent(event);
+    event->acceptProposedAction();
+}
+
+void OpenglView::dragMoveEvent(QDragMoveEvent *event)
+{
+    QOpenGLWidget::dragMoveEvent(event);
+    event->acceptProposedAction();
+}
+
+void OpenglView::dropEvent(QDropEvent *event)
+{
+    QOpenGLWidget::dropEvent(event);
+    const auto urls = event->mimeData()->urls();
+    if (urls.isEmpty()) {
+        return;
+    }
+    setImageUrl(urls.first().toLocalFile());
 }
 
 void OpenglView::contextMenuEvent(QContextMenuEvent *event)

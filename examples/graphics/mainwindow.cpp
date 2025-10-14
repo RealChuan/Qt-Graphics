@@ -56,6 +56,8 @@ public:
     SubtitlSplicingWidget *subtitlSplicingWidget;
     DrawWidget *drawWidget;
     QStackedWidget *stackedWidget;
+
+    QAction *multiImageFileViewerAction = nullptr;
 };
 
 MainWindow::MainWindow(QWidget *parent)
@@ -63,6 +65,7 @@ MainWindow::MainWindow(QWidget *parent)
     , d_ptr(new MainWindowPrivate(this))
 {
     setupUI();
+    buildConnect();
     resize(1000, 618);
     Utils::windowCenter(this);
 
@@ -83,6 +86,16 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 MainWindow::~MainWindow() {}
+
+void MainWindow::onJumpToMultiImageFileViewer(const QString &url)
+{
+    if (url.isEmpty()) {
+        return;
+    }
+
+    d_ptr->multiImageFileViewerAction->trigger();
+    d_ptr->multiImageFileViewer->setImageUrl(url);
+}
 
 void MainWindow::setupUI()
 {
@@ -116,9 +129,10 @@ void MainWindow::initMenuBar()
         }));
     }
 #endif
-    setCheckable(menu->addAction(tr("Multi Image File Viewer"), this, [this] {
+    d_ptr->multiImageFileViewerAction = menu->addAction(tr("Multi Image File Viewer"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->multiImageFileViewer);
-    }));
+    });
+    setCheckable(d_ptr->multiImageFileViewerAction);
     setCheckable(menu->addAction(tr("ICO Converter"), this, [this] {
         d_ptr->stackedWidget->setCurrentWidget(d_ptr->icoConverterWidget);
     }));
@@ -139,4 +153,22 @@ void MainWindow::initMenuBar()
         auto recordWidget = new RecordWidget;
         recordWidget->show();
     });
+}
+
+void MainWindow::buildConnect()
+{
+    connect(d_ptr->imageViewer,
+            &ImageViewer::jumpToMultiPage,
+            this,
+            &MainWindow::onJumpToMultiImageFileViewer);
+    connect(d_ptr->openglViewer,
+            &OpenglViewer::jumpToMultiPage,
+            this,
+            &MainWindow::onJumpToMultiImageFileViewer);
+#ifdef BUILD_VULKAN
+    connect(d_ptr->vulkanViewer,
+            &VulkanViewer::jumpToMultiPage,
+            this,
+            &MainWindow::onJumpToMultiImageFileViewer);
+#endif
 }

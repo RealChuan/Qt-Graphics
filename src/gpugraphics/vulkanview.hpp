@@ -1,5 +1,4 @@
-#ifndef VULKANVIEW_HPP
-#define VULKANVIEW_HPP
+#pragma once
 
 #include "gpugraphics_global.hpp"
 
@@ -44,5 +43,3 @@ private:
 };
 
 } // namespace GpuGraphics
-
-#endif // VULKANVIEW_HPP

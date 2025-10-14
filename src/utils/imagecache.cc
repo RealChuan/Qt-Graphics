@@ -4,20 +4,15 @@
 
 #include <QCache>
 #include <QImage>
-#include <QtConcurrent>
 
 namespace Utils {
 
 static QImage syncLoadImage(const QString &absoluteFilePath)
 {
-    QEventLoop loop;
-    QFutureWatcher<QImage> watcher;
-    QObject::connect(&watcher, &QFutureWatcher<QImage>::finished, &loop, &QEventLoop::quit);
-    watcher.setFuture(QtConcurrent::run([absoluteFilePath]() {
+    auto func = [absoluteFilePath]() -> QImage {
         return absoluteFilePath.isEmpty() ? QImage{} : QImage{absoluteFilePath};
-    }));
-    loop.exec();
-    return watcher.result();
+    };
+    return asynchronous<QImage>(func);
 }
 
 QString getCacheKey(const QFileInfo &fileInfo)
@@ -70,6 +65,10 @@ void ImageCache::insert(const QString &absoluteFilePath, const QImage &image)
 
 bool ImageCache::find(const QString &absoluteFilePath, QImage &image)
 {
+    if (absoluteFilePath.isEmpty()) {
+        return false;
+    }
+
     auto key = getCacheKey(QFileInfo(absoluteFilePath));
     auto ret = d_ptr->find(key, image);
     if (!ret) {
