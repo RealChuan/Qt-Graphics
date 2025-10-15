@@ -3,7 +3,7 @@
 
 #include <graphics/graphicspixmapitem.h>
 #include <graphics/graphicsroundedrectitem.hpp>
-#include <graphics/imageview.h>
+#include <graphics/graphicsview.hpp>
 
 #include <QtWidgets>
 
@@ -30,7 +30,7 @@ public:
     {
         roundedRectItemPtr->setShowBoundingRect(true);
 
-        imageView = new ImageView(q_ptr);
+        imageView = new GraphicsView(q_ptr);
 
         previewLabel = new QLabel(q_ptr);
         previewLabel->setMinimumHeight(200);
@@ -107,7 +107,7 @@ public:
 
     RoundDialog *q_ptr;
 
-    ImageView *imageView;
+    GraphicsView *imageView;
 
     QLabel *previewLabel;
 

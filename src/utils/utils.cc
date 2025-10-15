@@ -14,9 +14,9 @@
 
 namespace Utils {
 
-auto readImages(const QString &path) -> QList<QImage>
+auto readImages(const QString &path) -> Images
 {
-    QList<QImage> list;
+    Images list;
     QImageReader reader(path);
     if (!reader.canRead()) {
         qWarning() << QString("Cannot read image %1: %2").arg(path, reader.errorString());
@@ -435,7 +435,7 @@ auto calculateDirectoryStats(const QString &path) -> DirectoryStats
 QByteArray generateRandomData(int size)
 {
     const int numWords = (size + sizeof(quint32) - 1) / sizeof(quint32);
-    QVector<quint32> buffer(numWords);
+    QList<quint32> buffer(numWords);
     QRandomGenerator::global()->fillRange(buffer.data(), numWords);
     QByteArray data(reinterpret_cast<const char *>(buffer.constData()), numWords * sizeof(quint32));
     data.resize(size);

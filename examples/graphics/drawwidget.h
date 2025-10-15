@@ -1,5 +1,4 @@
-#ifndef DRAWWIDGET_H
-#define DRAWWIDGET_H
+#pragma once
 
 #include <QWidget>
 
@@ -38,5 +37,3 @@ private:
     class DrawWidgetPrivate;
     QScopedPointer<DrawWidgetPrivate> d_ptr;
 };
-
-#endif // DRAWWIDGET_H

@@ -1,7 +1,7 @@
 #include "opencvwidget.hpp"
 
 #include <examples/common/imagelistmodel.h>
-#include <graphics/imageview.h>
+#include <graphics/graphicsview.hpp>
 #include <utils/utils.hpp>
 #include <qopencv/opencvutils.hpp>
 #include <qopencv/qopencv.hpp>
@@ -16,7 +16,7 @@ public:
     explicit OpenCVWidgetPrivate(OpenCVWidget *q)
         : q_ptr(q)
     {
-        imageView = new Graphics::ImageView(q_ptr);
+        imageView = new Graphics::GraphicsView(q_ptr);
 
         toolLayout = new QVBoxLayout;
 
@@ -40,7 +40,7 @@ public:
 
     OpenCVWidget *q_ptr;
 
-    Graphics::ImageView *imageView;
+    Graphics::GraphicsView *imageView;
 
     QVBoxLayout *toolLayout;
     QComboBox *typeComboBox;
@@ -247,15 +247,15 @@ void OpenCVWidget::buildConnect()
     connect(m_openButton, &QPushButton::clicked, this, &OpenCVWidget::onOpenImage);
 
     connect(d_ptr->imageView,
-            &Graphics::ImageView::scaleFactorChanged,
+            &Graphics::GraphicsView::scaleFactorChanged,
             this,
             &OpenCVWidget::onScaleFactorChanged);
     connect(d_ptr->imageView,
-            &Graphics::ImageView::imageSizeChanged,
+            &Graphics::GraphicsView::imageSizeChanged,
             this,
             &OpenCVWidget::onImageSizeChanged);
     connect(d_ptr->imageView,
-            &Graphics::ImageView::imageUrlChanged,
+            &Graphics::GraphicsView::imageUrlChanged,
             this,
             &OpenCVWidget::onImageChanged);
     connect(m_imageListView, &ImageListView::changeItem, this, &OpenCVWidget::onChangedImage);

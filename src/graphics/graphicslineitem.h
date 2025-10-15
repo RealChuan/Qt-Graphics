@@ -1,11 +1,10 @@
-#ifndef GRAPHICSLINEITEM_H
-#define GRAPHICSLINEITEM_H
+#pragma once
 
-#include "basicgraphicsitem.h"
+#include "graphicsbasicitem.h"
 
 namespace Graphics {
 
-class GRAPHICS_EXPORT GraphicsLineItem : public BasicGraphicsItem
+class GRAPHICS_EXPORT GraphicsLineItem : public GraphicsBasicItem
 {
     Q_OBJECT
 public:
@@ -35,10 +34,8 @@ protected:
 private:
     void showHoverLine(const QPolygonF &ply);
 
-    struct GraphicsLineItemPrivate;
+    class GraphicsLineItemPrivate;
     QScopedPointer<GraphicsLineItemPrivate> d_ptr;
 };
 
 } // namespace Graphics
-
-#endif // GRAPHICSLINEITEM_H

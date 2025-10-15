@@ -1,13 +1,9 @@
 #pragma once
 
-#include "utils_global.h"
-
-#include <QImage>
-#include <QList>
+#include "utils.hpp"
 
 namespace Utils {
 
-using Images = QList<QImage>;
 using ImageSizes = QList<int>;
 
 constexpr auto defaultIcoSizes = {256, 128, 64, 48, 32, 24, 16};

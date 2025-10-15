@@ -4,7 +4,7 @@
 #include <QLineF>
 #include <QPolygonF>
 
-namespace Graphics {
+namespace Graphics::Utils {
 
 auto calculateCircle(const QPolygonF &pts, QPointF &center, double &radius) -> bool;
 auto curorFromAngle(double angle) -> QCursor;
@@ -12,4 +12,4 @@ auto boundingFromLine(const QLineF &line, double margin) -> QPolygonF;
 auto distance(QPointF pos, QPointF center) -> double;
 auto ConvertTo360(double angle) -> double;
 
-} // namespace Graphics
+} // namespace Graphics::Utils

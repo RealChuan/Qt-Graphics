@@ -1,8 +1,8 @@
 #pragma once
 
-#include <graphics/imageview.h>
+#include <graphics/graphicsview.hpp>
 
-class ListItemView : public Graphics::ImageView
+class ListItemView : public Graphics::GraphicsView
 {
     Q_OBJECT
 public:

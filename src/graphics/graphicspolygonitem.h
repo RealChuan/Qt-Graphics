@@ -1,18 +1,16 @@
-#ifndef GRAPHICSPOLYGONITEM_H
-#define GRAPHICSPOLYGONITEM_H
+#pragma once
 
-#include "basicgraphicsitem.h"
+#include "graphicsbasicitem.h"
 
 namespace Graphics {
-
-class GRAPHICS_EXPORT GraphicsPolygonItem : public BasicGraphicsItem
+class GRAPHICS_EXPORT GraphicsPolygonItem : public GraphicsBasicItem
 {
 public:
     explicit GraphicsPolygonItem(QGraphicsItem *parent = nullptr);
     explicit GraphicsPolygonItem(const QPolygonF &polygon, QGraphicsItem *parent = nullptr);
     ~GraphicsPolygonItem() override;
 
-    void setPolygon(const QPolygonF& ply);
+    void setPolygon(const QPolygonF &ply);
     [[nodiscard]] auto polygon() const -> QPolygonF;
 
     [[nodiscard]] auto isValid() const -> bool override;
@@ -25,14 +23,13 @@ protected:
     void paint(QPainter *painter,
                const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
+
 private:
     void pointsChanged(const QPolygonF &ply);
     void showHoverPolygon(const QPolygonF &ply);
 
-    struct GraphicsPolygonItemPrivate;
+    class GraphicsPolygonItemPrivate;
     QScopedPointer<GraphicsPolygonItemPrivate> d_ptr;
 };
 
-}
-
-#endif // GRAPHICSPOLYGONITEM_H
+} // namespace Graphics

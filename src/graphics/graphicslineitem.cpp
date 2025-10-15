@@ -8,20 +8,27 @@
 
 namespace Graphics {
 
-struct GraphicsLineItem::GraphicsLineItemPrivate
+class GraphicsLineItem::GraphicsLineItemPrivate
 {
+public:
+    explicit GraphicsLineItemPrivate(GraphicsLineItem *q)
+        : q_ptr(q)
+    {}
+
+    GraphicsLineItem *q_ptr;
+
     QLineF line;
     QLineF tempLine;
 };
 
 GraphicsLineItem::GraphicsLineItem(QGraphicsItem *parent)
-    : BasicGraphicsItem(parent)
-    , d_ptr(new GraphicsLineItemPrivate)
+    : GraphicsBasicItem(parent)
+    , d_ptr(new GraphicsLineItemPrivate(this))
 {}
 
 GraphicsLineItem::GraphicsLineItem(const QLineF &line, QGraphicsItem *parent)
-    : BasicGraphicsItem(parent)
-    , d_ptr(new GraphicsLineItemPrivate)
+    : GraphicsBasicItem(parent)
+    , d_ptr(new GraphicsLineItemPrivate(this))
 {
     setLine(line);
 }
@@ -64,7 +71,7 @@ auto GraphicsLineItem::type() const -> int
 void GraphicsLineItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if (event->button() != Qt::LeftButton) {
-        return BasicGraphicsItem::mousePressEvent(event);
+        return GraphicsBasicItem::mousePressEvent(event);
     }
     setClickedPos(event->scenePos());
 
@@ -106,7 +113,7 @@ void GraphicsLineItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         showHoverLine(pts_tmp);
     }
 
-    BasicGraphicsItem::hoverMoveEvent(event);
+    GraphicsBasicItem::hoverMoveEvent(event);
 }
 
 void GraphicsLineItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)

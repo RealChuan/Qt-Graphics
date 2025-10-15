@@ -1,20 +1,19 @@
-#ifndef IMAGEVIEW_H
-#define IMAGEVIEW_H
-
-#include <QGraphicsView>
+#pragma once
 
 #include "graphics_global.h"
+
+#include <QGraphicsView>
 
 namespace Graphics {
 
 class GraphicsPixmapItem;
-class GRAPHICS_EXPORT ImageView : public QGraphicsView
+class GRAPHICS_EXPORT GraphicsView : public QGraphicsView
 {
     Q_OBJECT
 public:
-    explicit ImageView(QWidget *parent = nullptr);
-    explicit ImageView(QGraphicsScene *scene, QWidget *parent = nullptr);
-    ~ImageView() override;
+    explicit GraphicsView(QWidget *parent = nullptr);
+    explicit GraphicsView(QGraphicsScene *scene, QWidget *parent = nullptr);
+    ~GraphicsView() override;
 
     [[nodiscard]] auto pixmap() const -> QPixmap;
     auto pixmapItem() -> GraphicsPixmapItem *;
@@ -72,5 +71,3 @@ private:
 };
 
 } // namespace Graphics
-
-#endif // IMAGEVIEW_H

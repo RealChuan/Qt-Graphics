@@ -1,9 +1,7 @@
 set(PROJECT_SOURCES
-    basicgraphicsitem.cpp
-    basicgraphicsitem.h
     graphics_global.h
-    graphics.cpp
-    graphics.h
+    graphicsbasicitem.cpp
+    graphicsbasicitem.h
     graphicsarcitem.cpp
     graphicsarcitem.h
     graphicscircleitem.cpp
@@ -24,8 +22,10 @@ set(PROJECT_SOURCES
     graphicsroundedrectitem.hpp
     graphicstextitem.cc
     graphicstextitem.hpp
-    imageview.cpp
-    imageview.h)
+    graphicsutils.cc
+    graphicsutils.hpp
+    graphicsview.cc
+    graphicsview.hpp)
 
 add_platform_library(graphics ${PROJECT_SOURCES})
 target_link_libraries(graphics PRIVATE utils Qt::Concurrent Qt::Widgets)

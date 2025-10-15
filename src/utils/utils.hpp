@@ -2,6 +2,7 @@
 
 #include "utils_global.h"
 
+#include <QImage>
 #include <QJsonObject>
 #include <QtConcurrent>
 #include <QtCore>
@@ -27,7 +28,9 @@ auto asynchronous(std::function<T()> &&func)
     return watcher.result();
 }
 
-UTILS_EXPORT QList<QImage> readImages(const QString &path);
+using Images = QList<QImage>;
+
+UTILS_EXPORT Images readImages(const QString &path);
 UTILS_EXPORT QWidget *getTopParentWidget(QWidget *child);
 UTILS_EXPORT QRect desktopGeometry();
 UTILS_EXPORT QPixmap grabFullWindow();

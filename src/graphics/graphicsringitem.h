@@ -1,11 +1,11 @@
-#ifndef GRAPHICSRINGITEM_H
-#define GRAPHICSRINGITEM_H
+#pragma once
 
-#include "basicgraphicsitem.h"
+#include "graphicsbasicitem.h"
 
 namespace Graphics {
 
-struct GRAPHICS_EXPORT Ring{
+struct GRAPHICS_EXPORT Ring
+{
     [[nodiscard]] auto boundingRect() const -> QRectF;
     [[nodiscard]] auto minBoundingRect() const -> QRectF;
     [[nodiscard]] auto isVaild() const -> bool;
@@ -15,19 +15,15 @@ struct GRAPHICS_EXPORT Ring{
     double maxRadius = 0;
 };
 
-class GRAPHICS_EXPORT GraphicsRingItem : public BasicGraphicsItem
+class GRAPHICS_EXPORT GraphicsRingItem : public GraphicsBasicItem
 {
 public:
-    enum MouseRegion{
-        InEdge0,
-        InEdge1,
-        None
-    };
+    enum MouseRegion { InEdge0, InEdge1, None };
     explicit GraphicsRingItem(QGraphicsItem *parent = nullptr);
     explicit GraphicsRingItem(const Ring &ring, QGraphicsItem *parent = nullptr);
     ~GraphicsRingItem() override;
 
-    void setRing(const Ring&);
+    void setRing(const Ring &);
     [[nodiscard]] auto ring() const -> Ring;
 
     [[nodiscard]] auto isValid() const -> bool override;
@@ -41,14 +37,13 @@ protected:
     void paint(QPainter *painter,
                const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
+
 private:
     void pointsChanged(const QPolygonF &ply);
     void showHoverRing(const QPolygonF &ply);
 
-    struct GraphicsRingItemPrivate;
+    class GraphicsRingItemPrivate;
     QScopedPointer<GraphicsRingItemPrivate> d_ptr;
 };
 
-}
-
-#endif // GRAPHICSRINGITEM_H
+} // namespace Graphics

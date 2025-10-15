@@ -2,7 +2,7 @@
 #include "stretchparamssettingdailog.hpp"
 
 #include <graphics/graphicspixmapitem.h>
-#include <graphics/imageview.h>
+#include <graphics/graphicsview.hpp>
 
 #include <QtWidgets>
 
@@ -14,7 +14,7 @@ public:
     MaskDialogPrivate(QWidget *parent)
         : q_ptr(parent)
     {
-        imageView = new ImageView(q_ptr);
+        imageView = new GraphicsView(q_ptr);
         buttonGroup = new QButtonGroup(q_ptr);
         buttonGroup->setExclusive(true);
         penSizeSpinBox = new QSpinBox(q_ptr);
@@ -27,7 +27,7 @@ public:
     }
     QWidget *q_ptr;
 
-    ImageView *imageView;
+    GraphicsView *imageView;
     QButtonGroup *buttonGroup;
     QSpinBox *penSizeSpinBox;
     QDoubleSpinBox *opacitySpinBox;

@@ -3,7 +3,7 @@
 #include "rounddialog.hpp"
 
 #include <examples/common/imagelistmodel.h>
-#include <graphics/imageview.h>
+#include <graphics/graphicsview.hpp>
 #include <utils/utils.hpp>
 
 #include <QtWidgets>
@@ -14,8 +14,8 @@ public:
     explicit ImageViewerPrivate(ImageViewer *q)
         : q_ptr(q)
     {
-        imageView = new Graphics::ImageView(q_ptr);
-        imageViewFormat = new Graphics::ImageView(q_ptr);
+        imageView = new Graphics::GraphicsView(q_ptr);
+        imageViewFormat = new Graphics::GraphicsView(q_ptr);
 
         formatBox = new QComboBox(q_ptr);
         colorBox = new QComboBox(q_ptr);
@@ -32,8 +32,8 @@ public:
 
     ImageViewer *q_ptr;
 
-    Graphics::ImageView *imageView;
-    Graphics::ImageView *imageViewFormat;
+    Graphics::GraphicsView *imageView;
+    Graphics::GraphicsView *imageViewFormat;
 
     QComboBox *formatBox;
     QComboBox *colorBox;
@@ -164,15 +164,15 @@ void ImageViewer::buildConnect()
     connect(m_openButton, &QPushButton::clicked, this, &ImageViewer::onOpenImage);
 
     connect(d_ptr->imageView,
-            &Graphics::ImageView::scaleFactorChanged,
+            &Graphics::GraphicsView::scaleFactorChanged,
             this,
             &ImageViewer::onScaleFactorChanged);
     connect(d_ptr->imageView,
-            &Graphics::ImageView::imageSizeChanged,
+            &Graphics::GraphicsView::imageSizeChanged,
             this,
             &ImageViewer::onImageSizeChanged);
     connect(d_ptr->imageView,
-            &Graphics::ImageView::imageUrlChanged,
+            &Graphics::GraphicsView::imageUrlChanged,
             this,
             &ImageViewer::onImageChanged);
     connect(m_imageListView, &ImageListView::changeItem, this, &ImageViewer::onChangedImage);

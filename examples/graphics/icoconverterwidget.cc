@@ -1,7 +1,7 @@
 #include "icoconverterwidget.hpp"
 #include "sizeselectorwidget.hpp"
 
-#include <graphics/imageview.h>
+#include <graphics/graphicsview.hpp>
 #include <utils/icowriter.hpp>
 #include <utils/utils.hpp>
 
@@ -13,7 +13,7 @@ public:
     explicit IcoConverterWidgetPrivate(IcoConverterWidget *q)
         : q_ptr(q)
     {
-        imageView = new Graphics::ImageView(q_ptr);
+        imageView = new Graphics::GraphicsView(q_ptr);
 
         sizeSelectorWidget = new SizeSelectorWidget(q_ptr);
         sizeSelectorWidget->setSizes(Utils::defaultIcoSizes);
@@ -47,7 +47,7 @@ public:
 
     IcoConverterWidget *q_ptr;
 
-    Graphics::ImageView *imageView;
+    Graphics::GraphicsView *imageView;
     SizeSelectorWidget *sizeSelectorWidget;
     QLabel *colorLabel;
     QColor color = Qt::transparent;
@@ -188,15 +188,15 @@ void IcoConverterWidget::buildConnect()
     connect(m_openButton, &QPushButton::clicked, this, &IcoConverterWidget::onOpenImage);
 
     connect(d_ptr->imageView,
-            &Graphics::ImageView::scaleFactorChanged,
+            &Graphics::GraphicsView::scaleFactorChanged,
             this,
             &IcoConverterWidget::onScaleFactorChanged);
     connect(d_ptr->imageView,
-            &Graphics::ImageView::imageSizeChanged,
+            &Graphics::GraphicsView::imageSizeChanged,
             this,
             &IcoConverterWidget::onImageSizeChanged);
     connect(d_ptr->imageView,
-            &Graphics::ImageView::imageUrlChanged,
+            &Graphics::GraphicsView::imageUrlChanged,
             this,
             &IcoConverterWidget::onImageChanged);
     connect(m_imageListView, &ImageListView::changeItem, this, &IcoConverterWidget::onChangedImage);

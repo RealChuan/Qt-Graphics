@@ -1,16 +1,15 @@
-#ifndef BASICGRAPHICSITEM_H
-#define BASICGRAPHICSITEM_H
-
-#include <QGraphicsPixmapItem>
-#include <QObject>
+#pragma once
 
 #include "graphics_global.h"
+
+#include <QGraphicsPixmapItem>
+#include <QList>
 
 namespace Graphics {
 
 #define LineColor QColor(57, 163, 255)
 
-class GRAPHICS_EXPORT BasicGraphicsItem : public QObject, public QAbstractGraphicsShapeItem
+class GRAPHICS_EXPORT GraphicsBasicItem : public QObject, public QAbstractGraphicsShapeItem
 {
     Q_OBJECT
 public:
@@ -29,8 +28,8 @@ public:
 
     enum MouseRegion { DotRegion, All, Edge, None };
 
-    explicit BasicGraphicsItem(QGraphicsItem *parent = nullptr);
-    ~BasicGraphicsItem() override;
+    explicit GraphicsBasicItem(QGraphicsItem *parent = nullptr);
+    ~GraphicsBasicItem() override;
 
     [[nodiscard]] virtual auto isValid() const -> bool = 0;
     [[nodiscard]] auto type() const -> int override = 0;
@@ -69,10 +68,10 @@ protected:
     void setMyCursor(const QPointF &center, const QPointF &pos);
 
 private:
-    class BasicGraphicsItemPrivate;
-    QScopedPointer<BasicGraphicsItemPrivate> d_ptr;
+    class GraphicsBasicItemPrivate;
+    QScopedPointer<GraphicsBasicItemPrivate> d_ptr;
 };
 
-} // namespace Graphics
+using GraphicsItemList = QList<GraphicsBasicItem *>;
 
-#endif // BASICGRAPHICSITEM_H
+} // namespace Graphics

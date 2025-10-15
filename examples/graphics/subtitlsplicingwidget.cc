@@ -7,7 +7,7 @@
 class GenerateTask : public QRunnable
 {
 public:
-    explicit GenerateTask(const QVector<StitchingImageInfo> &infos,
+    explicit GenerateTask(const StitchingImageInfoList &infos,
                           SubtitlSplicingWidget *subtitlSplicingWidget)
         : m_infos(infos)
         , m_subtitlSplicingWidgetPtr(subtitlSplicingWidget)
@@ -57,14 +57,14 @@ public:
         listWidget = new QListWidget(q_ptr);
         listWidget->setSpacing(10);
         listWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-        imageView = new Graphics::ImageView(q_ptr);
+        imageView = new Graphics::GraphicsView(q_ptr);
         generateButton = new QPushButton(QObject::tr("Generate", "SubtitlSplicingWidget"), q_ptr);
     }
 
     SubtitlSplicingWidget *q_ptr;
 
     QListWidget *listWidget;
-    Graphics::ImageView *imageView;
+    Graphics::GraphicsView *imageView;
     QPushButton *generateButton;
 };
 

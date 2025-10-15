@@ -1,5 +1,5 @@
 #include "graphicsroundedrectitem.hpp"
-#include "graphics.h"
+#include "graphicsutils.hpp"
 
 #include <QDebug>
 #include <QGraphicsScene>
@@ -44,13 +44,13 @@ public:
 };
 
 GraphicsRoundedRectItem::GraphicsRoundedRectItem(QGraphicsItem *parent)
-    : BasicGraphicsItem(parent)
+    : GraphicsBasicItem(parent)
     , d_ptr(new GraphicsRoundedRectItemPrivate(this))
 {}
 
 GraphicsRoundedRectItem::GraphicsRoundedRectItem(const RoundedRect &roundedRect,
                                                  QGraphicsItem *parent)
-    : BasicGraphicsItem(parent)
+    : GraphicsBasicItem(parent)
     , d_ptr(new GraphicsRoundedRectItemPrivate(this))
 {
     setRoundedRect(roundedRect);
@@ -89,7 +89,7 @@ auto GraphicsRoundedRectItem::type() const -> int
 void GraphicsRoundedRectItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if (event->button() != Qt::LeftButton) {
-        return BasicGraphicsItem::mousePressEvent(event);
+        return GraphicsBasicItem::mousePressEvent(event);
     }
     setClickedPos(event->scenePos());
     if (isValid()) {
@@ -174,18 +174,18 @@ void GraphicsRoundedRectItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     if (!isValid()) {
         return;
     }
-    BasicGraphicsItem::hoverMoveEvent(event);
+    GraphicsBasicItem::hoverMoveEvent(event);
     if (mouseRegion() == DotRegion) {
         return;
     }
     QPolygonF ply = polygonFromRect(m_roundedRect.rect);
     for (int i = 0; i < ply.count(); ++i) {
         QLineF pl(ply.at(i), ply.at((i + 1) % 4));
-        QPolygonF tmp = Graphics::boundingFromLine(pl, margin() / 4);
+        QPolygonF tmp = Utils::boundingFromLine(pl, margin() / 4);
         if (tmp.containsPoint(point, Qt::OddEvenFill)) {
             d_ptr->linehovered = true;
             d_ptr->hoveredLine = pl;
-            setCursor(Graphics::curorFromAngle(pl.angle()));
+            setCursor(Utils::curorFromAngle(pl.angle()));
             return;
         }
     }

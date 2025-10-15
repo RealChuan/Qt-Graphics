@@ -3,7 +3,6 @@
 
 #include <3rdparty/gif/egif/GifEncoder.h>
 #include <3rdparty/gif/gif-h/gif.h>
-#include <utils/utils.hpp>
 
 #include <QPixmap>
 
@@ -190,7 +189,7 @@ void RecordGifThread::moveFile2()
     copy(tempPath("gif-h"), savePath);
 }
 
-void RecordGifThread::encode1(const QVector<QImage> &images)
+void RecordGifThread::encode1(const Utils::Images &images)
 {
     /// [1]
     QScopedPointer<GifEncoder> gifEncoderPtr(createGifEncoder());
@@ -204,7 +203,7 @@ void RecordGifThread::encode1(const QVector<QImage> &images)
     moveFile1();
 }
 
-void RecordGifThread::encode2(const QVector<QImage> &images)
+void RecordGifThread::encode2(const Utils::Images &images)
 {
     /// [1]
     QScopedPointer<GifWriter> gifWriterPtr(createGifWriter());

@@ -1,8 +1,8 @@
-#include "graphics.h"
+#include "graphicsutils.hpp"
 
 #include <QtMath>
 
-namespace Graphics {
+namespace Graphics::Utils {
 
 auto calculateCircle(const QPolygonF &pts, QPointF &center, double &radius) -> bool
 {
@@ -100,4 +100,4 @@ auto ConvertTo360(double angle) -> double
         return ConvertTo360(angle - 360);
 }
 
-} // namespace Graphics
+} // namespace Graphics::Utils

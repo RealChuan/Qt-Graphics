@@ -8,9 +8,8 @@ TARGET = $$add_platform_library(graphics)
 LIBS += -l$$replaceLibName(utils)
 
 SOURCES += \
-    basicgraphicsitem.cpp \
-    graphics.cpp \
     graphicsarcitem.cpp \
+    graphicsbasicitem.cpp \
     graphicscircleitem.cpp \
     graphicslineitem.cpp \
     graphicspixmapitem.cpp \
@@ -20,13 +19,13 @@ SOURCES += \
     graphicsrotatedrectitem.cpp \
     graphicsroundedrectitem.cc \
     graphicstextitem.cc \
-    imageview.cpp
+    graphicsutils.cc \
+    graphicsview.cc
 
 HEADERS += \
-    basicgraphicsitem.h \
-    graphics.h \
     graphics_global.h \
     graphicsarcitem.h \
+    graphicsbasicitem.h \
     graphicscircleitem.h \
     graphicslineitem.h \
     graphicspixmapitem.h \
@@ -36,4 +35,5 @@ HEADERS += \
     graphicsrotatedrectitem.h \
     graphicsroundedrectitem.hpp \
     graphicstextitem.hpp \
-    imageview.h
+    graphicsutils.hpp \
+    graphicsview.hpp

@@ -3,12 +3,9 @@
 
 #pragma once
 
-#include <QtCore/qglobal.h>
-#if QT_VERSION >= 0x050000
-#include <QtWidgets/QWidget>
-#else
-#include <QtGui/QWidget>
-#endif
+#include <QWidget>
+
+using Areas = QList<QRect>;
 
 class QPropertyAnimation;
 
@@ -32,7 +29,7 @@ public:
     explicit SelectionWidget(QColor c, QWidget *parent = nullptr);
 
     [[nodiscard]] auto getMouseSide(const QPoint &mousePos) const -> SideType;
-    QVector<QRect> handlerAreas();
+    Areas handlerAreas();
 
     void setGeometry(const QRect &r);
     [[nodiscard]] auto geometry() const -> QRect;

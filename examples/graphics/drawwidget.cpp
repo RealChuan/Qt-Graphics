@@ -1,8 +1,8 @@
 #include "drawwidget.h"
 #include "drawscene.hpp"
 
-#include <graphics/basicgraphicsitem.h>
 #include <graphics/graphicsarcitem.h>
+#include <graphics/graphicsbasicitem.h>
 #include <graphics/graphicscircleitem.h>
 #include <graphics/graphicslineitem.h>
 #include <graphics/graphicspolygonitem.h>
@@ -11,7 +11,7 @@
 #include <graphics/graphicsrotatedrectitem.h>
 #include <graphics/graphicsroundedrectitem.hpp>
 #include <graphics/graphicstextitem.hpp>
-#include <graphics/imageview.h>
+#include <graphics/graphicsview.hpp>
 #include <utils/validator.hpp>
 
 #include <QDebug>
@@ -22,11 +22,11 @@ using namespace Graphics;
 class DrawWidget::DrawWidgetPrivate
 {
 public:
-    DrawWidgetPrivate(QWidget *parent)
+    explicit DrawWidgetPrivate(DrawWidget *parent)
         : q_ptr(parent)
     {
         drawScene = new DrawScene(q_ptr);
-        imageView = new ImageView(drawScene, q_ptr);
+        imageView = new GraphicsView(drawScene, q_ptr);
         imageView->setContextMenuPolicy(Qt::NoContextMenu);
         shapeWidget = new QListWidget(q_ptr);
         shapeWidget->setFixedWidth(200);
@@ -55,11 +55,13 @@ public:
         underlineAction->setCheckable(true);
         underlineAction->setShortcut(tr("Ctrl+U"));
     }
-    QWidget *q_ptr;
+
+    DrawWidget *q_ptr;
+
     DrawScene *drawScene;
-    ImageView *imageView;
+    GraphicsView *imageView;
     QListWidget *shapeWidget;
-    QVector<BasicGraphicsItem *> graphicsItems;
+    GraphicsItemList graphicsItemList;
 
     QToolButton *newButton;
     QComboBox *fontSizeCombo;
@@ -92,25 +94,25 @@ void DrawWidget::onAddShape(QListWidgetItem *item)
         return;
     }
 
-    if (!d_ptr->graphicsItems.isEmpty() && !d_ptr->graphicsItems.last()->isValid()) {
-        delete d_ptr->graphicsItems.takeLast();
+    if (!d_ptr->graphicsItemList.isEmpty() && !d_ptr->graphicsItemList.last()->isValid()) {
+        delete d_ptr->graphicsItemList.takeLast();
     }
 
-    BasicGraphicsItem *shape = nullptr;
+    GraphicsBasicItem *shape = nullptr;
     int type = d_ptr->shapeWidget->row(item) + 1;
     switch (type) {
-    case BasicGraphicsItem::LINE: shape = new GraphicsLineItem; break;
-    case BasicGraphicsItem::RECT: shape = new GraphicsRectItem; break;
-    case BasicGraphicsItem::ROUNDEDRECT: shape = new GraphicsRoundedRectItem; break;
-    case BasicGraphicsItem::ROTATEDRECT: shape = new GraphicsRotatedRectItem; break;
-    case BasicGraphicsItem::CIRCLE: shape = new GraphicsCircleItem; break;
-    case BasicGraphicsItem::POLYGON: shape = new GraphicsPolygonItem; break;
-    case BasicGraphicsItem::RING: shape = new GraphicsRingItem; break;
-    case BasicGraphicsItem::ARC: shape = new GraphicsArcItem; break;
+    case GraphicsBasicItem::LINE: shape = new GraphicsLineItem; break;
+    case GraphicsBasicItem::RECT: shape = new GraphicsRectItem; break;
+    case GraphicsBasicItem::ROUNDEDRECT: shape = new GraphicsRoundedRectItem; break;
+    case GraphicsBasicItem::ROTATEDRECT: shape = new GraphicsRotatedRectItem; break;
+    case GraphicsBasicItem::CIRCLE: shape = new GraphicsCircleItem; break;
+    case GraphicsBasicItem::POLYGON: shape = new GraphicsPolygonItem; break;
+    case GraphicsBasicItem::RING: shape = new GraphicsRingItem; break;
+    case GraphicsBasicItem::ARC: shape = new GraphicsArcItem; break;
     default: break;
     }
     if (shape) {
-        d_ptr->graphicsItems.append(shape);
+        d_ptr->graphicsItemList.append(shape);
         d_ptr->drawScene->addItem(shape);
         d_ptr->drawScene->setDrawText(false);
     } else {
@@ -122,9 +124,9 @@ void DrawWidget::onDeleteItem()
 {
     auto selectedItems = d_ptr->drawScene->selectedItems();
     for (auto item : selectedItems) {
-        auto basicGraphicsItem = dynamic_cast<BasicGraphicsItem *>(item);
+        auto basicGraphicsItem = dynamic_cast<GraphicsBasicItem *>(item);
         if (basicGraphicsItem) {
-            d_ptr->graphicsItems.removeOne(basicGraphicsItem);
+            d_ptr->graphicsItemList.removeOne(basicGraphicsItem);
             basicGraphicsItem->deleteLater();
         } else {
             auto textItem = qgraphicsitem_cast<GraphicsTextItem *>(item);
@@ -207,7 +209,7 @@ void DrawWidget::itemSelected(QGraphicsItem *item)
 
 void DrawWidget::setupUI()
 {
-    QMetaEnum shapeEnum = QMetaEnum::fromType<BasicGraphicsItem::Shape>();
+    QMetaEnum shapeEnum = QMetaEnum::fromType<GraphicsBasicItem::Shape>();
     for (int i = 0; i < shapeEnum.keyCount(); i++) {
         auto item = new QListWidgetItem(shapeEnum.key(i), d_ptr->shapeWidget);
         item->setSizeHint(QSize(1, 30));
@@ -284,11 +286,11 @@ void DrawWidget::initNewButton()
 
 void DrawWidget::clearAll()
 {
-    if (d_ptr->graphicsItems.isEmpty()) {
+    if (d_ptr->graphicsItemList.isEmpty()) {
         return;
     }
-    qDeleteAll(d_ptr->graphicsItems);
-    d_ptr->graphicsItems.clear();
+    qDeleteAll(d_ptr->graphicsItemList);
+    d_ptr->graphicsItemList.clear();
 }
 
 QToolBar *DrawWidget::cerateToolBar()

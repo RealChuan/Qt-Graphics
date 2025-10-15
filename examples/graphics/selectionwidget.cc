@@ -62,9 +62,9 @@ SelectionWidget::SideType SelectionWidget::getMouseSide(const QPoint &mousePos) 
     }
 }
 
-QVector<QRect> SelectionWidget::handlerAreas()
+Areas SelectionWidget::handlerAreas()
 {
-    QVector<QRect> areas;
+    Areas areas;
     areas << m_TLHandle << m_TRHandle << m_BLHandle << m_BRHandle << m_LHandle << m_THandle
           << m_RHandle << m_BHandle;
     return areas;

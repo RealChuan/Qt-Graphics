@@ -1,11 +1,10 @@
-#ifndef GRAPHICSCIRCLEITEM_H
-#define GRAPHICSCIRCLEITEM_H
-
-#include "basicgraphicsitem.h"
+#pragma once
+#include "graphicsbasicitem.h"
 
 namespace Graphics {
 
-struct GRAPHICS_EXPORT Circle{
+struct GRAPHICS_EXPORT Circle
+{
     [[nodiscard]] auto isVaild() const -> bool;
     [[nodiscard]] auto boundingRect() const -> QRectF;
 
@@ -13,7 +12,7 @@ struct GRAPHICS_EXPORT Circle{
     double radius = 0;
 };
 
-class GRAPHICS_EXPORT GraphicsCircleItem : public BasicGraphicsItem
+class GRAPHICS_EXPORT GraphicsCircleItem : public GraphicsBasicItem
 {
 public:
     explicit GraphicsCircleItem(QGraphicsItem *parent = nullptr);
@@ -22,7 +21,7 @@ public:
 
     static auto checkCircle(const Circle &circle, const double margin) -> bool;
 
-    void setCircle(const Circle&);
+    void setCircle(const Circle &);
     [[nodiscard]] auto circle() const -> Circle;
 
     [[nodiscard]] auto isValid() const -> bool override;
@@ -36,14 +35,13 @@ protected:
     void paint(QPainter *painter,
                const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
+
 private:
     void pointsChanged(const QPolygonF &ply);
     void showHoverCircle(const QPolygonF &ply);
 
-    struct GraphicsCircleItemPrivate;
+    class GraphicsCircleItemPrivate;
     QScopedPointer<GraphicsCircleItemPrivate> d_ptr;
 };
 
-}
-
-#endif // GRAPHICSCIRCLEITEM_H
+} // namespace Graphics

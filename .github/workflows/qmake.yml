@@ -88,14 +88,14 @@ jobs:
           qmake QMAKE_APPLE_DEVICE_ARCHS="${{ matrix.arch }}" ../.
           make -j $(sysctl -n hw.ncpu)
 
-      - name: Display binary directory tree (Windows)
+      - name: Display output directory tree (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           cd output/
           cmd /c tree /f
 
-      - name: Display binary directory tree (Unix-like)
+      - name: Display output directory tree (Unix-like)
         if: runner.os == 'Linux' || runner.os == 'macOS'
         shell: bash
         run: |

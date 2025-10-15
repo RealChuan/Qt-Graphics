@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QThread>
+#include <utils/utils.hpp>
 
 class GifEncoder;
 struct GifWriter;
@@ -35,8 +35,8 @@ private:
     void moveFile2();
 
     // 太占内存
-    void encode1(const QVector<QImage> &images);
-    void encode2(const QVector<QImage> &images);
+    void encode1(const Utils::Images &images);
+    void encode2(const Utils::Images &images);
 
     void encode1();
     void encode2();

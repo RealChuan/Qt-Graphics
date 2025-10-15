@@ -1,5 +1,5 @@
 #include "graphicsrotatedrectitem.h"
-#include "graphics.h"
+#include "graphicsutils.hpp"
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneHoverEvent>
@@ -14,8 +14,15 @@ auto RotatedRect::isValid() const -> bool
     return width > 0 && height > 0;
 }
 
-struct GraphicsRotatedRectItem::GraphicsRotatedRectItemPrivate
+class GraphicsRotatedRectItem::GraphicsRotatedRectItemPrivate
 {
+public:
+    explicit GraphicsRotatedRectItemPrivate(GraphicsRotatedRectItem *q)
+        : q_ptr(q)
+    {}
+
+    GraphicsRotatedRectItem *q_ptr;
+
     RotatedRect rotatedRect;
     bool rotatedHovered = false;
     bool linehovered = false;
@@ -23,16 +30,16 @@ struct GraphicsRotatedRectItem::GraphicsRotatedRectItemPrivate
 };
 
 GraphicsRotatedRectItem::GraphicsRotatedRectItem(QGraphicsItem *parent)
-    : BasicGraphicsItem(parent)
-    , d_ptr(new GraphicsRotatedRectItemPrivate)
+    : GraphicsBasicItem(parent)
+    , d_ptr(new GraphicsRotatedRectItemPrivate(this))
 {
     setAcceptHoverEvents(true);
 }
 
 GraphicsRotatedRectItem::GraphicsRotatedRectItem(const RotatedRect &rotatedRect,
                                                  QGraphicsItem *parent)
-    : BasicGraphicsItem(parent)
-    , d_ptr(new GraphicsRotatedRectItemPrivate)
+    : GraphicsBasicItem(parent)
+    , d_ptr(new GraphicsRotatedRectItemPrivate(this))
 {
     setAcceptHoverEvents(true);
     setRotatedRect(rotatedRect);
@@ -47,7 +54,7 @@ inline auto checkRotatedRect(const RotatedRect &rotatedRect, const double margin
 
 inline auto rotate(const QPointF &p, double angle) -> QPointF
 {
-    double _angle = Graphics::ConvertTo360(angle) * M_PI * 2 / 360.0;
+    double _angle = Utils::ConvertTo360(angle) * M_PI * 2 / 360.0;
     double cos = std::cos(_angle);
     double sin = std::sin(_angle);
     double _x = cos * p.x() - sin * p.y();
@@ -132,8 +139,8 @@ void GraphicsRotatedRectItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     if (d_ptr->rotatedHovered) {
         double angle = l0.angleTo(l1);
         rrt.angle += angle;
-        rrt.angle = Graphics::ConvertTo360(rrt.angle);
-        setCursor(Graphics::curorFromAngle(360 - rrt.angle));
+        rrt.angle = Utils::ConvertTo360(rrt.angle);
+        setCursor(Utils::curorFromAngle(360 - rrt.angle));
     } else if (d_ptr->linehovered) {
         QLineF dl = d_ptr->hoveredLine.normalVector();
         QPointF p1 = d_ptr->hoveredLine.p1();
@@ -185,28 +192,28 @@ void GraphicsRotatedRectItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     QLineF l = QLineF(center, c1);
     l = QLineF(center, l.pointAt(0.9));
 
-    pts_tmp = Graphics::boundingFromLine(l, margin() / 4);
+    pts_tmp = Utils::boundingFromLine(l, margin() / 4);
     if (pts_tmp.containsPoint(point, Qt::OddEvenFill)) {
         d_ptr->rotatedHovered = true;
-        setCursor(Graphics::curorFromAngle(l.angle()));
+        setCursor(Utils::curorFromAngle(l.angle()));
         return;
     }
 
     pts_tmp = cache();
     for (int i = 0; i < pts_tmp.count(); ++i) {
         QLineF pl(pts_tmp.at(i), pts_tmp.at((i + 1) % 4));
-        QPolygonF tmp = Graphics::boundingFromLine(pl, margin() / 4);
+        QPolygonF tmp = Utils::boundingFromLine(pl, margin() / 4);
         if (tmp.containsPoint(point, Qt::OddEvenFill)) {
             d_ptr->linehovered = true;
             d_ptr->hoveredLine = pl;
-            setCursor(Graphics::curorFromAngle(pl.angle()));
+            setCursor(Utils::curorFromAngle(pl.angle()));
             return;
         }
     }
 
     d_ptr->rotatedHovered = false;
     d_ptr->linehovered = false;
-    BasicGraphicsItem::hoverMoveEvent(event);
+    GraphicsBasicItem::hoverMoveEvent(event);
 }
 
 void GraphicsRotatedRectItem::paint(QPainter *painter,
@@ -246,7 +253,7 @@ inline auto showRotatedFromCache(const QPolygonF &ply) -> RotatedRect
     rrt.width = QLineF(ply[0], ply[1]).length();
     rrt.height = QLineF(ply[1], ply[2]).length();
     rrt.center = (ply[0] + ply[2]) / 2;
-    rrt.angle = Graphics::ConvertTo360(QLineF(ply[0], ply[1]).angle());
+    rrt.angle = Utils::ConvertTo360(QLineF(ply[0], ply[1]).angle());
     return rrt;
 }
 

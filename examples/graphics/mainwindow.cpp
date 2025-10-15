@@ -166,9 +166,11 @@ void MainWindow::buildConnect()
             this,
             &MainWindow::onJumpToMultiImageFileViewer);
 #ifdef BUILD_VULKAN
-    connect(d_ptr->vulkanViewer,
-            &VulkanViewer::jumpToMultiPage,
-            this,
-            &MainWindow::onJumpToMultiImageFileViewer);
+    if (nullptr != d_ptr->vulkanViewer) {
+        connect(d_ptr->vulkanViewer,
+                &VulkanViewer::jumpToMultiPage,
+                this,
+                &MainWindow::onJumpToMultiImageFileViewer);
+    }
 #endif
 }

@@ -1,5 +1,5 @@
 #include "graphicspolygonitem.h"
-#include "graphics.h"
+#include "graphicsutils.hpp"
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneHoverEvent>
@@ -10,20 +10,27 @@ namespace Graphics {
 
 #define PolygonMinPointSize 3
 
-struct GraphicsPolygonItem::GraphicsPolygonItemPrivate
+class GraphicsPolygonItem::GraphicsPolygonItemPrivate
 {
+public:
+    explicit GraphicsPolygonItemPrivate(GraphicsPolygonItem *q)
+        : q_ptr(q)
+    {}
+
+    GraphicsPolygonItem *q_ptr;
+
     QPolygonF polygon;
     QPolygonF tempPolygon;
 };
 
 GraphicsPolygonItem::GraphicsPolygonItem(QGraphicsItem *parent)
-    : BasicGraphicsItem(parent)
-    , d_ptr(new GraphicsPolygonItemPrivate)
+    : GraphicsBasicItem(parent)
+    , d_ptr(new GraphicsPolygonItemPrivate(this))
 {}
 
 GraphicsPolygonItem::GraphicsPolygonItem(const QPolygonF &polygon, QGraphicsItem *parent)
-    : BasicGraphicsItem(parent)
-    , d_ptr(new GraphicsPolygonItemPrivate)
+    : GraphicsBasicItem(parent)
+    , d_ptr(new GraphicsPolygonItemPrivate(this))
 {
     setPolygon(polygon);
 }
@@ -110,7 +117,7 @@ void GraphicsPolygonItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         showHoverPolygon(pts_tmp);
     }
 
-    BasicGraphicsItem::hoverMoveEvent(event);
+    GraphicsBasicItem::hoverMoveEvent(event);
 }
 
 void GraphicsPolygonItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
@@ -141,7 +148,7 @@ void GraphicsPolygonItem::pointsChanged(const QPolygonF &ply)
     if (size < 3) {
         setCache(ply);
     } else {
-        if (Graphics::distance(ply.first(), ply.last()) < margin() && checkPolygon(ply, margin())) {
+        if (Utils::distance(ply.first(), ply.last()) < margin() && checkPolygon(ply, margin())) {
             QPolygonF pts_tmp = ply;
             pts_tmp.removeLast();
             setPolygon(pts_tmp);

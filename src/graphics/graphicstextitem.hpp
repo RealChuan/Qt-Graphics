@@ -1,5 +1,4 @@
-#ifndef GRAPHICSTEXTITEM_HPP
-#define GRAPHICSTEXTITEM_HPP
+#pragma once
 
 #include <QGraphicsTextItem>
 
@@ -30,5 +29,3 @@ protected:
 };
 
 } // namespace Graphics
-
-#endif // GRAPHICSTEXTITEM_HPP

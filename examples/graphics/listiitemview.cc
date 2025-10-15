@@ -56,7 +56,7 @@ public:
 };
 
 ListItemView::ListItemView(QWidget *parent)
-    : Graphics::ImageView(parent)
+    : Graphics::GraphicsView(parent)
     , d_ptr(new ListItemViewPrivate(this))
 {
     setContextMenuPolicy(Qt::NoContextMenu);
@@ -116,7 +116,7 @@ auto ListItemView::realImageSize() const -> QSize
 
 void ListItemView::resizeEvent(QResizeEvent *event)
 {
-    Graphics::ImageView::resizeEvent(event);
+    Graphics::GraphicsView::resizeEvent(event);
     QMetaObject::invokeMethod(this, &ListItemView::fitToScreen, Qt::QueuedConnection);
 }
 

@@ -1,7 +1,6 @@
-#ifndef GRAPHICSROTATEDRECTITEM_H
-#define GRAPHICSROTATEDRECTITEM_H
+#pragma once
 
-#include "basicgraphicsitem.h"
+#include "graphicsbasicitem.h"
 
 namespace Graphics {
 
@@ -15,7 +14,7 @@ struct GRAPHICS_EXPORT RotatedRect
     double angle = 0;
 };
 
-class GRAPHICS_EXPORT GraphicsRotatedRectItem : public BasicGraphicsItem
+class GRAPHICS_EXPORT GraphicsRotatedRectItem : public GraphicsBasicItem
 {
 public:
     explicit GraphicsRotatedRectItem(QGraphicsItem *parent = nullptr);
@@ -36,13 +35,12 @@ protected:
     void paint(QPainter *painter,
                const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
+
 private:
     void pointsChanged(const QPolygonF &ply);
 
-    struct GraphicsRotatedRectItemPrivate;
+    class GraphicsRotatedRectItemPrivate;
     QScopedPointer<GraphicsRotatedRectItemPrivate> d_ptr;
 };
 
-}
-
-#endif // GRAPHICSROTATEDRECTITEM_H
+} // namespace Graphics

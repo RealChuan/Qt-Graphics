@@ -1,11 +1,11 @@
-#ifndef GRAPHICSARCITEM_H
-#define GRAPHICSARCITEM_H
+#pragma once
 
-#include "basicgraphicsitem.h"
+#include "graphicsbasicitem.h"
 
 namespace Graphics {
 
-struct GRAPHICS_EXPORT Arc{
+struct GRAPHICS_EXPORT Arc
+{
     [[nodiscard]] auto isValid() const -> bool;
 
     QPointF center;
@@ -15,7 +15,7 @@ struct GRAPHICS_EXPORT Arc{
     double endAngle = 0;
 };
 
-class GRAPHICS_EXPORT GraphicsArcItem : public BasicGraphicsItem
+class GRAPHICS_EXPORT GraphicsArcItem : public GraphicsBasicItem
 {
 public:
     enum MouseRegion { InEdge0, InEdge1, None, InEdgeL, InEdgeH };
@@ -39,15 +39,14 @@ protected:
     void paint(QPainter *painter,
                const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
+
 private:
-    void pointsChanged(const QPolygonF& ply);
+    void pointsChanged(const QPolygonF &ply);
     void showHoverArc(const QPolygonF &ply);
 
 private:
-    struct GraphicsArcItemPrivate;
+    class GraphicsArcItemPrivate;
     QScopedPointer<GraphicsArcItemPrivate> d_ptr;
 };
 
-}
-
-#endif // GRAPHICSARCITEM_H
+} // namespace Graphics

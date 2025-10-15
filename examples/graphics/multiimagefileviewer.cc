@@ -1,6 +1,6 @@
 #include "multiimagefileviewer.hpp"
 
-#include <graphics/imageview.h>
+#include <graphics/graphicsview.hpp>
 #include <utils/utils.hpp>
 
 #include <QtWidgets>
@@ -11,13 +11,13 @@ public:
     explicit MultiImageFileViewerPrivate(MultiImageFileViewer *q)
         : q_ptr(q)
     {
-        imageView = new Graphics::ImageView(q_ptr);
+        imageView = new Graphics::GraphicsView(q_ptr);
     }
     ~MultiImageFileViewerPrivate() {}
 
     MultiImageFileViewer *q_ptr;
 
-    Graphics::ImageView *imageView;
+    Graphics::GraphicsView *imageView;
 };
 
 MultiImageFileViewer::MultiImageFileViewer(QWidget *parent)
@@ -74,7 +74,7 @@ void MultiImageFileViewer::onImageUrlChanged(const QString &url)
     m_openButton->setEnabled(false);
 
     clearThumbnail();
-    auto images = Utils::asynchronous<QList<QImage>>([url]() { return Utils::readImages(url); });
+    auto images = Utils::asynchronous<Utils::Images>([url]() { return Utils::readImages(url); });
     for (const auto &image : std::as_const(images)) {
         appendThumbnail({{}, image});
     }
@@ -113,15 +113,15 @@ void MultiImageFileViewer::buildConnect()
 {
     connect(m_openButton, &QPushButton::clicked, this, &MultiImageFileViewer::onOpenImage);
     connect(d_ptr->imageView,
-            &Graphics::ImageView::scaleFactorChanged,
+            &Graphics::GraphicsView::scaleFactorChanged,
             this,
             &MultiImageFileViewer::onScaleFactorChanged);
     connect(d_ptr->imageView,
-            &Graphics::ImageView::imageSizeChanged,
+            &Graphics::GraphicsView::imageSizeChanged,
             this,
             &MultiImageFileViewer::onImageSizeChanged);
     connect(d_ptr->imageView,
-            &Graphics::ImageView::imageUrlChanged,
+            &Graphics::GraphicsView::imageUrlChanged,
             this,
             &MultiImageFileViewer::onImageUrlChanged);
     connect(m_imageListView,

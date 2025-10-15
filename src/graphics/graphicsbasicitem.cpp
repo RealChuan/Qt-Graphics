@@ -1,5 +1,5 @@
-#include "basicgraphicsitem.h"
-#include "graphics.h"
+#include "graphicsbasicitem.h"
+#include "graphicsutils.hpp"
 
 #include <QCursor>
 #include <QGraphicsScene>
@@ -11,17 +11,17 @@
 
 namespace Graphics {
 
-class BasicGraphicsItem::BasicGraphicsItemPrivate
+class GraphicsBasicItem::GraphicsBasicItemPrivate
 {
 public:
-    explicit BasicGraphicsItemPrivate(BasicGraphicsItem *q)
+    explicit GraphicsBasicItemPrivate(GraphicsBasicItem *q)
         : q_ptr(q)
     {}
 
-    BasicGraphicsItem *q_ptr;
+    GraphicsBasicItem *q_ptr;
 
     QString name;
-    BasicGraphicsItem::MouseRegion mouseRegin = BasicGraphicsItem::None;
+    GraphicsBasicItem::MouseRegion mouseRegin = GraphicsBasicItem::None;
     int hoveredDotIndex = -1;
     QPointF clickedPos;
     QPolygonF cache;
@@ -29,10 +29,10 @@ public:
     bool showBoundingRect = false;
 };
 
-BasicGraphicsItem::BasicGraphicsItem(QGraphicsItem *parent)
+GraphicsBasicItem::GraphicsBasicItem(QGraphicsItem *parent)
     : QObject(nullptr)
     , QAbstractGraphicsShapeItem(parent)
-    , d_ptr(new BasicGraphicsItemPrivate(this))
+    , d_ptr(new GraphicsBasicItemPrivate(this))
 {
     setPen(QPen(Qt::blue));
     setFlags(flags() | ItemIsSelectable | ItemIsMovable | ItemSendsGeometryChanges
@@ -40,9 +40,9 @@ BasicGraphicsItem::BasicGraphicsItem(QGraphicsItem *parent)
     setAcceptHoverEvents(true);
 }
 
-BasicGraphicsItem::~BasicGraphicsItem() {}
+GraphicsBasicItem::~GraphicsBasicItem() {}
 
-auto BasicGraphicsItem::boundingRect() const -> QRectF
+auto GraphicsBasicItem::boundingRect() const -> QRectF
 {
     if (!isValid()) {
         return scene()->sceneRect();
@@ -54,17 +54,17 @@ auto BasicGraphicsItem::boundingRect() const -> QRectF
     return rectF;
 }
 
-void BasicGraphicsItem::setName(const QString &name)
+void GraphicsBasicItem::setName(const QString &name)
 {
     d_ptr->name = name;
 }
 
-auto BasicGraphicsItem::name() const -> QString
+auto GraphicsBasicItem::name() const -> QString
 {
     return d_ptr->name;
 }
 
-void BasicGraphicsItem::setMargin(double m11)
+void GraphicsBasicItem::setMargin(double m11)
 {
     d_ptr->margin = 1.5 * 10 / m11;
     if (d_ptr->margin <= 3) {
@@ -76,23 +76,23 @@ void BasicGraphicsItem::setMargin(double m11)
     }
 }
 
-auto BasicGraphicsItem::margin() const -> double
+auto GraphicsBasicItem::margin() const -> double
 {
     return d_ptr->margin;
 }
 
-void BasicGraphicsItem::setItemEditable(bool editable)
+void GraphicsBasicItem::setItemEditable(bool editable)
 {
     setAcceptHoverEvents(editable);
 }
 
-void BasicGraphicsItem::setShowBoundingRect(bool show)
+void GraphicsBasicItem::setShowBoundingRect(bool show)
 {
     d_ptr->showBoundingRect = show;
-    QMetaObject::invokeMethod(this, [this] { update(); }, Qt::QueuedConnection);
+    update();
 }
 
-bool BasicGraphicsItem::showBoundingRect() const
+bool GraphicsBasicItem::showBoundingRect() const
 {
     return d_ptr->showBoundingRect;
 }
@@ -114,7 +114,7 @@ bool BasicGraphicsItem::showBoundingRect() const
 //    return QGraphicsItem::itemChange(change, value);
 //}
 
-void BasicGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
+void GraphicsBasicItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     QAbstractGraphicsShapeItem::hoverMoveEvent(event);
     if (!isValid()) {
@@ -142,49 +142,49 @@ void BasicGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     }
 }
 
-void BasicGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+void GraphicsBasicItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     unsetCursor();
     d_ptr->mouseRegin = None;
     QAbstractGraphicsShapeItem::hoverLeaveEvent(event);
 }
 
-void BasicGraphicsItem::setCache(const QPolygonF &cache)
+void GraphicsBasicItem::setCache(const QPolygonF &cache)
 {
     d_ptr->cache = cache;
 }
 
-auto BasicGraphicsItem::cache() const -> QPolygonF
+auto GraphicsBasicItem::cache() const -> QPolygonF
 {
     return d_ptr->cache;
 }
 
-void BasicGraphicsItem::setClickedPos(const QPointF &pointF)
+void GraphicsBasicItem::setClickedPos(const QPointF &pointF)
 {
     d_ptr->clickedPos = pointF;
 }
 
-auto BasicGraphicsItem::clickedPos() const -> QPointF
+auto GraphicsBasicItem::clickedPos() const -> QPointF
 {
     return d_ptr->clickedPos;
 }
 
-auto BasicGraphicsItem::mouseRegion() const -> BasicGraphicsItem::MouseRegion
+auto GraphicsBasicItem::mouseRegion() const -> GraphicsBasicItem::MouseRegion
 {
     return d_ptr->mouseRegin;
 }
 
-void BasicGraphicsItem::setMouseRegion(const BasicGraphicsItem::MouseRegion mouseRegin)
+void GraphicsBasicItem::setMouseRegion(const GraphicsBasicItem::MouseRegion mouseRegin)
 {
     d_ptr->mouseRegin = mouseRegin;
 }
 
-auto BasicGraphicsItem::hoveredDotIndex() const -> int
+auto GraphicsBasicItem::hoveredDotIndex() const -> int
 {
     return d_ptr->hoveredDotIndex;
 }
 
-void BasicGraphicsItem::drawAnchor(QPainter *painter)
+void GraphicsBasicItem::drawAnchor(QPainter *painter)
 {
     if (!acceptHoverEvents()) {
         return;
@@ -200,7 +200,7 @@ void BasicGraphicsItem::drawAnchor(QPainter *painter)
     }
 }
 
-void BasicGraphicsItem::drawBoundingRect(QPainter *painter)
+void GraphicsBasicItem::drawBoundingRect(QPainter *painter)
 {
     if (!d_ptr->showBoundingRect || !isValid()) {
         return;
@@ -212,10 +212,10 @@ void BasicGraphicsItem::drawBoundingRect(QPainter *painter)
     painter->drawRect(boundingRect());
 }
 
-void BasicGraphicsItem::setMyCursor(const QPointF &center, const QPointF &pos)
+void GraphicsBasicItem::setMyCursor(const QPointF &center, const QPointF &pos)
 {
     double angle = QLineF(center, pos).angle();
-    setCursor(Graphics::curorFromAngle(Graphics::ConvertTo360(angle - 90)));
+    setCursor(Utils::curorFromAngle(Utils::ConvertTo360(angle - 90)));
 }
 
 } // namespace Graphics

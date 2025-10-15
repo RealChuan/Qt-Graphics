@@ -13,9 +13,8 @@
 
 #include <QBuffer>
 #include <QFile>
-#include <QImageReader>
 #include <QPainter>
-#include <QtCore/qendian.h>
+#include <QtCore>
 
 namespace Utils {
 

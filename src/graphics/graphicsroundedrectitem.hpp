@@ -1,6 +1,6 @@
 #pragma once
 
-#include "basicgraphicsitem.h"
+#include "graphicsbasicitem.h"
 
 namespace Graphics {
 
@@ -16,7 +16,7 @@ struct GRAPHICS_EXPORT RoundedRect
     qreal yRadius = 10;
 };
 
-class GRAPHICS_EXPORT GraphicsRoundedRectItem : public BasicGraphicsItem
+class GRAPHICS_EXPORT GraphicsRoundedRectItem : public GraphicsBasicItem
 {
     Q_OBJECT
 public:

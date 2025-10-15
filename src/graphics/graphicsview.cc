@@ -1,4 +1,4 @@
-#include "imageview.h"
+#include "graphicsview.hpp"
 #include "graphicspixmapitem.h"
 
 #include <utils/imagecache.hpp>
@@ -7,10 +7,10 @@
 
 namespace Graphics {
 
-class ImageView::ImageViewPrivate
+class GraphicsView::ImageViewPrivate
 {
 public:
-    explicit ImageViewPrivate(ImageView *q)
+    explicit ImageViewPrivate(GraphicsView *q)
         : q_ptr(q)
         , menu(new QMenu)
     {
@@ -35,7 +35,7 @@ public:
 
     ~ImageViewPrivate() {}
 
-    ImageView *q_ptr;
+    GraphicsView *q_ptr;
 
     GraphicsPixmapItem *pixmapItem;
     QGraphicsRectItem *backgroundItem;
@@ -52,7 +52,7 @@ public:
     QScopedPointer<QMovie> movie;
 };
 
-ImageView::ImageView(QWidget *parent)
+GraphicsView::GraphicsView(QWidget *parent)
     : QGraphicsView(parent)
     , d_ptr(new ImageViewPrivate(this))
 {
@@ -69,7 +69,7 @@ ImageView::ImageView(QWidget *parent)
     createPopMenu();
 }
 
-ImageView::ImageView(QGraphicsScene *scene, QWidget *parent)
+GraphicsView::GraphicsView(QGraphicsScene *scene, QWidget *parent)
     : QGraphicsView(parent)
     , d_ptr(new ImageViewPrivate(this))
 {
@@ -86,19 +86,19 @@ ImageView::ImageView(QGraphicsScene *scene, QWidget *parent)
     createPopMenu();
 }
 
-ImageView::~ImageView() {}
+GraphicsView::~GraphicsView() {}
 
-auto ImageView::pixmap() const -> QPixmap
+auto GraphicsView::pixmap() const -> QPixmap
 {
     return d_ptr->pixmapItem->pixmap();
 }
 
-auto ImageView::pixmapItem() -> GraphicsPixmapItem *
+auto GraphicsView::pixmapItem() -> GraphicsPixmapItem *
 {
     return d_ptr->pixmapItem;
 }
 
-void ImageView::createScene(const QString &imageUrl)
+void GraphicsView::createScene(const QString &imageUrl)
 {
     qDebug() << imageUrl;
     if (imageUrl.isEmpty()) {
@@ -117,7 +117,7 @@ void ImageView::createScene(const QString &imageUrl)
     setImagerReader(&imageRender);
 }
 
-void ImageView::setPixmap(const QPixmap &pixmap)
+void GraphicsView::setPixmap(const QPixmap &pixmap)
 {
     if (pixmap.isNull()) {
         QMessageBox::warning(this, tr("WARNING"), tr("Pixmap is null!"));
@@ -139,7 +139,7 @@ void ImageView::setPixmap(const QPixmap &pixmap)
     emit imageSizeChanged(pixmap.size());
 }
 
-void ImageView::setImagerReader(QImageReader *imageReader)
+void GraphicsView::setImagerReader(QImageReader *imageReader)
 {
     if (!imageReader->supportsAnimation()) {
         d_ptr->movie.reset();
@@ -161,24 +161,24 @@ void ImageView::setImagerReader(QImageReader *imageReader)
     connect(d_ptr->movie.data(),
             &QMovie::frameChanged,
             this,
-            &ImageView::onMovieFrameChanged,
+            &GraphicsView::onMovieFrameChanged,
             Qt::UniqueConnection);
     d_ptr->movie->start();
 }
 
-void ImageView::setViewBackground(bool enable)
+void GraphicsView::setViewBackground(bool enable)
 {
     d_ptr->showBackground = enable;
     d_ptr->backgroundItem->setVisible(enable);
 }
 
-void ImageView::setViewOutline(bool enable)
+void GraphicsView::setViewOutline(bool enable)
 {
     d_ptr->showOutline = enable;
     d_ptr->outlineItem->setVisible(enable);
 }
 
-void ImageView::setViewCrossLine(bool enable)
+void GraphicsView::setViewCrossLine(bool enable)
 {
     d_ptr->showCrossLine = enable;
     if (!enable) {
@@ -186,46 +186,46 @@ void ImageView::setViewCrossLine(bool enable)
     }
 }
 
-void ImageView::zoomIn()
+void GraphicsView::zoomIn()
 {
     doScale(d_ptr->scaleFactor);
 }
 
-void ImageView::zoomOut()
+void GraphicsView::zoomOut()
 {
     doScale(1.0 / d_ptr->scaleFactor);
 }
 
-void ImageView::resetToOriginalSize()
+void GraphicsView::resetToOriginalSize()
 {
     resetTransform();
     emitScaleFactor();
 }
 
-void ImageView::fitToScreen()
+void GraphicsView::fitToScreen()
 {
     fitInView(d_ptr->pixmapItem, Qt::KeepAspectRatio);
     emitScaleFactor();
 }
 
-void ImageView::rotateNinetieth()
+void GraphicsView::rotateNinetieth()
 {
     rotate(90);
 }
 
-void ImageView::anti_rotateNinetieth()
+void GraphicsView::anti_rotateNinetieth()
 {
     rotate(-90);
 }
 
-void ImageView::onMovieFrameChanged(int frameNumber)
+void GraphicsView::onMovieFrameChanged(int frameNumber)
 {
     Q_UNUSED(frameNumber)
     //qDebug() << frameNumber;
     setPixmap(d_ptr->movie->currentPixmap());
 }
 
-void ImageView::drawBackground(QPainter *p, const QRectF &)
+void GraphicsView::drawBackground(QPainter *p, const QRectF &)
 {
     p->save();
     p->resetTransform();
@@ -234,7 +234,7 @@ void ImageView::drawBackground(QPainter *p, const QRectF &)
     p->restore();
 }
 
-void ImageView::drawForeground(QPainter *painter, const QRectF &rect)
+void GraphicsView::drawForeground(QPainter *painter, const QRectF &rect)
 {
     QGraphicsView::drawForeground(painter, rect);
     painter->save();
@@ -248,7 +248,7 @@ void ImageView::drawForeground(QPainter *painter, const QRectF &rect)
     painter->restore();
 }
 
-void ImageView::wheelEvent(QWheelEvent *event)
+void GraphicsView::wheelEvent(QWheelEvent *event)
 {
     QGraphicsView::wheelEvent(event);
     if (d_ptr->pixmapItem->pixmap().isNull()) {
@@ -258,7 +258,7 @@ void ImageView::wheelEvent(QWheelEvent *event)
     doScale(factor);
 }
 
-void ImageView::mouseMoveEvent(QMouseEvent *event)
+void GraphicsView::mouseMoveEvent(QMouseEvent *event)
 {
     QGraphicsView::mouseMoveEvent(event);
     if (!d_ptr->showCrossLine || !d_ptr->pixmapItem) {
@@ -279,25 +279,25 @@ void ImageView::mouseMoveEvent(QMouseEvent *event)
     scene()->update();
 }
 
-void ImageView::mouseDoubleClickEvent(QMouseEvent *event)
+void GraphicsView::mouseDoubleClickEvent(QMouseEvent *event)
 {
     QGraphicsView::mouseDoubleClickEvent(event);
     fitToScreen();
 }
 
-void ImageView::dragEnterEvent(QDragEnterEvent *event)
+void GraphicsView::dragEnterEvent(QDragEnterEvent *event)
 {
     QGraphicsView::dragEnterEvent(event);
     event->acceptProposedAction();
 }
 
-void ImageView::dragMoveEvent(QDragMoveEvent *event)
+void GraphicsView::dragMoveEvent(QDragMoveEvent *event)
 {
     QGraphicsView::dragMoveEvent(event);
     event->acceptProposedAction();
 }
 
-void ImageView::dropEvent(QDropEvent *event)
+void GraphicsView::dropEvent(QDropEvent *event)
 {
     QGraphicsView::dropEvent(event);
     const auto urls = event->mimeData()->urls();
@@ -307,12 +307,12 @@ void ImageView::dropEvent(QDropEvent *event)
     createScene(urls.first().toLocalFile());
 }
 
-void ImageView::contextMenuEvent(QContextMenuEvent *event)
+void GraphicsView::contextMenuEvent(QContextMenuEvent *event)
 {
     d_ptr->menu->exec(event->globalPos());
 }
 
-void ImageView::initScene()
+void GraphicsView::initScene()
 {
     // Prepare background check-board pattern
     QPixmap tilePixmap(64, 64);
@@ -330,29 +330,31 @@ void ImageView::initScene()
     scene()->addItem(d_ptr->outlineItem);
 }
 
-void ImageView::createPopMenu()
+void GraphicsView::createPopMenu()
 {
-    d_ptr->menu->addAction(tr("Original Size"), this, &ImageView::resetToOriginalSize);
-    d_ptr->menu->addAction(tr("Adapt To Screen"), this, &ImageView::fitToScreen);
-    d_ptr->menu->addAction(tr("Rotate 90 Clockwise"), this, &ImageView::rotateNinetieth);
-    d_ptr->menu->addAction(tr("Rotate 90 Counterclockwise"), this, &ImageView::anti_rotateNinetieth);
+    d_ptr->menu->addAction(tr("Original Size"), this, &GraphicsView::resetToOriginalSize);
+    d_ptr->menu->addAction(tr("Adapt To Screen"), this, &GraphicsView::fitToScreen);
+    d_ptr->menu->addAction(tr("Rotate 90 Clockwise"), this, &GraphicsView::rotateNinetieth);
+    d_ptr->menu->addAction(tr("Rotate 90 Counterclockwise"),
+                           this,
+                           &GraphicsView::anti_rotateNinetieth);
     d_ptr->menu->addSeparator();
 
     QAction *showBackgroundAction = new QAction(tr("Show Background"), this);
     showBackgroundAction->setCheckable(true);
-    connect(showBackgroundAction, &QAction::triggered, this, &ImageView::setViewBackground);
+    connect(showBackgroundAction, &QAction::triggered, this, &GraphicsView::setViewBackground);
     QAction *showOutlineAction = new QAction(tr("Show Outline"), this);
     showOutlineAction->setCheckable(true);
-    connect(showOutlineAction, &QAction::triggered, this, &ImageView::setViewOutline);
+    connect(showOutlineAction, &QAction::triggered, this, &GraphicsView::setViewOutline);
     QAction *showCrossLineAction = new QAction(tr("Show CrossLine"), this);
     showCrossLineAction->setCheckable(true);
-    connect(showCrossLineAction, &QAction::triggered, this, &ImageView::setViewCrossLine);
+    connect(showCrossLineAction, &QAction::triggered, this, &GraphicsView::setViewCrossLine);
     d_ptr->menu->addAction(showBackgroundAction);
     d_ptr->menu->addAction(showOutlineAction);
     d_ptr->menu->addAction(showCrossLineAction);
 }
 
-auto ImageView::textRect(const Qt::Corner pos, const QFontMetrics &metrics, const QString &text)
+auto GraphicsView::textRect(const Qt::Corner pos, const QFontMetrics &metrics, const QString &text)
     -> QRect
 {
     int startX = 1;
@@ -372,7 +374,7 @@ auto ImageView::textRect(const Qt::Corner pos, const QFontMetrics &metrics, cons
     return QRect(startX, startY, rectWidth, rectHeight);
 }
 
-void ImageView::drawInfo(QPainter *painter)
+void GraphicsView::drawInfo(QPainter *painter)
 {
     if (d_ptr->rgbInfo.isEmpty()) {
         return;
@@ -395,7 +397,7 @@ void ImageView::drawInfo(QPainter *painter)
     painter->drawText(textPos, d_ptr->rgbInfo);
 }
 
-void ImageView::drawCrossLine(QPainter *painter)
+void GraphicsView::drawCrossLine(QPainter *painter)
 {
     QPen pen = painter->pen();
     pen.setColor(QColor(0, 230, 230));
@@ -408,14 +410,14 @@ void ImageView::drawCrossLine(QPainter *painter)
     painter->drawLine(QPointF(d_ptr->mousePoint.x(), 0), QPointF(d_ptr->mousePoint.x(), h));
 }
 
-void ImageView::emitScaleFactor()
+void GraphicsView::emitScaleFactor()
 {
     // get scale factor directly from the transform matrix
     qreal factor = transform().m11() * devicePixelRatioF();
     emit scaleFactorChanged(factor);
 }
 
-void ImageView::doScale(qreal factor)
+void GraphicsView::doScale(qreal factor)
 {
     //    qDebug() << factor;
     //    qreal currentScale = transform().m11();
@@ -435,7 +437,7 @@ void ImageView::doScale(qreal factor)
                                                                    : Qt::FastTransformation);
 }
 
-void ImageView::reset()
+void GraphicsView::reset()
 {
     scene()->clear();
     resetTransform();
