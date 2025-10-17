@@ -1,12 +1,13 @@
 #include "graphicsbasicitem.h"
+#include "geometrycache.hpp"
 #include "graphicsutils.hpp"
 
-#include <QCursor>
 #include <QGraphicsScene>
 #include <QGraphicsSceneHoverEvent>
 #include <QMenu>
 #include <QPainter>
 #include <QPen>
+#include <QStyleOptionGraphicsItem>
 #include <QWheelEvent>
 
 namespace Graphics {
@@ -16,17 +17,22 @@ class GraphicsBasicItem::GraphicsBasicItemPrivate
 public:
     explicit GraphicsBasicItemPrivate(GraphicsBasicItem *q)
         : q_ptr(q)
+        , geometryCachePtr(new GeometryCache)
     {}
+
+    ~GraphicsBasicItemPrivate() {}
 
     GraphicsBasicItem *q_ptr;
 
     QString name;
-    GraphicsBasicItem::MouseRegion mouseRegin = GraphicsBasicItem::None;
+    MouseRegion mouseRegin = MouseRegion::None;
     int hoveredDotIndex = -1;
     QPointF clickedPos;
-    QPolygonF cache;
-    double margin = 10;
-    bool showBoundingRect = false;
+    double margin = 6;
+    bool showBoundingRect = true;
+    const double minAddLen = 10;
+
+    GeometryCachePtr geometryCachePtr;
 };
 
 GraphicsBasicItem::GraphicsBasicItem(QGraphicsItem *parent)
@@ -34,24 +40,25 @@ GraphicsBasicItem::GraphicsBasicItem(QGraphicsItem *parent)
     , QAbstractGraphicsShapeItem(parent)
     , d_ptr(new GraphicsBasicItemPrivate(this))
 {
-    setPen(QPen(Qt::blue));
+    setPen(QPen(QColor(57, 163, 255), 2));
     setFlags(flags() | ItemIsSelectable | ItemIsMovable | ItemSendsGeometryChanges
              | ItemIsFocusable);
-    setAcceptHoverEvents(true);
+    setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+    setItemEditable(true);
 }
 
 GraphicsBasicItem::~GraphicsBasicItem() {}
 
+auto GraphicsBasicItem::isValid() const -> bool
+{
+    return d_ptr->geometryCachePtr->isValid();
+}
+
 auto GraphicsBasicItem::boundingRect() const -> QRectF
 {
-    if (!isValid()) {
-        return scene()->sceneRect();
-    }
-
-    QRectF rectF = d_ptr->cache.boundingRect();
-    double addLen = d_ptr->margin / 2;
-    rectF.adjust(-addLen, -addLen, addLen, addLen);
-    return rectF;
+    return d_ptr->geometryCachePtr->isValid()
+               ? d_ptr->geometryCachePtr->boundingRect(margin() + addLen(), pen().width())
+               : scene()->sceneRect();
 }
 
 void GraphicsBasicItem::setName(const QString &name)
@@ -64,16 +71,9 @@ auto GraphicsBasicItem::name() const -> QString
     return d_ptr->name;
 }
 
-void GraphicsBasicItem::setMargin(double m11)
+void GraphicsBasicItem::setMargin(double margin)
 {
-    d_ptr->margin = 1.5 * 10 / m11;
-    if (d_ptr->margin <= 3) {
-        d_ptr->margin = 3;
-    }
-
-    if (d_ptr->margin >= 100) {
-        d_ptr->margin = 100;
-    }
+    d_ptr->margin = margin;
 }
 
 auto GraphicsBasicItem::margin() const -> double
@@ -84,6 +84,11 @@ auto GraphicsBasicItem::margin() const -> double
 void GraphicsBasicItem::setItemEditable(bool editable)
 {
     setAcceptHoverEvents(editable);
+}
+
+bool GraphicsBasicItem::itemEditable() const
+{
+    return acceptHoverEvents();
 }
 
 void GraphicsBasicItem::setShowBoundingRect(bool show)
@@ -114,6 +119,20 @@ bool GraphicsBasicItem::showBoundingRect() const
 //    return QGraphicsItem::itemChange(change, value);
 //}
 
+void GraphicsBasicItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (event->button() != Qt::LeftButton) {
+        return QAbstractGraphicsShapeItem::mousePressEvent(event);
+    }
+    setClickedPos(event->scenePos());
+    if (isValid()) {
+        return;
+    }
+    auto pts_tmp = d_ptr->geometryCachePtr->anchorPoints();
+    pts_tmp.append(event->pos());
+    pointsChanged(pts_tmp);
+}
+
 void GraphicsBasicItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     QAbstractGraphicsShapeItem::hoverMoveEvent(event);
@@ -121,42 +140,57 @@ void GraphicsBasicItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         return;
     }
 
-    d_ptr->mouseRegin = None;
+    d_ptr->mouseRegin = MouseRegion::None;
     d_ptr->hoveredDotIndex = -1;
+    const auto scenePos = event->scenePos();
+    const auto &anchorPoints = d_ptr->geometryCachePtr->anchorPoints();
+    const qreal halfMargin = d_ptr->margin * 0.5;
+    const QPointF marginOffset(halfMargin, halfMargin);
 
-    QPointF pos = event->scenePos();
-    if (shape().contains(pos)) {
-        d_ptr->mouseRegin = All;
-        setCursor(Qt::SizeAllCursor);
-    }
+    for (int i = 0; i < anchorPoints.size(); ++i) {
+        const auto &point = anchorPoints.at(i);
+        const QRectF area(point - marginOffset, point + marginOffset);
 
-    for (const QPointF &p : std::as_const(d_ptr->cache)) {
-        QPointF m(margin() / 2, margin() / 2);
-        QRectF area(p - m, p + m);
-        if (area.contains(pos)) {
-            d_ptr->hoveredDotIndex = d_ptr->cache.indexOf(p);
-            d_ptr->mouseRegin = DotRegion;
+        if (area.contains(scenePos)) {
+            d_ptr->hoveredDotIndex = i;
+            d_ptr->mouseRegin = MouseRegion::DotRegion;
             setCursor(Qt::PointingHandCursor);
             return;
         }
+    }
+
+    if (shape().contains(scenePos)) {
+        d_ptr->mouseRegin = MouseRegion::All;
+        setCursor(Qt::SizeAllCursor);
     }
 }
 
 void GraphicsBasicItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     unsetCursor();
-    d_ptr->mouseRegin = None;
+    d_ptr->mouseRegin = MouseRegion::None;
     QAbstractGraphicsShapeItem::hoverLeaveEvent(event);
 }
 
-void GraphicsBasicItem::setCache(const QPolygonF &cache)
+void GraphicsBasicItem::paint(QPainter *painter,
+                              const QStyleOptionGraphicsItem *option,
+                              QWidget *widget)
 {
-    d_ptr->cache = cache;
+    painter->setRenderHint(QPainter::Antialiasing);
+    painter->setPen(pen());
+
+    drawContent(painter);
+
+    if (option->state & QStyle::State_Selected) {
+        drawAnchor(painter);
+        drawBoundingRect(painter);
+        drawShape(painter);
+    }
 }
 
-auto GraphicsBasicItem::cache() const -> QPolygonF
+GeometryCache *GraphicsBasicItem::geometryCache() const
 {
-    return d_ptr->cache;
+    return d_ptr->geometryCachePtr.data();
 }
 
 void GraphicsBasicItem::setClickedPos(const QPointF &pointF)
@@ -184,14 +218,16 @@ auto GraphicsBasicItem::hoveredDotIndex() const -> int
     return d_ptr->hoveredDotIndex;
 }
 
+void GraphicsBasicItem::drawContent(QPainter *painter) {}
+
 void GraphicsBasicItem::drawAnchor(QPainter *painter)
 {
     if (!acceptHoverEvents()) {
         return;
     }
 
-    QPolygonF polygonF = cache();
-    for (const QPointF &p : std::as_const(polygonF)) {
+    auto anchorPoints = d_ptr->geometryCachePtr->anchorPoints();
+    for (const QPointF &p : std::as_const(anchorPoints)) {
         painter->fillRect(QRectF(p.x() - d_ptr->margin / 2,
                                  p.y() - d_ptr->margin / 2,
                                  d_ptr->margin,
@@ -212,10 +248,23 @@ void GraphicsBasicItem::drawBoundingRect(QPainter *painter)
     painter->drawRect(boundingRect());
 }
 
+void GraphicsBasicItem::drawShape(QPainter *painter)
+{
+    QPen outline(Qt::green, 1, Qt::DashLine);
+    outline.setCosmetic(true);
+    painter->setPen(outline);
+    painter->drawPath(shape());
+}
+
 void GraphicsBasicItem::setMyCursor(const QPointF &center, const QPointF &pos)
 {
-    double angle = QLineF(center, pos).angle();
-    setCursor(Utils::curorFromAngle(Utils::ConvertTo360(angle - 90)));
+    auto angle = QLineF(center, pos).angle();
+    setCursor(Utils::cursorForDirection(angle - 90));
+}
+
+auto GraphicsBasicItem::addLen() const -> int
+{
+    return std::max({d_ptr->margin, pen().widthF(), d_ptr->minAddLen});
 }
 
 } // namespace Graphics

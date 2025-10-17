@@ -8,6 +8,7 @@ TARGET = $$add_platform_library(graphics)
 LIBS += -l$$replaceLibName(utils)
 
 SOURCES += \
+    geometrycache.cc \
     graphicsarcitem.cpp \
     graphicsbasicitem.cpp \
     graphicscircleitem.cpp \
@@ -23,6 +24,7 @@ SOURCES += \
     graphicsview.cc
 
 HEADERS += \
+    geometrycache.hpp \
     graphics_global.h \
     graphicsarcitem.h \
     graphicsbasicitem.h \

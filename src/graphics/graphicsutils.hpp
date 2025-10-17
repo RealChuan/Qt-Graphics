@@ -4,12 +4,18 @@
 #include <QLineF>
 #include <QPolygonF>
 
-namespace Graphics::Utils {
+namespace Graphics {
+
+namespace Utils {
+
+auto createBoundingRect(const QPolygonF &ply, double margin) -> QRectF;
+auto distance(QPointF pos, QPointF center) -> double;
+auto normalizeAngle(double angle) -> double;
+auto cursorForDirection(double angle) -> QCursor;
 
 auto calculateCircle(const QPolygonF &pts, QPointF &center, double &radius) -> bool;
-auto curorFromAngle(double angle) -> QCursor;
 auto boundingFromLine(const QLineF &line, double margin) -> QPolygonF;
-auto distance(QPointF pos, QPointF center) -> double;
-auto ConvertTo360(double angle) -> double;
 
-} // namespace Graphics::Utils
+} // namespace Utils
+
+} // namespace Graphics

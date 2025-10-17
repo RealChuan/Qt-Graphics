@@ -12,24 +12,21 @@ public:
     explicit GraphicsLineItem(const QLineF &line, QGraphicsItem *parent = nullptr);
     ~GraphicsLineItem() override;
 
-    void setLine(const QLineF &line);
+    [[nodiscard]] auto setLine(const QLineF &line) -> bool;
     [[nodiscard]] auto line() const -> QLineF;
 
-    [[nodiscard]] auto isValid() const -> bool override;
+    [[nodiscard]] auto shape() const -> QPainterPath override;
     [[nodiscard]] auto type() const -> int override;
 
 signals:
-    void lineChnaged(const QLineF &line);
+    void lineChanged(const QLineF &line);
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-    void paint(QPainter *painter,
-               const QStyleOptionGraphicsItem *option,
-               QWidget *widget = nullptr) override;
 
-    void pointsChanged(const QPolygonF &ply);
+    void drawContent(QPainter *painter) override;
+    void pointsChanged(const QPolygonF &ply) override;
 
 private:
     void showHoverLine(const QPolygonF &ply);

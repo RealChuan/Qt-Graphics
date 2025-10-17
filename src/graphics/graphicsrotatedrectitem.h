@@ -6,7 +6,8 @@ namespace Graphics {
 
 struct GRAPHICS_EXPORT RotatedRect
 {
-    [[nodiscard]] auto isValid() const -> bool;
+    [[nodiscard]] auto isValid(double margin) const -> bool;
+    [[nodiscard]] auto controlPoints() const -> QPolygonF;
 
     QPointF center;
     double width = 0;
@@ -22,23 +23,19 @@ public:
                                      QGraphicsItem *parent = nullptr);
     ~GraphicsRotatedRectItem() override;
 
-    void setRotatedRect(const RotatedRect &rotatedRect);
+    [[nodiscard]] auto setRotatedRect(const RotatedRect &rotatedRect) -> bool;
     [[nodiscard]] auto rotatedRect() const -> RotatedRect;
 
-    [[nodiscard]] auto isValid() const -> bool override;
     [[nodiscard]] auto type() const -> int override;
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-    void paint(QPainter *painter,
-               const QStyleOptionGraphicsItem *option,
-               QWidget *widget = nullptr) override;
+
+    void drawContent(QPainter *painter) override;
+    void pointsChanged(const QPolygonF &ply) override;
 
 private:
-    void pointsChanged(const QPolygonF &ply);
-
     class GraphicsRotatedRectItemPrivate;
     QScopedPointer<GraphicsRotatedRectItemPrivate> d_ptr;
 };

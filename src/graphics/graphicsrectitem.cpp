@@ -18,20 +18,15 @@ GraphicsRectItem::GraphicsRectItem(const QRectF &rect, QGraphicsItem *parent)
 
 GraphicsRectItem::~GraphicsRectItem() {}
 
-void GraphicsRectItem::setRect(const QRectF &rect)
+auto GraphicsRectItem::setRect(const QRectF &rect) -> bool
 {
     RoundedRect roundedRect(rect);
-    setRoundedRect(roundedRect);
+    return setRoundedRect(roundedRect);
 }
 
 QRectF GraphicsRectItem::rect() const
 {
     return roundedRect().rect;
-}
-
-bool GraphicsRectItem::isValid() const
-{
-    return GraphicsRoundedRectItem::isValid();
 }
 
 int GraphicsRectItem::type() const

@@ -1,19 +1,13 @@
 #include "graphicsroundedrectitem.hpp"
+#include "geometrycache.hpp"
 #include "graphicsutils.hpp"
 
 #include <QDebug>
 #include <QGraphicsScene>
 #include <QGraphicsSceneHoverEvent>
 #include <QPainter>
-#include <QStyleOptionGraphicsItem>
 
 namespace Graphics {
-
-inline auto checkRect(const QRectF &rect, const double margin) -> bool
-{
-    return rect.isValid() && rect.x() >= 0 && rect.y() >= 0 && rect.width() > margin
-           && rect.height() > margin;
-}
 
 RoundedRect::RoundedRect(const QRectF &rect, qreal xRadius, qreal yRadius)
 {
@@ -22,10 +16,11 @@ RoundedRect::RoundedRect(const QRectF &rect, qreal xRadius, qreal yRadius)
     this->yRadius = yRadius;
 }
 
-bool RoundedRect::isValid() const
+bool RoundedRect::isValid(double margin) const
 {
     return rect.isValid() && xRadius >= 0 && yRadius >= 0 && xRadius < rect.width() / 2
-           && yRadius < rect.height() / 2;
+           && yRadius < rect.height() / 2 && rect.x() >= 0 && rect.y() >= 0 && rect.width() > margin
+           && rect.height() > margin;
 }
 
 class GraphicsRoundedRectItem::GraphicsRoundedRectItemPrivate
@@ -39,7 +34,6 @@ public:
 
     GraphicsRoundedRectItem *q_ptr = nullptr;
 
-    bool linehovered = false;
     QLineF hoveredLine;
 };
 
@@ -58,17 +52,25 @@ GraphicsRoundedRectItem::GraphicsRoundedRectItem(const RoundedRect &roundedRect,
 
 GraphicsRoundedRectItem::~GraphicsRoundedRectItem() {}
 
-void GraphicsRoundedRectItem::setRoundedRect(const RoundedRect &roundedRect)
+auto GraphicsRoundedRectItem::setRoundedRect(const RoundedRect &roundedRect) -> bool
 {
-    if (!roundedRect.isValid() || !checkRect(roundedRect.rect, margin())) {
-        return;
+    if (!roundedRect.isValid(margin())) {
+        return false;
     }
+
+    QPolygonF anchorPoints{roundedRect.rect.topLeft(), roundedRect.rect.bottomRight()};
+    auto rect = Utils::createBoundingRect(anchorPoints, margin());
+    if (!scene()->sceneRect().contains(rect)) {
+        return false;
+    }
+
     prepareGeometryChange();
     m_roundedRect = roundedRect;
-    QPolygonF cache;
-    cache << roundedRect.rect.topLeft() << roundedRect.rect.bottomRight();
-    setCache(cache);
+
+    geometryCache()->setAnchorPoints(anchorPoints, Utils::createBoundingRect(anchorPoints, 0));
     emit roundedRectChanged(m_roundedRect);
+
+    return true;
 }
 
 RoundedRect GraphicsRoundedRectItem::roundedRect() const
@@ -76,29 +78,9 @@ RoundedRect GraphicsRoundedRectItem::roundedRect() const
     return m_roundedRect;
 }
 
-auto GraphicsRoundedRectItem::isValid() const -> bool
-{
-    return m_roundedRect.isValid() && checkRect(m_roundedRect.rect, margin());
-}
-
 auto GraphicsRoundedRectItem::type() const -> int
 {
-    return ROUNDEDRECT;
-}
-
-void GraphicsRoundedRectItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{
-    if (event->button() != Qt::LeftButton) {
-        return GraphicsBasicItem::mousePressEvent(event);
-    }
-    setClickedPos(event->scenePos());
-    if (isValid()) {
-        return;
-    }
-    QPointF point = event->pos();
-    QPolygonF pts_tmp = cache();
-    pts_tmp.append(point);
-    pointsChanged(pts_tmp);
+    return Shape::ROUNDEDRECT;
 }
 
 auto polygonFromRect(const QRectF &rect) -> QPolygonF
@@ -120,11 +102,16 @@ void GraphicsRoundedRectItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         setSelected(true);
     }
     QPointF point = event->scenePos();
-    QPolygonF pts_tmp = cache();
+    auto pts_tmp = geometryCache()->anchorPoints();
     QPointF dp = point - clickedPos();
     setClickedPos(point);
 
-    if (d_ptr->linehovered) {
+    switch (mouseRegion()) {
+    case MouseRegion::DotRegion: {
+        int index = hoveredDotIndex();
+        pts_tmp.replace(index, point);
+    } break;
+    case MouseRegion::Edge: {
         QPointF p1 = d_ptr->hoveredLine.p1();
         QPointF p2 = d_ptr->hoveredLine.p2();
 
@@ -150,23 +137,18 @@ void GraphicsRoundedRectItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         pts_tmp.clear();
         pts_tmp.append(ply1.at(0));
         pts_tmp.append(ply1.at(2));
-    } else {
-        switch (mouseRegion()) {
-        case DotRegion: {
-            int index = hoveredDotIndex();
-            pts_tmp.replace(index, point);
-        } break;
-        case All: pts_tmp.translate(dp); break;
-        default: return;
-        }
+    } break;
+    case MouseRegion::All: pts_tmp.translate(dp); break;
+    default: return;
     }
+
     pointsChanged(pts_tmp);
 }
 
 void GraphicsRoundedRectItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     QPointF point = event->scenePos();
-    QPolygonF pts_tmp = cache();
+    auto pts_tmp = geometryCache()->anchorPoints();
     if (pts_tmp.size() == 1) {
         pts_tmp.append(point);
         showHoverRect(pts_tmp);
@@ -174,8 +156,9 @@ void GraphicsRoundedRectItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     if (!isValid()) {
         return;
     }
+
     GraphicsBasicItem::hoverMoveEvent(event);
-    if (mouseRegion() == DotRegion) {
+    if (mouseRegion() == MouseRegion::DotRegion) {
         return;
     }
     QPolygonF ply = polygonFromRect(m_roundedRect.rect);
@@ -183,49 +166,36 @@ void GraphicsRoundedRectItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         QLineF pl(ply.at(i), ply.at((i + 1) % 4));
         QPolygonF tmp = Utils::boundingFromLine(pl, margin() / 4);
         if (tmp.containsPoint(point, Qt::OddEvenFill)) {
-            d_ptr->linehovered = true;
+            setMouseRegion(MouseRegion::Edge);
             d_ptr->hoveredLine = pl;
-            setCursor(Utils::curorFromAngle(pl.angle()));
+            setCursor(Utils::cursorForDirection(pl.angle()));
             return;
         }
     }
-
-    d_ptr->linehovered = false;
 }
 
-void GraphicsRoundedRectItem::paint(QPainter *painter,
-                                    const QStyleOptionGraphicsItem *option,
-                                    QWidget *)
+void GraphicsRoundedRectItem::drawContent(QPainter *painter)
 {
-    painter->setRenderHint(QPainter::Antialiasing);
-    double linew = 2 * pen().widthF() / painter->transform().m11();
-    painter->setPen(QPen(LineColor, linew));
-    setMargin(painter->transform().m11());
     auto roundedRect = isValid() ? m_roundedRect : m_tempRoundedRect;
     painter->drawRoundedRect(roundedRect.rect, roundedRect.xRadius, roundedRect.yRadius);
-
-    if (option->state & QStyle::State_Selected) {
-        drawAnchor(painter);
-        drawBoundingRect(painter);
-    }
 }
 
 void GraphicsRoundedRectItem::pointsChanged(const QPolygonF &ply)
 {
-    QRectF rect = scene()->sceneRect();
+    auto rect = scene()->sceneRect();
     if (!rect.contains(ply.last())) {
         return;
     }
+
     switch (ply.size()) {
-    case 1: setCache(ply); break;
-    case 2: {
-        QRectF rect_(ply[0], ply[1]);
-        if (checkRect(rect_, margin())) {
-            setRoundedRect({rect_, m_roundedRect.xRadius, m_roundedRect.yRadius});
-        } else {
+    case 1: geometryCache()->setAnchorPoints(ply, {}); break;
+    case 2:
+        if (!setRoundedRect(RoundedRect(QRectF(ply[0], ply[1]).normalized(),
+                                        m_roundedRect.xRadius,
+                                        m_roundedRect.yRadius))) {
             return;
         }
-    } break;
+        break;
     default: return;
     }
     update();
@@ -236,7 +206,7 @@ void GraphicsRoundedRectItem::showHoverRect(const QPolygonF &ply)
     if (ply.size() != 2) {
         return;
     }
-    m_tempRoundedRect.rect = QRectF(ply[0], ply[1]);
+    m_tempRoundedRect.rect = QRectF(ply[0], ply[1]).normalized();
     update();
 }
 

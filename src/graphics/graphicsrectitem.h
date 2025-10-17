@@ -12,10 +12,9 @@ public:
     explicit GraphicsRectItem(const QRectF &rect, QGraphicsItem *parent = nullptr);
     ~GraphicsRectItem() override;
 
-    void setRect(const QRectF &rect);
+    [[nodiscard]] auto setRect(const QRectF &rect) -> bool;
     [[nodiscard]] auto rect() const -> QRectF;
 
-    [[nodiscard]] auto isValid() const -> bool override;
     [[nodiscard]] auto type() const -> int override;
 
 signals:

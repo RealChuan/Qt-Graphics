@@ -1,5 +1,4 @@
-#ifndef CUSTOMLINEITEM_HPP
-#define CUSTOMLINEITEM_HPP
+#pragma once
 
 #include <graphics/graphicslineitem.h>
 
@@ -11,5 +10,3 @@ public:
 protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 };
-
-#endif // CUSTOMLINEITEM_HPP

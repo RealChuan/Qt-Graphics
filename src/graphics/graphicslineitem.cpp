@@ -1,12 +1,58 @@
 #include "graphicslineitem.h"
+#include "geometrycache.hpp"
+#include "graphicsutils.hpp"
 
 #include <QDebug>
 #include <QGraphicsScene>
 #include <QGraphicsSceneHoverEvent>
 #include <QPainter>
-#include <QStyleOptionGraphicsItem>
 
 namespace Graphics {
+
+inline auto checkLineVaild(const QLineF &line, const double margin) -> bool
+{
+    return !line.isNull() && line.length() > margin;
+}
+
+inline auto lineShape(const QLineF &line, qreal penWidth) -> QPainterPath
+{
+    QPainterPath path;
+
+    if (line.isNull())
+        return path;
+
+    // 计算线段的方向向量和长度
+    QPointF dir = line.p2() - line.p1();
+    qreal length = sqrt(dir.x() * dir.x() + dir.y() * dir.y());
+
+    if (length == 0)
+        return path;
+
+    // 归一化方向向量
+    dir /= length;
+
+    // 计算法向量（垂直于线段方向）
+    QPointF normal(-dir.y(), dir.x());
+
+    // 计算延长量
+    qreal extension = penWidth;
+
+    // 延长后的端点
+    QPointF extendedP1 = line.p1() - dir * extension;
+    QPointF extendedP2 = line.p2() + dir * extension;
+
+    // 计算侧向偏移量
+    QPointF offset = normal * (penWidth);
+
+    // 构造矩形路径
+    path.moveTo(extendedP1 + offset);
+    path.lineTo(extendedP2 + offset);
+    path.lineTo(extendedP2 - offset);
+    path.lineTo(extendedP1 - offset);
+    path.closeSubpath();
+
+    return path;
+}
 
 class GraphicsLineItem::GraphicsLineItemPrivate
 {
@@ -19,6 +65,8 @@ public:
 
     QLineF line;
     QLineF tempLine;
+    QPainterPath shape;
+    int lastAddLen = 0;
 };
 
 GraphicsLineItem::GraphicsLineItem(QGraphicsItem *parent)
@@ -35,22 +83,28 @@ GraphicsLineItem::GraphicsLineItem(const QLineF &line, QGraphicsItem *parent)
 
 GraphicsLineItem::~GraphicsLineItem() {}
 
-inline auto checkLine(const QLineF &line, const double margin) -> bool
+auto GraphicsLineItem::setLine(const QLineF &line) -> bool
 {
-    return !line.isNull() && line.length() > margin;
-}
-
-void GraphicsLineItem::setLine(const QLineF &line)
-{
-    if (!checkLine(line, margin())) {
-        return;
+    if (!checkLineVaild(line, margin())) {
+        return false;
     }
+
+    QPolygonF anchorPoints{line.p1(), line.p2()};
+    auto rect = Utils::createBoundingRect(anchorPoints, margin());
+    if (!scene()->sceneRect().contains(rect)) {
+        return false;
+    }
+
     prepareGeometryChange();
+
     d_ptr->line = line;
-    QPolygonF cache;
-    cache << line.p1() << line.p2();
-    setCache(cache);
-    emit lineChnaged(line);
+    geometryCache()->setAnchorPoints(anchorPoints, Utils::createBoundingRect(anchorPoints, 0));
+    emit lineChanged(line);
+
+    d_ptr->lastAddLen = addLen(); // 线段的宽度
+    d_ptr->shape = lineShape(line, d_ptr->lastAddLen);
+
+    return true;
 }
 
 auto GraphicsLineItem::line() const -> QLineF
@@ -58,30 +112,22 @@ auto GraphicsLineItem::line() const -> QLineF
     return d_ptr->line;
 }
 
-auto GraphicsLineItem::isValid() const -> bool
+auto GraphicsLineItem::shape() const -> QPainterPath
 {
-    return checkLine(d_ptr->line, margin());
+    if (isValid()) {
+        auto add = addLen(); // 线段的宽度
+        if (add != d_ptr->lastAddLen) {
+            d_ptr->shape = lineShape(d_ptr->line, add);
+            d_ptr->lastAddLen = add;
+        }
+        return d_ptr->shape;
+    }
+    return GraphicsBasicItem::shape();
 }
 
 auto GraphicsLineItem::type() const -> int
 {
-    return LINE;
-}
-
-void GraphicsLineItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{
-    if (event->button() != Qt::LeftButton) {
-        return GraphicsBasicItem::mousePressEvent(event);
-    }
-    setClickedPos(event->scenePos());
-
-    if (isValid()) {
-        return;
-    }
-    QPointF point = event->pos();
-    QPolygonF pts_tmp = cache();
-    pts_tmp.append(point);
-    pointsChanged(pts_tmp);
+    return Shape::LINE;
 }
 
 void GraphicsLineItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -92,14 +138,14 @@ void GraphicsLineItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     if (!isSelected()) {
         setSelected(true);
     }
-    QPointF point = event->scenePos();
-    QPolygonF pts_tmp = cache();
-    QPointF dp = point - clickedPos();
-    setClickedPos(point);
+    auto scenePos = event->scenePos();
+    auto dp = scenePos - clickedPos();
+    setClickedPos(scenePos);
 
+    auto pts_tmp = geometryCache()->anchorPoints();
     switch (mouseRegion()) {
-    case DotRegion: pts_tmp.replace(hoveredDotIndex(), point); break;
-    case All: pts_tmp.translate(dp); break;
+    case MouseRegion::DotRegion: pts_tmp.replace(hoveredDotIndex(), scenePos); break;
+    case MouseRegion::All: pts_tmp.translate(dp); break;
     default: return;
     }
     pointsChanged(pts_tmp);
@@ -107,7 +153,7 @@ void GraphicsLineItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void GraphicsLineItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
-    QPolygonF pts_tmp = cache();
+    auto pts_tmp = geometryCache()->anchorPoints();
     if (pts_tmp.size() == 1) {
         pts_tmp.append(event->scenePos());
         showHoverLine(pts_tmp);
@@ -116,40 +162,25 @@ void GraphicsLineItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     GraphicsBasicItem::hoverMoveEvent(event);
 }
 
-void GraphicsLineItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
+void GraphicsLineItem::drawContent(QPainter *painter)
 {
-    painter->setRenderHint(QPainter::Antialiasing);
-    double linew = 2 * pen().widthF() / painter->transform().m11();
-    painter->setPen(QPen(LineColor, linew));
-    setMargin(painter->transform().m11());
-
-    if (isValid()) {
-        painter->drawLine(d_ptr->line);
-    } else {
-        painter->drawLine(d_ptr->tempLine);
-    }
-    if (option->state & QStyle::State_Selected) {
-        drawAnchor(painter);
-        drawBoundingRect(painter);
-    }
+    painter->drawLine(isValid() ? d_ptr->line : d_ptr->tempLine);
 }
 
 void GraphicsLineItem::pointsChanged(const QPolygonF &ply)
 {
-    QRectF rect = scene()->sceneRect();
+    auto rect = scene()->sceneRect();
     if (!rect.contains(ply.last())) {
         return;
     }
+
     switch (ply.size()) {
-    case 1: setCache(ply); break;
-    case 2: {
-        QLineF line(ply[0], ply[1]);
-        if (checkLine(line, margin())) {
-            setLine(line);
-        } else {
+    case 1: geometryCache()->setAnchorPoints(ply, {}); break;
+    case 2:
+        if (!setLine(QLineF(ply[0], ply[1]))) {
             return;
         }
-    } break;
+        break;
     default: return;
     }
     update();

@@ -89,11 +89,11 @@ void SectionalSubtitlesView::setLine2RatioOfHeight(double value)
 void SectionalSubtitlesView::buildConnect()
 {
     connect(d_ptr->line1Ptr.data(),
-            &CustomLineItem::lineChnaged,
+            &CustomLineItem::lineChanged,
             this,
             &SectionalSubtitlesView::line1Changed);
     connect(d_ptr->line2Ptr.data(),
-            &CustomLineItem::lineChnaged,
+            &CustomLineItem::lineChanged,
             this,
             &SectionalSubtitlesView::line2Changed);
 }

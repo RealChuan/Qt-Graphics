@@ -2,57 +2,54 @@
 
 #include "graphics_global.h"
 
-#include <QGraphicsPixmapItem>
+#include <QAbstractGraphicsShapeItem>
 #include <QList>
 
 namespace Graphics {
 
-#define LineColor QColor(57, 163, 255)
+class GeometryCache;
 
 class GRAPHICS_EXPORT GraphicsBasicItem : public QObject, public QAbstractGraphicsShapeItem
 {
     Q_OBJECT
 public:
-    // Why does add UserType not draw
-    enum Shape {
-        LINE = /*UserType +*/ 1,
-        RECT,
-        ROUNDEDRECT,
-        ROTATEDRECT,
-        CIRCLE,
-        POLYGON,
-        RING,
-        ARC
-    };
+    enum Shape : int { LINE = 1, RECT, ROUNDEDRECT, ROTATEDRECT, CIRCLE, POLYGON, RING, ARC };
     Q_ENUM(Shape)
 
-    enum MouseRegion { DotRegion, All, Edge, None };
+    enum MouseRegion : int { DotRegion, All, Edge, None };
 
     explicit GraphicsBasicItem(QGraphicsItem *parent = nullptr);
     ~GraphicsBasicItem() override;
 
-    [[nodiscard]] virtual auto isValid() const -> bool = 0;
+    [[nodiscard]] virtual auto isValid() const -> bool;
     [[nodiscard]] auto type() const -> int override = 0;
     [[nodiscard]] auto boundingRect() const -> QRectF override;
 
     void setName(const QString &name);
     [[nodiscard]] auto name() const -> QString;
 
-    void setMargin(double m11);
+    void setMargin(double margin);
     [[nodiscard]] auto margin() const -> double;
 
     void setItemEditable(bool editable);
+    bool itemEditable() const;
 
     void setShowBoundingRect(bool show);
     bool showBoundingRect() const;
 
 protected:
     //QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
 
-    void setCache(const QPolygonF &);
-    [[nodiscard]] auto cache() const -> QPolygonF;
+    void paint(QPainter *painter,
+               const QStyleOptionGraphicsItem *option,
+               QWidget *widget = nullptr) override;
+
+    [[nodiscard]] auto addLen() const -> int;
+
+    void setMyCursor(const QPointF &center, const QPointF &pos);
 
     void setClickedPos(const QPointF &p);
     [[nodiscard]] auto clickedPos() const -> QPointF;
@@ -62,10 +59,14 @@ protected:
 
     [[nodiscard]] auto hoveredDotIndex() const -> int;
 
+    GeometryCache *geometryCache() const;
+
+    virtual void drawContent(QPainter *painter);
     void drawAnchor(QPainter *painter);
     void drawBoundingRect(QPainter *painter);
+    void drawShape(QPainter *painter);
 
-    void setMyCursor(const QPointF &center, const QPointF &pos);
+    virtual void pointsChanged(const QPolygonF &ply) = 0;
 
 private:
     class GraphicsBasicItemPrivate;

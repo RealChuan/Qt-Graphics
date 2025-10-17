@@ -47,29 +47,6 @@ auto calculateCircle(const QPolygonF &pts, QPointF &center, double &radius) -> b
     return true;
 }
 
-auto curorFromAngle(double angle) -> QCursor
-{
-    if (angle >= 0 && angle < 15) {
-        return Qt::SizeVerCursor;
-    } else if (angle >= 15 && angle < 75) {
-        return Qt::SizeFDiagCursor;
-    } else if (angle >= 75 && angle < 105) {
-        return Qt::SizeHorCursor;
-    } else if (angle >= 105 && angle < 165) {
-        return Qt::SizeBDiagCursor;
-    } else if (angle >= 165 && angle < 195) {
-        return Qt::SizeVerCursor;
-    } else if (angle >= 195 && angle < 255) {
-        return Qt::SizeFDiagCursor;
-    } else if (angle >= 255 && angle < 285) {
-        return Qt::SizeHorCursor;
-    } else if (angle >= 285 && angle < 345) {
-        return Qt::SizeBDiagCursor;
-    } else {
-        return Qt::SizeVerCursor;
-    }
-}
-
 auto boundingFromLine(const QLineF &line, double margin) -> QPolygonF
 {
     QPolygonF ply;
@@ -85,19 +62,37 @@ auto boundingFromLine(const QLineF &line, double margin) -> QPolygonF
     return ply;
 }
 
+auto createBoundingRect(const QPolygonF &ply, double margin) -> QRectF
+{
+    double addLen = margin / 2;
+    return ply.boundingRect().adjusted(-addLen, -addLen, addLen, addLen);
+}
+
+auto normalizeAngle(double angle) -> double
+{
+    angle = std::fmod(angle, 360.0);
+    return angle < 0.0 ? angle + 360.0 : angle;
+}
+
 auto distance(QPointF pos, QPointF center) -> double
 {
     return QLineF(center, pos).length();
 }
 
-auto ConvertTo360(double angle) -> double
+auto cursorForDirection(double angle) -> QCursor
 {
-    if (angle >= 0 && angle < 360)
-        return angle;
-    else if (angle < 0)
-        return ConvertTo360(angle + 360);
-    else
-        return ConvertTo360(angle - 360);
+    angle = normalizeAngle(angle);
+    const int sector = static_cast<int>((angle + 22.5) / 45.0) % 8;
+    static constexpr std::array<Qt::CursorShape, 8> cursors = {Qt::SizeVerCursor,
+                                                               Qt::SizeFDiagCursor,
+                                                               Qt::SizeHorCursor,
+                                                               Qt::SizeBDiagCursor,
+                                                               Qt::SizeVerCursor,
+                                                               Qt::SizeFDiagCursor,
+                                                               Qt::SizeHorCursor,
+                                                               Qt::SizeBDiagCursor};
+
+    return cursors[sector];
 }
 
 } // namespace Graphics::Utils

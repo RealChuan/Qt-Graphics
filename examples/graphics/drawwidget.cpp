@@ -27,7 +27,6 @@ public:
     {
         drawScene = new DrawScene(q_ptr);
         imageView = new GraphicsView(drawScene, q_ptr);
-        imageView->setContextMenuPolicy(Qt::NoContextMenu);
         shapeWidget = new QListWidget(q_ptr);
         shapeWidget->setFixedWidth(200);
 

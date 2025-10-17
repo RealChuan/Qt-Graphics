@@ -36,7 +36,7 @@ GraphicsPixmapItem::GraphicsPixmapItem(QGraphicsItem *parent)
 {
     setAcceptHoverEvents(true);
     setFlags(flags() | ItemIsSelectable);
-    setCacheMode(QGraphicsItem::NoCache);
+    setCacheMode(QGraphicsItem::DeviceCoordinateCache);
     setTransformationMode(Qt::SmoothTransformation);
     setZValue(0);
 }

@@ -1,31 +1,39 @@
 #include "graphicscircleitem.h"
+#include "geometrycache.hpp"
 #include "graphicsutils.hpp"
 
 #include <QDebug>
 #include <QGraphicsScene>
 #include <QGraphicsSceneHoverEvent>
 #include <QPainter>
-#include <QStyleOptionGraphicsItem>
 #include <QtMath>
 
 namespace Graphics {
 
-auto Circle::isVaild() const -> bool
+auto Circle::isVaild(double margin) const -> bool
 {
-    return qAbs(radius) > 0;
+    return radius > 0 && radius > margin;
 }
 
-auto Circle::boundingRect() const -> QRectF
+auto Circle::boundingRect(double margin) const -> QRectF
 {
-    if (!isVaild()) {
+    if (!isVaild(margin)) {
         return QRectF();
     }
-    return QRectF(center - QPointF(radius, radius), center + QPointF(radius, radius));
+    double addLen = margin / 2;
+    return QRectF(center - QPointF(radius, radius), center + QPointF(radius, radius))
+        .adjusted(-addLen, -addLen, addLen, addLen);
 }
 
-/*
- *
- */
+auto Circle::controlPoints() const -> QPolygonF
+{
+    return {
+        center + QPointF(0, -radius), // 上点
+        center + QPointF(radius, 0),  // 右点
+        center + QPointF(0, radius),  // 下点
+        center + QPointF(-radius, 0)  // 左点
+    };
+}
 
 class GraphicsCircleItem::GraphicsCircleItemPrivate
 {
@@ -39,6 +47,7 @@ public:
     Circle circle;
     Circle tempCircle;
     QPainterPath shape;
+    int lastAddLen = 0;
 };
 
 GraphicsCircleItem::GraphicsCircleItem(QGraphicsItem *parent)
@@ -55,37 +64,29 @@ GraphicsCircleItem::GraphicsCircleItem(const Circle &cicrle, QGraphicsItem *pare
 
 GraphicsCircleItem::~GraphicsCircleItem() {}
 
-auto GraphicsCircleItem::checkCircle(const Circle &circle, const double margin) -> bool
+auto GraphicsCircleItem::setCircle(const Circle &circle) -> bool
 {
-    return qAbs(circle.radius) > margin;
-}
-
-void computeCache(const Circle &circle, QPolygonF &cache)
-{
-    cache.clear();
-    for (int i = 0; i <= 270; i += 90) {
-        double x = circle.radius * qCos(i * M_PI * 1.0 / 180.0) + circle.center.x();
-        double y = circle.radius * qSin(i * M_PI * 1.0 / 180.0) + circle.center.y();
-        cache.append(QPointF(x, y));
+    if (!circle.isVaild(margin())) {
+        return false;
     }
-}
 
-void GraphicsCircleItem::setCircle(const Circle &circle)
-{
-    if (!checkCircle(circle, margin())) {
-        return;
+    auto rect = circle.boundingRect(margin());
+    if (!scene()->sceneRect().contains(rect)) {
+        return false;
     }
+    rect = circle.boundingRect(0);
+
     prepareGeometryChange();
 
     d_ptr->circle = circle;
-    QPolygonF pts;
-    computeCache(d_ptr->circle, pts);
-    setCache(pts);
+    geometryCache()->setAnchorPoints(d_ptr->circle.controlPoints(), rect);
 
-    QRectF rect = d_ptr->circle.boundingRect();
-    rect.adjust(-margin(), -margin(), margin(), margin());
+    d_ptr->lastAddLen = addLen();
     d_ptr->shape.clear();
-    d_ptr->shape.addEllipse(rect);
+    d_ptr->shape.addEllipse(
+        rect.adjusted(-d_ptr->lastAddLen, -d_ptr->lastAddLen, d_ptr->lastAddLen, d_ptr->lastAddLen));
+
+    return true;
 }
 
 auto GraphicsCircleItem::circle() const -> Circle
@@ -93,37 +94,23 @@ auto GraphicsCircleItem::circle() const -> Circle
     return d_ptr->circle;
 }
 
-auto GraphicsCircleItem::isValid() const -> bool
-{
-    return checkCircle(d_ptr->circle, margin());
-}
-
 auto GraphicsCircleItem::type() const -> int
 {
-    return CIRCLE;
+    return Shape::CIRCLE;
 }
 
 auto GraphicsCircleItem::shape() const -> QPainterPath
 {
     if (isValid()) {
+        auto add = addLen();
+        if (d_ptr->lastAddLen != add) {
+            d_ptr->lastAddLen = add;
+            d_ptr->shape.clear();
+            d_ptr->shape.addEllipse(d_ptr->circle.boundingRect(0).adjusted(-add, -add, add, add));
+        }
         return d_ptr->shape;
     }
     return GraphicsBasicItem::shape();
-}
-
-void GraphicsCircleItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{
-    if (event->button() != Qt::LeftButton) {
-        return;
-    }
-    setClickedPos(event->scenePos());
-    if (isValid()) {
-        return;
-    }
-    QPointF point = event->pos();
-    QPolygonF pts_tmp = cache();
-    pts_tmp.append(point);
-    pointsChanged(pts_tmp);
 }
 
 void GraphicsCircleItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -141,90 +128,79 @@ void GraphicsCircleItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     double radius = d_ptr->circle.radius;
     QPointF center = d_ptr->circle.center;
     switch (mouseRegion()) {
-    case DotRegion:
+    case MouseRegion::DotRegion:
         switch (hoveredDotIndex()) {
-        case 0: radius += dp.x(); break;
-        case 1: radius += dp.y(); break;
-        case 2: radius -= dp.x(); break;
-        case 3: radius -= dp.y(); break;
+        case 0: // 上点 - 垂直移动控制半径 向上拖动增加半径，向下拖动减小半径
+            radius -= dp.y();
+            break;
+        case 1: // 右点 - 水平移动控制半径 向右拖动增加半径，向左拖动减小半径
+            radius += dp.x();
+            break;
+        case 2: // 下点 - 垂直移动控制半径 向下拖动增加半径，向上拖动减小半径
+            radius += dp.y();
+            break;
+        case 3: // 左点 - 水平移动控制半径 向左拖动增加半径，向右拖动减小半径
+            radius -= dp.x();
+            break;
         default: break;
         }
         break;
-    case Edge: {
+    case MouseRegion::Edge: {
         QLineF lineF = QLineF(d_ptr->circle.center, point);
         setMyCursor(d_ptr->circle.center, point);
         radius = lineF.length();
     } break;
-    case All: center += dp; break;
+    case MouseRegion::All: center += dp; break;
     default: return;
     }
 
-    Circle circle{center, radius};
-    if (checkCircle(circle, margin()) && scene()->sceneRect().contains(circle.boundingRect())) {
-        setCircle(circle);
+    if (setCircle({center, radius})) {
         update();
     }
 }
 
 void GraphicsCircleItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
-    QPointF point = event->scenePos();
-    QPolygonF pts_tmp = cache();
-    if (pts_tmp.size() == 2) {
-        pts_tmp.append(point);
+    auto scenePos = event->scenePos();
+    auto pts_tmp = geometryCache()->anchorPoints();
+    if (pts_tmp.size() == 1) {
+        pts_tmp.append(scenePos);
         showHoverCircle(pts_tmp);
     }
 
-    if (!isValid()) {
-        return;
-    }
     GraphicsBasicItem::hoverMoveEvent(event);
-    if (mouseRegion() == DotRegion) {
+    if (mouseRegion() == MouseRegion::DotRegion) {
         return;
     }
-    if (qAbs(Utils::distance(point, d_ptr->circle.center) - d_ptr->circle.radius) < margin() / 3) {
-        setMouseRegion(Edge);
-        setMyCursor(d_ptr->circle.center, point);
+
+    const qreal distanceToCenter = Utils::distance(scenePos, d_ptr->circle.center);
+    const qreal distanceToEdge = qAbs(distanceToCenter - d_ptr->circle.radius);
+    if (distanceToEdge < margin() / 1.2) {
+        setMouseRegion(MouseRegion::Edge);
+        setMyCursor(d_ptr->circle.center, scenePos);
     }
 }
 
-void GraphicsCircleItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
+void GraphicsCircleItem::drawContent(QPainter *painter)
 {
-    painter->setRenderHint(QPainter::Antialiasing);
-    double linew = 2 * pen().widthF() / painter->transform().m11();
-    painter->setPen(QPen(LineColor, linew));
-    setMargin(painter->transform().m11());
-
-    if (isValid()) {
-        painter->drawEllipse(d_ptr->circle.boundingRect());
-    } else {
-        painter->drawEllipse(d_ptr->tempCircle.boundingRect());
-    }
-    if ((option->state & QStyle::State_Selected)) {
-        drawAnchor(painter);
-        drawBoundingRect(painter);
-    }
+    painter->drawEllipse(isValid() ? d_ptr->circle.boundingRect(0)
+                                   : d_ptr->tempCircle.boundingRect(0));
 }
 
 void GraphicsCircleItem::pointsChanged(const QPolygonF &ply)
 {
-    QRectF rect = scene()->sceneRect();
+    auto rect = scene()->sceneRect();
     if (!rect.contains(ply.last())) {
         return;
     }
 
     switch (ply.size()) {
-    case 1:
-    case 2: setCache(ply); break;
-    case 3: {
-        Circle circle;
-        Utils::calculateCircle(ply, circle.center, circle.radius);
-        if (rect.contains(circle.boundingRect()) && checkCircle(circle, margin())) {
-            setCircle(circle);
-        } else {
+    case 1: geometryCache()->setAnchorPoints(ply, {}); break;
+    case 2:
+        if (!setCircle({ply.first(), Utils::distance(ply.first(), ply.last())})) {
             return;
         }
-    } break;
+        break;
     default: return;
     }
 
@@ -233,10 +209,14 @@ void GraphicsCircleItem::pointsChanged(const QPolygonF &ply)
 
 void GraphicsCircleItem::showHoverCircle(const QPolygonF &ply)
 {
-    if (ply.size() != 3) {
+    if (ply.size() != 2) {
         return;
     }
-    Utils::calculateCircle(ply, d_ptr->tempCircle.center, d_ptr->tempCircle.radius);
+    Circle circle(ply.first(), Utils::distance(ply.first(), ply.last()));
+    if (!circle.isVaild(margin())) {
+        return;
+    }
+    d_ptr->tempCircle = circle;
     update();
 }
 

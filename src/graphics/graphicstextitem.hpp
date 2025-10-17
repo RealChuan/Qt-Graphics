@@ -1,8 +1,8 @@
 #pragma once
 
-#include <QGraphicsTextItem>
-
 #include "graphics_global.h"
+
+#include <QGraphicsTextItem>
 
 namespace Graphics {
 
@@ -10,7 +10,7 @@ class GRAPHICS_EXPORT GraphicsTextItem : public QGraphicsTextItem
 {
     Q_OBJECT
 public:
-    enum { Type = UserType + 3 };
+    enum { Type = UserType + 1 };
 
     explicit GraphicsTextItem(QGraphicsItem *parent = nullptr);
 

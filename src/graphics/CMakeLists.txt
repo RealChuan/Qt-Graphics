@@ -1,4 +1,6 @@
 set(PROJECT_SOURCES
+    geometrycache.cc
+    geometrycache.hpp
     graphics_global.h
     graphicsbasicitem.cpp
     graphicsbasicitem.h

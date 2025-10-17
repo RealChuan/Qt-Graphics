@@ -6,9 +6,10 @@ namespace Graphics {
 
 struct GRAPHICS_EXPORT Ring
 {
-    [[nodiscard]] auto boundingRect() const -> QRectF;
-    [[nodiscard]] auto minBoundingRect() const -> QRectF;
-    [[nodiscard]] auto isVaild() const -> bool;
+    [[nodiscard]] auto boundingRect(double margin) const -> QRectF;
+    [[nodiscard]] auto minBoundingRect(double margin) const -> QRectF;
+    [[nodiscard]] auto isVaild(double margin) const -> bool;
+    [[nodiscard]] auto controlPoints() const -> QPolygonF;
 
     QPointF center;
     double minRadius = 0;
@@ -23,23 +24,20 @@ public:
     explicit GraphicsRingItem(const Ring &ring, QGraphicsItem *parent = nullptr);
     ~GraphicsRingItem() override;
 
-    void setRing(const Ring &);
+    [[nodiscard]] auto setRing(const Ring &ring) -> bool;
     [[nodiscard]] auto ring() const -> Ring;
 
-    [[nodiscard]] auto isValid() const -> bool override;
     [[nodiscard]] auto type() const -> int override;
     [[nodiscard]] auto shape() const -> QPainterPath override;
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-    void paint(QPainter *painter,
-               const QStyleOptionGraphicsItem *option,
-               QWidget *widget = nullptr) override;
+
+    void drawContent(QPainter *painter) override;
+    void pointsChanged(const QPolygonF &ply) override;
 
 private:
-    void pointsChanged(const QPolygonF &ply);
     void showHoverRing(const QPolygonF &ply);
 
     class GraphicsRingItemPrivate;

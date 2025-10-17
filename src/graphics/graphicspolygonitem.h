@@ -10,22 +10,19 @@ public:
     explicit GraphicsPolygonItem(const QPolygonF &polygon, QGraphicsItem *parent = nullptr);
     ~GraphicsPolygonItem() override;
 
-    void setPolygon(const QPolygonF &ply);
+    [[nodiscard]] auto setPolygon(const QPolygonF &ply) -> bool;
     [[nodiscard]] auto polygon() const -> QPolygonF;
 
-    [[nodiscard]] auto isValid() const -> bool override;
     [[nodiscard]] auto type() const -> int override;
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-    void paint(QPainter *painter,
-               const QStyleOptionGraphicsItem *option,
-               QWidget *widget = nullptr) override;
+
+    void drawContent(QPainter *painter) override;
+    void pointsChanged(const QPolygonF &ply) override;
 
 private:
-    void pointsChanged(const QPolygonF &ply);
     void showHoverPolygon(const QPolygonF &ply);
 
     class GraphicsPolygonItemPrivate;

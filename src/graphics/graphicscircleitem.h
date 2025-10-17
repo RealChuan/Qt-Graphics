@@ -1,12 +1,14 @@
 #pragma once
+
 #include "graphicsbasicitem.h"
 
 namespace Graphics {
 
 struct GRAPHICS_EXPORT Circle
 {
-    [[nodiscard]] auto isVaild() const -> bool;
-    [[nodiscard]] auto boundingRect() const -> QRectF;
+    [[nodiscard]] auto isVaild(double margin) const -> bool;
+    [[nodiscard]] auto boundingRect(double margin) const -> QRectF;
+    [[nodiscard]] auto controlPoints() const -> QPolygonF;
 
     QPointF center;
     double radius = 0;
@@ -19,25 +21,20 @@ public:
     explicit GraphicsCircleItem(const Circle &, QGraphicsItem *parent = nullptr);
     ~GraphicsCircleItem() override;
 
-    static auto checkCircle(const Circle &circle, const double margin) -> bool;
-
-    void setCircle(const Circle &);
+    [[nodiscard]] auto setCircle(const Circle &circle) -> bool;
     [[nodiscard]] auto circle() const -> Circle;
 
-    [[nodiscard]] auto isValid() const -> bool override;
     [[nodiscard]] auto type() const -> int override;
     [[nodiscard]] auto shape() const -> QPainterPath override;
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-    void paint(QPainter *painter,
-               const QStyleOptionGraphicsItem *option,
-               QWidget *widget = nullptr) override;
+
+    void drawContent(QPainter *painter) override;
+    void pointsChanged(const QPolygonF &ply) override;
 
 private:
-    void pointsChanged(const QPolygonF &ply);
     void showHoverCircle(const QPolygonF &ply);
 
     class GraphicsCircleItemPrivate;
