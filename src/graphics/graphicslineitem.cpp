@@ -65,8 +65,6 @@ public:
 
     QLineF line;
     QLineF tempLine;
-    QPainterPath shape;
-    int lastAddLen = 0;
 };
 
 GraphicsLineItem::GraphicsLineItem(QGraphicsItem *parent)
@@ -96,13 +94,11 @@ auto GraphicsLineItem::setLine(const QLineF &line) -> bool
     }
 
     prepareGeometryChange();
-
     d_ptr->line = line;
-    geometryCache()->setAnchorPoints(anchorPoints, Utils::createBoundingRect(anchorPoints, 0));
+    geometryCache()->setAnchorPoints(anchorPoints,
+                                     Utils::createBoundingRect(anchorPoints, 0),
+                                     lineShape(d_ptr->line, 6));
     emit lineChanged(line);
-
-    d_ptr->lastAddLen = addLen(); // 线段的宽度
-    d_ptr->shape = lineShape(line, d_ptr->lastAddLen);
 
     return true;
 }
@@ -110,19 +106,6 @@ auto GraphicsLineItem::setLine(const QLineF &line) -> bool
 auto GraphicsLineItem::line() const -> QLineF
 {
     return d_ptr->line;
-}
-
-auto GraphicsLineItem::shape() const -> QPainterPath
-{
-    if (isValid()) {
-        auto add = addLen(); // 线段的宽度
-        if (add != d_ptr->lastAddLen) {
-            d_ptr->shape = lineShape(d_ptr->line, add);
-            d_ptr->lastAddLen = add;
-        }
-        return d_ptr->shape;
-    }
-    return GraphicsBasicItem::shape();
 }
 
 auto GraphicsLineItem::type() const -> int
@@ -175,7 +158,7 @@ void GraphicsLineItem::pointsChanged(const QPolygonF &ply)
     }
 
     switch (ply.size()) {
-    case 1: geometryCache()->setAnchorPoints(ply, {}); break;
+    case 1: geometryCache()->setAnchorPoints(ply); break;
     case 2:
         if (!setLine(QLineF(ply[0], ply[1]))) {
             return;

@@ -236,8 +236,7 @@ auto GraphicsArcItem::setArc(const Arc &arc) -> bool
 
     prepareGeometryChange();
     d_ptr->arch = arc;
-
-    geometryCache()->setAnchorPoints(anchorPoints, Utils::createBoundingRect(pts, 0));
+    geometryCache()->setAnchorPoints(anchorPoints, Utils::createBoundingRect(pts, 0), d_ptr->shape);
 
     return true;
 }
@@ -250,11 +249,6 @@ auto GraphicsArcItem::arch() const -> Arc
 auto GraphicsArcItem::type() const -> int
 {
     return GraphicsBasicItem::Shape::ARC;
-}
-
-auto GraphicsArcItem::shape() const -> QPainterPath
-{
-    return isValid() ? d_ptr->shape : GraphicsBasicItem::shape();
 }
 
 inline auto lineSetLength(const QPointF p1, const QPointF p2, const double len) -> QPointF
@@ -443,7 +437,7 @@ void GraphicsArcItem::pointsChanged(const QPolygonF &ply)
 
     switch (ply.size()) {
     case 1:
-    case 2: geometryCache()->setAnchorPoints(ply, {}); break;
+    case 2: geometryCache()->setAnchorPoints(ply); break;
     case 3: {
         if (!calculateHalfArc(ply, d_ptr->cachePath)) {
             return;
@@ -452,7 +446,7 @@ void GraphicsArcItem::pointsChanged(const QPolygonF &ply)
         if (!rect.contains(polygon.boundingRect())) {
             return;
         }
-        geometryCache()->setAnchorPoints(ply, {});
+        geometryCache()->setAnchorPoints(ply);
     } break;
     case 4: {
         if (!calculateAllArc(ply, d_ptr->arcPath, d_ptr->shape, margin())) {

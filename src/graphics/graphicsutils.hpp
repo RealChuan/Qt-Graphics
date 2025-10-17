@@ -9,6 +9,7 @@ namespace Graphics {
 namespace Utils {
 
 auto createBoundingRect(const QPolygonF &ply, double margin) -> QRectF;
+auto expandAndUnitePath(const QPainterPath &path, qreal strokeWidth) -> QPainterPath;
 auto distance(QPointF pos, QPointF center) -> double;
 auto normalizeAngle(double angle) -> double;
 auto cursorForDirection(double angle) -> QCursor;

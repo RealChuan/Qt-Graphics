@@ -1,5 +1,6 @@
 #include "graphicsutils.hpp"
 
+#include <QPainterPath>
 #include <QtMath>
 
 namespace Graphics::Utils {
@@ -93,6 +94,14 @@ auto cursorForDirection(double angle) -> QCursor
                                                                Qt::SizeBDiagCursor};
 
     return cursors[sector];
+}
+
+auto expandAndUnitePath(const QPainterPath &path, qreal strokeWidth) -> QPainterPath
+{
+    QPainterPathStroker stroker;
+    stroker.setWidth(strokeWidth);
+    QPainterPath expandedPath = stroker.createStroke(path);
+    return expandedPath.united(path);
 }
 
 } // namespace Graphics::Utils

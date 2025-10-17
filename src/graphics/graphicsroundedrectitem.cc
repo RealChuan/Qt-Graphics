@@ -63,11 +63,14 @@ auto GraphicsRoundedRectItem::setRoundedRect(const RoundedRect &roundedRect) -> 
     if (!scene()->sceneRect().contains(rect)) {
         return false;
     }
+    QPainterPath shape;
+    shape.addRoundedRect(roundedRect.rect, roundedRect.xRadius, roundedRect.yRadius);
 
     prepareGeometryChange();
     m_roundedRect = roundedRect;
-
-    geometryCache()->setAnchorPoints(anchorPoints, Utils::createBoundingRect(anchorPoints, 0));
+    geometryCache()->setAnchorPoints(anchorPoints,
+                                     Utils::createBoundingRect(anchorPoints, 0),
+                                     shape);
     emit roundedRectChanged(m_roundedRect);
 
     return true;
@@ -188,7 +191,7 @@ void GraphicsRoundedRectItem::pointsChanged(const QPolygonF &ply)
     }
 
     switch (ply.size()) {
-    case 1: geometryCache()->setAnchorPoints(ply, {}); break;
+    case 1: geometryCache()->setAnchorPoints(ply); break;
     case 2:
         if (!setRoundedRect(RoundedRect(QRectF(ply[0], ply[1]).normalized(),
                                         m_roundedRect.xRadius,

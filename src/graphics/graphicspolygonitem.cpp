@@ -52,11 +52,14 @@ auto GraphicsPolygonItem::setPolygon(const QPolygonF &ply) -> bool
         return false;
     }
 
+    QPainterPath originalPath;
+    originalPath.addPolygon(ply);
+    QPainterPath simplifiedPath = originalPath.simplified();
+    simplifiedPath.setFillRule(Qt::WindingFill);
+
     prepareGeometryChange();
-
     d_ptr->polygon = ply;
-
-    geometryCache()->setAnchorPoints(ply, Utils::createBoundingRect(ply, 0));
+    geometryCache()->setAnchorPoints(ply, Utils::createBoundingRect(ply, 0), simplifiedPath);
 
     return true;
 }
@@ -124,16 +127,16 @@ void GraphicsPolygonItem::pointsChanged(const QPolygonF &ply)
     }
 
     if (ply.size() < 3) {
-        geometryCache()->setAnchorPoints(ply, {});
+        geometryCache()->setAnchorPoints(ply);
     } else {
         if (Utils::distance(ply.first(), ply.last()) < margin()) {
             QPolygonF pts_tmp = ply;
             pts_tmp.removeLast();
             if (!setPolygon(pts_tmp)) {
-                geometryCache()->setAnchorPoints(ply, {});
+                geometryCache()->setAnchorPoints(ply);
             }
         } else {
-            geometryCache()->setAnchorPoints(ply, {});
+            geometryCache()->setAnchorPoints(ply);
         }
     }
     update();

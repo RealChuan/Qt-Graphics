@@ -24,6 +24,7 @@ public:
     [[nodiscard]] virtual auto isValid() const -> bool;
     [[nodiscard]] auto type() const -> int override = 0;
     [[nodiscard]] auto boundingRect() const -> QRectF override;
+    [[nodiscard]] auto shape() const -> QPainterPath override;
 
     void setName(const QString &name);
     [[nodiscard]] auto name() const -> QString;
@@ -46,8 +47,6 @@ protected:
     void paint(QPainter *painter,
                const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
-
-    [[nodiscard]] auto addLen() const -> int;
 
     void setMyCursor(const QPointF &center, const QPointF &pos);
 

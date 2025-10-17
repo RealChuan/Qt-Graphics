@@ -30,7 +30,7 @@ public:
     QPointF clickedPos;
     double margin = 6;
     bool showBoundingRect = true;
-    const double minAddLen = 10;
+    const double minExpandSize = 10;
 
     GeometryCachePtr geometryCachePtr;
 };
@@ -57,8 +57,15 @@ auto GraphicsBasicItem::isValid() const -> bool
 auto GraphicsBasicItem::boundingRect() const -> QRectF
 {
     return d_ptr->geometryCachePtr->isValid()
-               ? d_ptr->geometryCachePtr->boundingRect(margin() + addLen(), pen().width())
+               ? d_ptr->geometryCachePtr->boundingRect(margin(), pen().width(), d_ptr->minExpandSize)
                : scene()->sceneRect();
+}
+
+auto GraphicsBasicItem::shape() const -> QPainterPath
+{
+    return d_ptr->geometryCachePtr->isValid()
+               ? d_ptr->geometryCachePtr->shape(margin(), pen().width(), d_ptr->minExpandSize)
+               : QAbstractGraphicsShapeItem::shape();
 }
 
 void GraphicsBasicItem::setName(const QString &name)
@@ -260,11 +267,6 @@ void GraphicsBasicItem::setMyCursor(const QPointF &center, const QPointF &pos)
 {
     auto angle = QLineF(center, pos).angle();
     setCursor(Utils::cursorForDirection(angle - 90));
-}
-
-auto GraphicsBasicItem::addLen() const -> int
-{
-    return std::max({d_ptr->margin, pen().widthF(), d_ptr->minAddLen});
 }
 
 } // namespace Graphics

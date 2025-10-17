@@ -25,7 +25,6 @@ public:
     [[nodiscard]] auto circle() const -> Circle;
 
     [[nodiscard]] auto type() const -> int override;
-    [[nodiscard]] auto shape() const -> QPainterPath override;
 
 protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;

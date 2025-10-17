@@ -99,11 +99,14 @@ auto GraphicsRotatedRectItem::setRotatedRect(const RotatedRect &rotatedRect) -> 
     if (!scene()->sceneRect().contains(rect)) {
         return false;
     }
+    rect = Utils::createBoundingRect(anchorPoints, 0);
+    QPainterPath shape;
+    shape.addRect(rect);
 
     prepareGeometryChange();
     d_ptr->rotatedRect = rotatedRect;
 
-    geometryCache()->setAnchorPoints(anchorPoints, Utils::createBoundingRect(anchorPoints, 0));
+    geometryCache()->setAnchorPoints(anchorPoints, rect, shape);
 
     return true;
 }
@@ -256,7 +259,7 @@ void GraphicsRotatedRectItem::pointsChanged(const QPolygonF &ply)
     double height = 0;
     switch (ply.size()) {
     case 1:
-    case 2: geometryCache()->setAnchorPoints(ply, {}); break;
+    case 2: geometryCache()->setAnchorPoints(ply); break;
     case 3: {
         QLineF l = QLineF(ply[0], ply[1]);
         QLineF l1 = l.normalVector();
