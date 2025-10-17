@@ -15,7 +15,6 @@ public:
     [[nodiscard]] auto setLine(const QLineF &line) -> bool;
     [[nodiscard]] auto line() const -> QLineF;
 
-    [[nodiscard]] auto shape() const -> QPainterPath override;
     [[nodiscard]] auto type() const -> int override;
 
 signals:

@@ -67,7 +67,6 @@ public:
     Ring tempRing;
     Circle maxCircle;
     GraphicsRingItem::MouseRegion mouseRegion = GraphicsRingItem::None;
-    QPainterPath shape;
 };
 
 GraphicsRingItem::GraphicsRingItem(QGraphicsItem *parent)
@@ -93,13 +92,17 @@ auto GraphicsRingItem::setRing(const Ring &ring) -> bool
     if (!scene()->sceneRect().contains(rect)) {
         return false;
     }
+    rect = ring.boundingRect(0);
+    QPainterPath shape;
+    shape.addEllipse(rect);
+    QPainterPath innerShape;
+    innerShape.addEllipse(ring.minBoundingRect(0));
+    shape -= innerShape;
 
     prepareGeometryChange();
 
     d_ptr->ring = ring;
-    geometryCache()->setAnchorPoints(ring.controlPoints(), ring.boundingRect(0));
-    d_ptr->shape.clear();
-    d_ptr->shape.addEllipse(rect);
+    geometryCache()->setControlPoints(ring.controlPoints(), rect, shape);
 
     return true;
 }
@@ -112,11 +115,6 @@ auto GraphicsRingItem::ring() const -> Ring
 auto GraphicsRingItem::type() const -> int
 {
     return Shape::RING;
-}
-
-auto GraphicsRingItem::shape() const -> QPainterPath
-{
-    return isValid() ? d_ptr->shape : GraphicsBasicItem::shape();
 }
 
 void GraphicsRingItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -188,7 +186,7 @@ void GraphicsRingItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void GraphicsRingItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     QPointF point = event->scenePos();
-    auto pts_tmp = geometryCache()->anchorPoints();
+    auto pts_tmp = geometryCache()->controlPoints();
     int size = pts_tmp.size();
     if (size == 1 || size == 2) {
         pts_tmp.append(point);
@@ -224,7 +222,7 @@ void GraphicsRingItem::drawContent(QPainter *painter)
         painter->drawEllipse(d_ptr->ring.boundingRect(0));
         painter->drawEllipse(d_ptr->ring.minBoundingRect(0));
     } else {
-        switch (geometryCache()->anchorPoints().size()) {
+        switch (geometryCache()->controlPoints().size()) {
         case 1: painter->drawEllipse(d_ptr->maxCircle.boundingRect(0)); break;
         case 2:
             painter->drawEllipse(d_ptr->tempRing.boundingRect(0));
@@ -243,12 +241,12 @@ void GraphicsRingItem::pointsChanged(const QPolygonF &ply)
     }
 
     switch (ply.size()) {
-    case 1: geometryCache()->setAnchorPoints(ply, {}); break;
+    case 1: geometryCache()->setControlPoints(ply); break;
     case 2: { //外圈
         Circle circle(ply.first(), Utils::distance(ply.first(), ply.last()));
         if (rect.contains(circle.boundingRect(0)) && circle.isVaild(margin())) {
             d_ptr->maxCircle = circle;
-            geometryCache()->setAnchorPoints(ply, {});
+            geometryCache()->setControlPoints(ply);
         } else {
             return;
         }

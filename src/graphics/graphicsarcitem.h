@@ -7,6 +7,7 @@ namespace Graphics {
 struct GRAPHICS_EXPORT Arc
 {
     [[nodiscard]] auto isValid(double margin) const -> bool;
+    [[nodiscard]] auto controlPoints() const -> QPolygonF;
 
     QPointF center;
     double minRadius = 0;
@@ -28,7 +29,6 @@ public:
     [[nodiscard]] auto arch() const -> Arc;
 
     [[nodiscard]] auto type() const -> int override;
-    [[nodiscard]] auto shape() const -> QPainterPath override;
 
 protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
@@ -40,7 +40,6 @@ protected:
 private:
     void showHoverArc(const QPolygonF &ply);
 
-private:
     class GraphicsArcItemPrivate;
     QScopedPointer<GraphicsArcItemPrivate> d_ptr;
 };

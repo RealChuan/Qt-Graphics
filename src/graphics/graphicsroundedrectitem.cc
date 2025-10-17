@@ -63,11 +63,14 @@ auto GraphicsRoundedRectItem::setRoundedRect(const RoundedRect &roundedRect) -> 
     if (!scene()->sceneRect().contains(rect)) {
         return false;
     }
+    QPainterPath shape;
+    shape.addRoundedRect(roundedRect.rect, roundedRect.xRadius, roundedRect.yRadius);
 
     prepareGeometryChange();
     m_roundedRect = roundedRect;
-
-    geometryCache()->setAnchorPoints(anchorPoints, Utils::createBoundingRect(anchorPoints, 0));
+    geometryCache()->setControlPoints(anchorPoints,
+                                      Utils::createBoundingRect(anchorPoints, 0),
+                                      shape);
     emit roundedRectChanged(m_roundedRect);
 
     return true;
@@ -102,7 +105,7 @@ void GraphicsRoundedRectItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         setSelected(true);
     }
     QPointF point = event->scenePos();
-    auto pts_tmp = geometryCache()->anchorPoints();
+    auto pts_tmp = geometryCache()->controlPoints();
     QPointF dp = point - clickedPos();
     setClickedPos(point);
 
@@ -148,7 +151,7 @@ void GraphicsRoundedRectItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void GraphicsRoundedRectItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     QPointF point = event->scenePos();
-    auto pts_tmp = geometryCache()->anchorPoints();
+    auto pts_tmp = geometryCache()->controlPoints();
     if (pts_tmp.size() == 1) {
         pts_tmp.append(point);
         showHoverRect(pts_tmp);
@@ -188,7 +191,7 @@ void GraphicsRoundedRectItem::pointsChanged(const QPolygonF &ply)
     }
 
     switch (ply.size()) {
-    case 1: geometryCache()->setAnchorPoints(ply, {}); break;
+    case 1: geometryCache()->setControlPoints(ply); break;
     case 2:
         if (!setRoundedRect(RoundedRect(QRectF(ply[0], ply[1]).normalized(),
                                         m_roundedRect.xRadius,

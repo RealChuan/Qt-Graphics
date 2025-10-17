@@ -8,6 +8,26 @@
 
 namespace Graphics {
 
+inline auto checkPolygonVaild(const QPolygonF &ply, const double margin) -> bool
+{
+    auto rect = ply.boundingRect();
+    return ply.size() >= 3 && rect.width() > margin && rect.height() > margin;
+}
+
+inline QPainterPath simplifiedPath(const QPolygonF &ply)
+{
+    QPainterPath originalPath;
+    originalPath.setFillRule(Qt::WindingFill);
+    originalPath.addPolygon(ply);
+    auto simplifiedPath = originalPath.simplified();
+    simplifiedPath.setFillRule(Qt::WindingFill);
+    return simplifiedPath; // 复杂自相交情况会出现空心，无法选中
+
+    // QPainterPath path;
+    // path.addPolygon(ply.boundingRect());
+    // return path;
+}
+
 class GraphicsPolygonItem::GraphicsPolygonItemPrivate
 {
 public:
@@ -35,12 +55,6 @@ GraphicsPolygonItem::GraphicsPolygonItem(const QPolygonF &polygon, QGraphicsItem
 
 GraphicsPolygonItem::~GraphicsPolygonItem() {}
 
-inline auto checkPolygonVaild(const QPolygonF &ply, const double margin) -> bool
-{
-    auto rect = ply.boundingRect();
-    return ply.size() >= 3 && rect.width() > margin && rect.height() > margin;
-}
-
 auto GraphicsPolygonItem::setPolygon(const QPolygonF &ply) -> bool
 {
     if (!checkPolygonVaild(ply, margin())) {
@@ -53,10 +67,8 @@ auto GraphicsPolygonItem::setPolygon(const QPolygonF &ply) -> bool
     }
 
     prepareGeometryChange();
-
     d_ptr->polygon = ply;
-
-    geometryCache()->setAnchorPoints(ply, Utils::createBoundingRect(ply, 0));
+    geometryCache()->setControlPoints(ply, Utils::createBoundingRect(ply, 0), simplifiedPath(ply));
 
     return true;
 }
@@ -80,7 +92,7 @@ void GraphicsPolygonItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         setSelected(true);
     }
     QPointF point = event->scenePos();
-    auto pts_tmp = geometryCache()->anchorPoints();
+    auto pts_tmp = geometryCache()->controlPoints();
 
     switch (mouseRegion()) {
     case MouseRegion::DotRegion: pts_tmp.replace(hoveredDotIndex(), point); break;
@@ -98,7 +110,7 @@ void GraphicsPolygonItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void GraphicsPolygonItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
-    auto pts_tmp = geometryCache()->anchorPoints();
+    auto pts_tmp = geometryCache()->controlPoints();
     if (pts_tmp.size() > 0) {
         pts_tmp.append(event->scenePos());
         showHoverPolygon(pts_tmp);
@@ -124,16 +136,16 @@ void GraphicsPolygonItem::pointsChanged(const QPolygonF &ply)
     }
 
     if (ply.size() < 3) {
-        geometryCache()->setAnchorPoints(ply, {});
+        geometryCache()->setControlPoints(ply);
     } else {
         if (Utils::distance(ply.first(), ply.last()) < margin()) {
             QPolygonF pts_tmp = ply;
             pts_tmp.removeLast();
             if (!setPolygon(pts_tmp)) {
-                geometryCache()->setAnchorPoints(ply, {});
+                geometryCache()->setControlPoints(ply);
             }
         } else {
-            geometryCache()->setAnchorPoints(ply, {});
+            geometryCache()->setControlPoints(ply);
         }
     }
     update();

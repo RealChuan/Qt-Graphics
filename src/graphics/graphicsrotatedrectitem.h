@@ -7,6 +7,7 @@ namespace Graphics {
 struct GRAPHICS_EXPORT RotatedRect
 {
     [[nodiscard]] auto isValid(double margin) const -> bool;
+    [[nodiscard]] auto boundingRect(double margin) const -> QRectF;
     [[nodiscard]] auto controlPoints() const -> QPolygonF;
 
     QPointF center;
@@ -36,6 +37,8 @@ protected:
     void pointsChanged(const QPolygonF &ply) override;
 
 private:
+    void showHoverRotatedRect(const QPolygonF &ply);
+
     class GraphicsRotatedRectItemPrivate;
     QScopedPointer<GraphicsRotatedRectItemPrivate> d_ptr;
 };

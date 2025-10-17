@@ -10,151 +10,68 @@
 
 namespace Graphics {
 
+inline auto calculateFinalArc(const QPolygonF &ply) -> Arc
+{
+    if (ply.size() != 4) {
+        return Arc{};
+    }
+
+    const QPointF &A = ply[0];
+    const QPointF &B = ply[1];
+    const QPointF &C = ply[2];
+    const QPointF &D = ply[3];
+
+    // 计算圆心和内半径（使用前三个点）
+    QPointF center;
+    double innerRadius = 0;
+    if (!Utils::calculateCircle(ply.mid(0, 3), center, innerRadius)) {
+        return Arc{};
+    }
+
+    // 计算外半径（第四个点到圆心的距离）
+    const double outerRadius = QLineF(center, D).length();
+
+    // 计算角度
+    const double angleA = QLineF(center, A).angle();
+    const double angleB = QLineF(center, B).angle();
+    const double angleC = QLineF(center, C).angle();
+
+    // 确定圆弧方向
+    const bool isCounterClockwise = Utils::isPointOnCounterClockwiseSide(A, B, C, center);
+
+    // 计算起始角度和扫过角度
+    double startAngle, sweepAngle;
+    Utils::calculateArcAngles(angleA, angleB, angleC, isCounterClockwise, startAngle, sweepAngle);
+
+    // 计算结束角度
+    double endAngle = startAngle + sweepAngle;
+
+    if (sweepAngle <= 0) {
+        auto startAngle_ = endAngle + 360;
+        auto endAngle_ = startAngle + 360;
+        startAngle = startAngle_;
+        endAngle = endAngle_;
+    }
+
+    return Arc{center,
+               qMin(innerRadius, outerRadius),
+               qMax(innerRadius, outerRadius),
+               startAngle,
+               endAngle};
+}
+
 auto Arc::isValid(double margin) const -> bool
 {
     double minLen = margin * qSqrt(2) / 2;
     return maxRadius > minRadius && minRadius >= minLen && maxRadius - minRadius >= minLen;
 }
 
-auto inTop(const QPointF linePt0, const QPointF linePt1, const QPointF pt) -> bool
+auto Arc::controlPoints() const -> QPolygonF
 {
-    if (linePt0.x() - linePt1.x() == 0.0) {
-        if (pt.x() > linePt0.x()) {
-            return false;
-        }
-        return true;
-    }
-
-    bool isInTop = true;
-    double k = 0;
-    double b = 0;
-    k = (linePt0.y() - linePt1.y()) / (linePt0.x() - linePt1.x());
-    b = linePt0.y() - k * linePt0.x();
-    if ((pt.x() * k + b - pt.y()) < 0) {
-        isInTop = false;
-    }
-    return isInTop;
-}
-
-void calculateArc(QPointF center,
-                  double radius,
-                  QPointF p1,
-                  QPointF p2,
-                  bool isInTop,
-                  QPainterPath &path,
-                  double &startAngle,
-                  double &endAngle,
-                  double &deltaAngle)
-{
-    // 先确定起点和终点 当两个点X相等时，起始点无所谓是哪个
-    QPointF startPoint;
-    QPointF endPoint;
-    if (p1.x() > p2.x()) {
-        startPoint = p1;
-        endPoint = p2;
-    } else {
-        startPoint = p2;
-        endPoint = p1;
-    }
-
-    // 计算角度，保证终点角度大于起点角度
-    startAngle = QLineF(center, startPoint).angle();
-    endAngle = QLineF(center, endPoint).angle();
-    if (startAngle > endAngle) {
-        endAngle += 360;
-    }
-    deltaAngle = isInTop ? (endAngle - startAngle) : (endAngle - startAngle - 360);
-
-    QRectF rect(QPointF(center.x() - radius, center.y() - radius),
-                QPointF(center.x() + radius, center.y() + radius));
-    QPainterPath pathTemp(startPoint);
-    path = pathTemp;
-    // deltaAngle 为 负数时，顺时针
-    path.arcTo(rect, startAngle, deltaAngle);
-}
-
-auto calculateAllArc(const QPolygonF &ply,
-                     QPainterPath &path,
-                     QPainterPath &shape,
-                     const double margin) -> bool
-{
-    if (ply.size() != 4) {
-        return false;
-    }
-
-    QPainterPath path_temp;
-    QPointF center;
-    double radius0 = 0;
-    double radius1 = 0;
-    double startAngle = 0;
-    double endAngle = 0;
-    double deltaAngle = 0;
-
-    QPolygonF pts_tmp = ply;
-    QPointF endPt = pts_tmp[3];
-    pts_tmp.pop_back();
-    // 计算方向得出旋转角度
-    bool isInTop = inTop(ply[0], ply[1], endPt);
-    Utils::calculateCircle(pts_tmp, center, radius0);
-    calculateArc(center,
-                 radius0,
-                 ply[0],
-                 ply[1],
-                 isInTop,
-                 path_temp,
-                 startAngle,
-                 endAngle,
-                 deltaAngle);
-
-    if (deltaAngle <= 0) {
-        if (endAngle < 0) {
-            endAngle += 360;
-            startAngle += 360;
-        }
-        qSwap(startAngle, endAngle);
-        deltaAngle = -deltaAngle;
-    }
-    radius1 = Utils::distance(endPt, center);
-
-    double radiusIn = qMin(radius0, radius1);
-    double radiusOut = qMax(radius0, radius1);
-    double num = margin * qSqrt(2) / 2;
-
-    if ((radiusIn < num) || ((radiusOut - radiusIn) < num)) {
-        return false;
-    }
-    QRectF rect0(center.x() - radiusIn, center.y() - radiusIn, radiusIn * 2, radiusIn * 2);
-    QRectF rect1(center.x() - radiusOut, center.y() - radiusOut, radiusOut * 2, radiusOut * 2);
-
-    path.clear();
-    path.moveTo(center);
-    path.arcTo(rect1, startAngle, deltaAngle);
-
-    QPainterPath subPath1;
-    subPath1.addEllipse(rect0);
-    path -= subPath1;
-
-    //shape
-    radiusIn -= num;
-    radiusOut += num;
-
-    QRectF rect00(center.x() - radiusIn, center.y() - radiusIn, radiusIn * 2, radiusIn * 2);
-    QRectF rect11(center.x() - radiusOut, center.y() - radiusOut, radiusOut * 2, radiusOut * 2);
-
-    double addAngle = qAsin(num / (radiusIn + num)) * 180 / M_PI;
-    startAngle -= addAngle;
-    deltaAngle += 2 * addAngle;
-
-    shape.clear();
-    shape.setFillRule(Qt::WindingFill);
-    shape.moveTo(center);
-    shape.arcTo(rect11, startAngle, deltaAngle);
-
-    QPainterPath subPath;
-    subPath.addEllipse(rect00);
-    shape -= subPath;
-
-    return true;
+    return {Utils::pointFromCenter(center, minRadius, startAngle),
+            Utils::pointFromCenter(center, minRadius, endAngle),
+            Utils::pointFromCenter(center, minRadius, (startAngle + endAngle) / 2.0),
+            Utils::pointFromCenter(center, maxRadius, (startAngle + endAngle) / 2.0)};
 }
 
 class GraphicsArcItem::GraphicsArcItemPrivate
@@ -169,7 +86,6 @@ public:
     Arc arch;
     QPainterPath arcPath;
     QPainterPath cachePath;
-    QPainterPath shape;
     GraphicsArcItem::MouseRegion mouseRegion = GraphicsArcItem::None;
 };
 
@@ -187,42 +103,14 @@ GraphicsArcItem::GraphicsArcItem(const Arc &arc, QGraphicsItem *parent)
 
 GraphicsArcItem::~GraphicsArcItem() {}
 
-inline auto findAnotherPtOfLine(const QPointF basePt, const double r, const double angle) -> QPointF
-{
-    QLineF line;
-    line.setP1(basePt);
-    line.setLength(r);
-    line.setAngle(angle);
-    return line.p2();
-}
-
-inline auto calculateCache(const Arc &arch) -> QPolygonF
-{
-    QPointF pt00 = findAnotherPtOfLine(arch.center, arch.minRadius, arch.startAngle);
-    QPointF pt01 = findAnotherPtOfLine(arch.center, arch.minRadius, arch.endAngle);
-    QPointF pt10 = findAnotherPtOfLine(arch.center,
-                                       arch.minRadius,
-                                       (arch.startAngle + arch.endAngle) / 2.0);
-    QPointF pt11 = findAnotherPtOfLine(arch.center,
-                                       arch.maxRadius,
-                                       (arch.startAngle + arch.endAngle) / 2.0);
-
-    QPolygonF pts;
-    pts.push_back(pt00);
-    pts.push_back(pt01);
-    pts.push_back(pt10);
-    pts.push_back(pt11);
-    return pts;
-}
-
 auto GraphicsArcItem::setArc(const Arc &arc) -> bool
 {
     if (!arc.isValid(margin())) {
         return false;
     }
 
-    auto anchorPoints = calculateCache(arc);
-    if (!calculateAllArc(anchorPoints, d_ptr->arcPath, d_ptr->shape, margin())) {
+    auto anchorPoints = arc.controlPoints();
+    if (!Utils::calculateAllArc(anchorPoints, d_ptr->arcPath, margin())) {
         return false;
     }
 
@@ -236,8 +124,9 @@ auto GraphicsArcItem::setArc(const Arc &arc) -> bool
 
     prepareGeometryChange();
     d_ptr->arch = arc;
-
-    geometryCache()->setAnchorPoints(anchorPoints, Utils::createBoundingRect(pts, 0));
+    geometryCache()->setControlPoints(anchorPoints,
+                                      Utils::createBoundingRect(pts, 0),
+                                      d_ptr->arcPath);
 
     return true;
 }
@@ -250,11 +139,6 @@ auto GraphicsArcItem::arch() const -> Arc
 auto GraphicsArcItem::type() const -> int
 {
     return GraphicsBasicItem::Shape::ARC;
-}
-
-auto GraphicsArcItem::shape() const -> QPainterPath
-{
-    return isValid() ? d_ptr->shape : GraphicsBasicItem::shape();
 }
 
 inline auto lineSetLength(const QPointF p1, const QPointF p2, const double len) -> QPointF
@@ -276,7 +160,7 @@ void GraphicsArcItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     QPointF point = event->scenePos();
     QPointF dp = point - clickedPos();
     setClickedPos(event->scenePos());
-    auto pts_tmp = geometryCache()->anchorPoints();
+    auto pts_tmp = geometryCache()->controlPoints();
     double distance = Utils::distance(d_ptr->arch.center, point);
 
     switch (mouseRegion()) {
@@ -309,7 +193,7 @@ void GraphicsArcItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             if (arch.endAngle - arch.startAngle > 360) {
                 arch.endAngle -= 360;
             }
-            pts_tmp = calculateCache(arch);
+            pts_tmp = arch.controlPoints();
         } break;
         default: return;
         }
@@ -324,7 +208,7 @@ void GraphicsArcItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void GraphicsArcItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
-    auto pts_tmp = geometryCache()->anchorPoints();
+    auto pts_tmp = geometryCache()->controlPoints();
     QPointF point = event->scenePos();
     if (pts_tmp.size() == 2 || pts_tmp.size() == 3) {
         pts_tmp.append(point);
@@ -339,12 +223,12 @@ void GraphicsArcItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     }
     setMouseRegion(GraphicsBasicItem::MouseRegion::None);
 
-    QPointF p1 = findAnotherPtOfLine(d_ptr->arch.center,
-                                     d_ptr->arch.maxRadius,
-                                     d_ptr->arch.startAngle);
-    QPointF p2 = findAnotherPtOfLine(d_ptr->arch.center,
-                                     d_ptr->arch.maxRadius,
-                                     d_ptr->arch.endAngle);
+    QPointF p1 = Utils::pointFromCenter(d_ptr->arch.center,
+                                        d_ptr->arch.maxRadius,
+                                        d_ptr->arch.startAngle);
+    QPointF p2 = Utils::pointFromCenter(d_ptr->arch.center,
+                                        d_ptr->arch.maxRadius,
+                                        d_ptr->arch.endAngle);
     QLineF line1(p1, pts_tmp.at(0));
     QLineF line2(p2, pts_tmp.at(1));
     if (qAbs(Utils::distance(point, d_ptr->arch.center) - d_ptr->arch.minRadius) < margin() / 3) {
@@ -373,60 +257,6 @@ void GraphicsArcItem::drawContent(QPainter *painter)
     painter->drawPath(isValid() ? d_ptr->arcPath : d_ptr->cachePath);
 }
 
-inline auto calculateHalfArc(const QPolygonF &ply, QPainterPath &path) -> bool
-{
-    if (ply.size() != 3) {
-        return false;
-    }
-
-    QPointF center;
-    double radius0 = 0;
-    double startAngle = 0;
-    double endAngle = 0;
-    double deltaAngle = 0;
-
-    QPointF endPt = ply[2];
-    // 计算方向得出旋转角度
-    bool isInTop = inTop(ply[0], ply[1], endPt);
-    Utils::calculateCircle(ply, center, radius0);
-    calculateArc(center, radius0, ply[0], ply[1], isInTop, path, startAngle, endAngle, deltaAngle);
-    return true;
-}
-
-inline auto calucateFinnalArch(const QPolygonF &ply) -> Arc
-{
-    double startAngle_ = 0;
-    double endAngle_ = 0;
-
-    QPointF center(0, 0);
-    double radius0 = 0;
-    double radius1 = 0;
-    double startAngle = 0;
-    double endAngle = 0;
-    double deltaAngle = 0;
-
-    QPolygonF pts_tmp = ply;
-    QPointF endPt = pts_tmp[3];
-    pts_tmp.pop_back();
-    // 计算方向得出旋转角度
-    bool isInTop = inTop(ply[0], ply[1], endPt);
-    Utils::calculateCircle(pts_tmp, center, radius0);
-    QPainterPath path1;
-    calculateArc(center, radius0, ply[0], ply[1], isInTop, path1, startAngle, endAngle, deltaAngle);
-    radius1 = Utils::distance(endPt, center);
-
-    endAngle = startAngle + deltaAngle;
-    if (deltaAngle > 0) {
-        startAngle_ = startAngle;
-        endAngle_ = endAngle;
-    } else {
-        startAngle_ = endAngle + 360;
-        endAngle_ = startAngle + 360;
-    }
-
-    return Arc{center, qMin(radius0, radius1), qMax(radius0, radius1), startAngle_, endAngle_};
-}
-
 void GraphicsArcItem::pointsChanged(const QPolygonF &ply)
 {
     auto rect = scene()->sceneRect();
@@ -434,7 +264,7 @@ void GraphicsArcItem::pointsChanged(const QPolygonF &ply)
         return;
     }
 
-    if (ply.size() > 2) {
+    if (ply.size() == 3) {
         double deltaAngle = QLineF(ply[0], ply[1]).angleTo(QLineF(ply[0], ply[2]));
         if (deltaAngle < 0.00001 || deltaAngle > 355.99999) {
             return;
@@ -443,26 +273,19 @@ void GraphicsArcItem::pointsChanged(const QPolygonF &ply)
 
     switch (ply.size()) {
     case 1:
-    case 2: geometryCache()->setAnchorPoints(ply, {}); break;
+    case 2: geometryCache()->setControlPoints(ply); break;
     case 3: {
-        if (!calculateHalfArc(ply, d_ptr->cachePath)) {
+        if (!Utils::calculateHalfArc(ply, d_ptr->cachePath)) {
             return;
         }
         QPolygonF polygon = d_ptr->cachePath.toFillPolygon() + ply;
         if (!rect.contains(polygon.boundingRect())) {
             return;
         }
-        geometryCache()->setAnchorPoints(ply, {});
+        geometryCache()->setControlPoints(ply);
     } break;
     case 4: {
-        if (!calculateAllArc(ply, d_ptr->arcPath, d_ptr->shape, margin())) {
-            return;
-        }
-        QPolygonF polygon = d_ptr->shape.toFillPolygon() + ply;
-        if (!rect.contains(polygon.boundingRect())) {
-            return;
-        }
-        if (!setArc(calucateFinnalArch(ply))) {
+        if (!setArc(calculateFinalArc(ply))) {
             return;
         }
     } break;
@@ -480,9 +303,9 @@ void GraphicsArcItem::showHoverArc(const QPolygonF &ply)
         if (Utils::distance(ply[1], ply[2]) < margin()) {
             return;
         }
-        calculateHalfArc(ply, d_ptr->cachePath);
+        Utils::calculateHalfArc(ply, d_ptr->cachePath);
         break;
-    case 4: calculateAllArc(ply, d_ptr->cachePath, d_ptr->shape, margin()); break;
+    case 4: Utils::calculateAllArc(ply, d_ptr->cachePath, margin()); break;
     default: return;
     }
 

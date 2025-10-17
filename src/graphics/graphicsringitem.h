@@ -28,7 +28,6 @@ public:
     [[nodiscard]] auto ring() const -> Ring;
 
     [[nodiscard]] auto type() const -> int override;
-    [[nodiscard]] auto shape() const -> QPainterPath override;
 
 protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;

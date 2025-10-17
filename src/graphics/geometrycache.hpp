@@ -1,7 +1,8 @@
 #pragma once
 
-#include <QPolygonF>
-#include <QScopedPointer>
+#include "graphicsutils.hpp"
+
+#include <QPainterPath>
 
 namespace Graphics {
 
@@ -12,37 +13,66 @@ public:
     GeometryCache() = default;
     ~GeometryCache() = default;
 
-    void setAnchorPoints(const QPolygonF &pts, const QRectF &boundingRect)
-    {
-        m_anchorPoints = pts;
-        m_boundingRect = boundingRect;
-        m_changed = true;
-    }
+    void setControlPoints(const QPolygonF &points) { setControlPoints(points, {}, {}); }
 
-    QPolygonF anchorPoints() const { return m_anchorPoints; }
-
-    QRectF boundingRect(double margin, double penWidth)
+    void setControlPoints(const QPolygonF &points, const QRectF &bounds, const QPainterPath &path)
     {
-        auto addLen = qMax(margin / 2, penWidth);
-        if (addLen == m_lastAddLen && !m_changed) {
-            return m_lastBoundingRect;
+        if (m_controlPoints == points && m_bounds == bounds && m_basePath == path) {
+            return;
         }
-        m_changed = false;
-        m_lastAddLen = addLen;
-        m_lastBoundingRect = m_boundingRect.adjusted(-addLen, -addLen, addLen, addLen);
-        return m_lastBoundingRect;
+
+        m_controlPoints = points;
+        m_bounds = bounds;
+        m_basePath = path;
+        m_cacheDirty = true;
     }
 
-    bool isValid() const { return !m_boundingRect.isNull() && !m_anchorPoints.isEmpty(); }
-    void invalidate() { m_boundingRect = QRectF(); }
+    QPolygonF controlPoints() const { return m_controlPoints; }
+
+    QRectF boundingRect(double margin, double penWidth, double expandAmount)
+    {
+        updateCachedData(margin, penWidth, expandAmount);
+        return m_cachedBounds;
+    }
+
+    QPainterPath shape(double margin, double penWidth, double expandAmount)
+    {
+        updateCachedData(margin, penWidth, expandAmount);
+        return m_cachedPath;
+    }
+
+    bool isValid() const { return !m_bounds.isNull() && !m_controlPoints.isEmpty(); }
+    void invalidate() { m_bounds = QRectF(); }
 
 private:
-    QPolygonF m_anchorPoints; // 用于交互的锚点
-    QRectF m_boundingRect;    // 边界矩形
+    void updateCachedData(double margin, double penWidth, double expandAmount)
+    {
+        const double expansion = computeExpansion(margin, penWidth, expandAmount);
+        if (!m_cacheDirty && qFuzzyCompare(m_cachedExpansion, expansion)) {
+            return; // 缓存仍然有效
+        }
 
-    bool m_changed = true;
-    double m_lastAddLen = 0;   // 上一次的addLen
-    QRectF m_lastBoundingRect; // 上一次的boundingRect
+        m_cacheDirty = false;
+        m_cachedExpansion = expansion;
+        m_cachedPath = m_basePath;
+        m_cachedPath = Utils::expandAndUnitePath(m_cachedPath, expansion);
+        m_cachedBounds = m_cachedPath.controlPointRect();
+    }
+
+    static double computeExpansion(double margin, double penWidth, double expandAmount)
+    {
+        return std::max({margin * 0.5, penWidth, expandAmount});
+    }
+
+    QPolygonF m_controlPoints; // 用于交互的锚点
+    QRectF m_bounds;           // 边界矩形
+    QPainterPath m_basePath;   // 路径
+
+    bool m_cacheDirty = true;     // 路径是否需要重新计算
+    double m_cachedExpansion = 0; // 路径扩展长度
+    QPainterPath m_cachedPath;    // 缓存路径
+
+    QRectF m_cachedBounds; // 缓存矩形
 };
 
 using GeometryCachePtr = QScopedPointer<GeometryCache>;

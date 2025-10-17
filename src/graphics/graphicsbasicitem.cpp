@@ -29,8 +29,9 @@ public:
     int hoveredDotIndex = -1;
     QPointF clickedPos;
     double margin = 6;
+    bool showShape = true;
     bool showBoundingRect = true;
-    const double minAddLen = 10;
+    const double minExpandSize = 20;
 
     GeometryCachePtr geometryCachePtr;
 };
@@ -57,8 +58,15 @@ auto GraphicsBasicItem::isValid() const -> bool
 auto GraphicsBasicItem::boundingRect() const -> QRectF
 {
     return d_ptr->geometryCachePtr->isValid()
-               ? d_ptr->geometryCachePtr->boundingRect(margin() + addLen(), pen().width())
+               ? d_ptr->geometryCachePtr->boundingRect(margin(), pen().width(), d_ptr->minExpandSize)
                : scene()->sceneRect();
+}
+
+auto GraphicsBasicItem::shape() const -> QPainterPath
+{
+    return d_ptr->geometryCachePtr->isValid()
+               ? d_ptr->geometryCachePtr->shape(margin(), pen().width(), d_ptr->minExpandSize)
+               : QAbstractGraphicsShapeItem::shape();
 }
 
 void GraphicsBasicItem::setName(const QString &name)
@@ -89,6 +97,16 @@ void GraphicsBasicItem::setItemEditable(bool editable)
 bool GraphicsBasicItem::itemEditable() const
 {
     return acceptHoverEvents();
+}
+
+void GraphicsBasicItem::setShowShape(bool show)
+{
+    d_ptr->showShape = show;
+}
+
+bool GraphicsBasicItem::showShape() const
+{
+    return d_ptr->showShape;
 }
 
 void GraphicsBasicItem::setShowBoundingRect(bool show)
@@ -128,7 +146,7 @@ void GraphicsBasicItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if (isValid()) {
         return;
     }
-    auto pts_tmp = d_ptr->geometryCachePtr->anchorPoints();
+    auto pts_tmp = d_ptr->geometryCachePtr->controlPoints();
     pts_tmp.append(event->pos());
     pointsChanged(pts_tmp);
 }
@@ -143,7 +161,7 @@ void GraphicsBasicItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     d_ptr->mouseRegin = MouseRegion::None;
     d_ptr->hoveredDotIndex = -1;
     const auto scenePos = event->scenePos();
-    const auto &anchorPoints = d_ptr->geometryCachePtr->anchorPoints();
+    const auto &anchorPoints = d_ptr->geometryCachePtr->controlPoints();
     const qreal halfMargin = d_ptr->margin * 0.5;
     const QPointF marginOffset(halfMargin, halfMargin);
 
@@ -226,7 +244,7 @@ void GraphicsBasicItem::drawAnchor(QPainter *painter)
         return;
     }
 
-    auto anchorPoints = d_ptr->geometryCachePtr->anchorPoints();
+    auto anchorPoints = d_ptr->geometryCachePtr->controlPoints();
     for (const QPointF &p : std::as_const(anchorPoints)) {
         painter->fillRect(QRectF(p.x() - d_ptr->margin / 2,
                                  p.y() - d_ptr->margin / 2,
@@ -250,6 +268,10 @@ void GraphicsBasicItem::drawBoundingRect(QPainter *painter)
 
 void GraphicsBasicItem::drawShape(QPainter *painter)
 {
+    if (!d_ptr->showShape || !isValid()) {
+        return;
+    }
+
     QPen outline(Qt::green, 1, Qt::DashLine);
     outline.setCosmetic(true);
     painter->setPen(outline);
@@ -260,11 +282,6 @@ void GraphicsBasicItem::setMyCursor(const QPointF &center, const QPointF &pos)
 {
     auto angle = QLineF(center, pos).angle();
     setCursor(Utils::cursorForDirection(angle - 90));
-}
-
-auto GraphicsBasicItem::addLen() const -> int
-{
-    return std::max({d_ptr->margin, pen().widthF(), d_ptr->minAddLen});
 }
 
 } // namespace Graphics

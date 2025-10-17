@@ -13,7 +13,7 @@ void CustomLineItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         setSelected(true);
     }
     QPointF point = event->scenePos();
-    auto pts_tmp = geometryCache()->anchorPoints();
+    auto pts_tmp = geometryCache()->controlPoints();
     QPointF dp = point - clickedPos();
     dp = QPointF(0, dp.y());
     setClickedPos(point);
