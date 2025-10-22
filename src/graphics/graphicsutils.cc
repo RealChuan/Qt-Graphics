@@ -85,21 +85,6 @@ auto calculateCircle(const QPolygonF &pts, QPointF &center, double &radius) -> b
     return true;
 }
 
-auto boundingFromLine(const QLineF &line, double margin) -> QPolygonF
-{
-    QPolygonF ply;
-    QPointF p1 = line.p1();
-    QPointF p2 = line.p2();
-
-    QLineF dl = line.normalVector();
-    QPointF dp = QPointF(dl.dx() * margin, dl.dy() * margin) / dl.length();
-    ply << p1 + dp;
-    ply << p1 - dp;
-    ply << p2 - dp;
-    ply << p2 + dp;
-    return ply;
-}
-
 auto createBoundingRect(const QPolygonF &ply, double margin) -> QRectF
 {
     double addLen = margin / 2;
@@ -331,6 +316,38 @@ auto pointFromCenter(const QPointF &center, double radius, double angle) -> QPoi
 {
     double radians = qDegreesToRadians(angle);
     return center + QPointF(radius * qCos(radians), -radius * qSin(radians));
+}
+
+auto isPointNearEdge(const QPointF &point, const QLineF &line, double margin) -> bool
+{
+    // 使用点到线段的距离公式
+    const QPointF lineVec = line.p2() - line.p1();
+    const QPointF pointVec = point - line.p1();
+
+    const double lineLengthSquared = QPointF::dotProduct(lineVec, lineVec);
+
+    // 如果线段长度为0，检查点到端点的距离
+    if (qFuzzyIsNull(lineLengthSquared)) {
+        return distance(point, line.p1()) <= margin;
+    }
+
+    // 计算投影比例 t
+    const double t = std::clamp(QPointF::dotProduct(pointVec, lineVec) / lineLengthSquared,
+                                0.0,
+                                1.0);
+
+    // 计算投影点
+    const QPointF projection = line.p1() + t * lineVec;
+
+    // 返回点到线段的距离是否在容差范围内
+    return distance(point, projection) <= margin;
+}
+
+auto pointAtDistance(const QPointF &from, const QPointF &to, double distance) -> QPointF
+{
+    QLineF line(from, to);
+    line.setLength(distance);
+    return line.p2();
 }
 
 } // namespace Graphics::Utils

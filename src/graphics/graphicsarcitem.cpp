@@ -10,7 +10,9 @@
 
 namespace Graphics {
 
-inline auto calculateFinalArc(const QPolygonF &ply) -> Arc
+namespace {
+
+auto calculateFinalArc(const QPolygonF &ply) -> Arc
 {
     if (ply.size() != 4) {
         return Arc{};
@@ -60,6 +62,8 @@ inline auto calculateFinalArc(const QPolygonF &ply) -> Arc
                endAngle};
 }
 
+} // namespace
+
 auto Arc::isValid(double margin) const -> bool
 {
     double minLen = margin * qSqrt(2) / 2;
@@ -77,6 +81,14 @@ auto Arc::controlPoints() const -> QPolygonF
 class GraphicsArcItem::GraphicsArcItemPrivate
 {
 public:
+    enum class MouseEdgeRegion : int {
+        NoSelection,
+        InnerEdge,
+        OuterEdge,
+        StartAngleSide,
+        EndAngleSide
+    };
+
     explicit GraphicsArcItemPrivate(GraphicsArcItem *q)
         : q_ptr(q)
     {}
@@ -86,7 +98,7 @@ public:
     Arc arch;
     QPainterPath arcPath;
     QPainterPath cachePath;
-    GraphicsArcItem::MouseRegion mouseRegion = GraphicsArcItem::None;
+    MouseEdgeRegion mouseRegion = MouseEdgeRegion::NoSelection;
 };
 
 GraphicsArcItem::GraphicsArcItem(QGraphicsItem *parent)
@@ -136,122 +148,6 @@ auto GraphicsArcItem::arch() const -> Arc
     return d_ptr->arch;
 }
 
-auto GraphicsArcItem::type() const -> int
-{
-    return GraphicsBasicItem::Shape::ARC;
-}
-
-inline auto lineSetLength(const QPointF p1, const QPointF p2, const double len) -> QPointF
-{
-    QLineF line(p1, p2);
-    line.setLength(len);
-    return line.p2();
-}
-
-void GraphicsArcItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
-{
-    if (!isValid()) {
-        return;
-    }
-    if (!isSelected()) {
-        setSelected(true);
-    }
-
-    QPointF point = event->scenePos();
-    QPointF dp = point - clickedPos();
-    setClickedPos(event->scenePos());
-    auto pts_tmp = geometryCache()->controlPoints();
-    double distance = Utils::distance(d_ptr->arch.center, point);
-
-    switch (mouseRegion()) {
-    case GraphicsBasicItem::MouseRegion::All: pts_tmp.translate(dp); break;
-    case GraphicsBasicItem::MouseRegion::None: {
-        switch (d_ptr->mouseRegion) {
-        case InEdge0:
-            setMyCursor(d_ptr->arch.center, event->scenePos());
-            for (int i = 0; i < 3; ++i) {
-                pts_tmp[i] = lineSetLength(d_ptr->arch.center, pts_tmp[i], distance);
-            }
-            break;
-        case InEdge1:
-            setMyCursor(d_ptr->arch.center, event->scenePos());
-            pts_tmp[3] = lineSetLength(d_ptr->arch.center, pts_tmp[3], distance);
-            break;
-        case InEdgeH:
-        case InEdgeL: {
-            Arc arch = d_ptr->arch;
-            if (d_ptr->mouseRegion == InEdgeL) {
-                arch.startAngle = QLineF(arch.center, event->scenePos()).angle();
-                setCursor(Utils::cursorForDirection(arch.startAngle));
-            } else {
-                arch.endAngle = QLineF(arch.center, event->scenePos()).angle();
-                setCursor(Utils::cursorForDirection(arch.endAngle));
-            }
-            while (arch.startAngle > arch.endAngle) {
-                arch.endAngle += 360;
-            }
-            if (arch.endAngle - arch.startAngle > 360) {
-                arch.endAngle -= 360;
-            }
-            pts_tmp = arch.controlPoints();
-        } break;
-        default: return;
-        }
-        break;
-    }
-    case GraphicsBasicItem::MouseRegion::DotRegion: pts_tmp[hoveredDotIndex()] += dp; break;
-    default: return;
-    }
-
-    pointsChanged(pts_tmp);
-}
-
-void GraphicsArcItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
-{
-    auto pts_tmp = geometryCache()->controlPoints();
-    QPointF point = event->scenePos();
-    if (pts_tmp.size() == 2 || pts_tmp.size() == 3) {
-        pts_tmp.append(point);
-        showHoverArc(pts_tmp);
-    }
-    if (!isValid()) {
-        return;
-    }
-    GraphicsBasicItem::hoverMoveEvent(event);
-    if (mouseRegion() == GraphicsBasicItem::MouseRegion::DotRegion) {
-        return;
-    }
-    setMouseRegion(GraphicsBasicItem::MouseRegion::None);
-
-    QPointF p1 = Utils::pointFromCenter(d_ptr->arch.center,
-                                        d_ptr->arch.maxRadius,
-                                        d_ptr->arch.startAngle);
-    QPointF p2 = Utils::pointFromCenter(d_ptr->arch.center,
-                                        d_ptr->arch.maxRadius,
-                                        d_ptr->arch.endAngle);
-    QLineF line1(p1, pts_tmp.at(0));
-    QLineF line2(p2, pts_tmp.at(1));
-    if (qAbs(Utils::distance(point, d_ptr->arch.center) - d_ptr->arch.minRadius) < margin() / 3) {
-        d_ptr->mouseRegion = InEdge0;
-        setMyCursor(d_ptr->arch.center, point);
-    } else if (qAbs(Utils::distance(point, d_ptr->arch.center) - d_ptr->arch.maxRadius)
-               < margin() / 3) {
-        d_ptr->mouseRegion = InEdge1;
-        setMyCursor(d_ptr->arch.center, point);
-    } else if (Utils::boundingFromLine(line1, margin() / 4).containsPoint(point, Qt::OddEvenFill)) {
-        d_ptr->mouseRegion = InEdgeL;
-        setCursor(Utils::cursorForDirection(line1.angle()));
-    } else if (Utils::boundingFromLine(line2, margin() / 4).containsPoint(point, Qt::OddEvenFill)) {
-        d_ptr->mouseRegion = InEdgeH;
-        setCursor(Utils::cursorForDirection(line2.angle()));
-    } else if (d_ptr->arcPath.contains(point)) {
-        setMouseRegion(GraphicsBasicItem::MouseRegion::All);
-        setCursor(Qt::SizeAllCursor);
-    } else {
-        unsetCursor();
-    }
-}
-
 void GraphicsArcItem::drawContent(QPainter *painter)
 {
     painter->drawPath(isValid() ? d_ptr->arcPath : d_ptr->cachePath);
@@ -259,17 +155,14 @@ void GraphicsArcItem::drawContent(QPainter *painter)
 
 void GraphicsArcItem::pointsChanged(const QPolygonF &ply)
 {
-    auto rect = scene()->sceneRect();
-    if (!rect.contains(ply.last())) {
-        return;
-    }
-
     if (ply.size() == 3) {
         double deltaAngle = QLineF(ply[0], ply[1]).angleTo(QLineF(ply[0], ply[2]));
         if (deltaAngle < 0.00001 || deltaAngle > 355.99999) {
             return;
         }
     }
+
+    auto sceneRect = scene()->sceneRect();
 
     switch (ply.size()) {
     case 1:
@@ -279,7 +172,7 @@ void GraphicsArcItem::pointsChanged(const QPolygonF &ply)
             return;
         }
         QPolygonF polygon = d_ptr->cachePath.toFillPolygon() + ply;
-        if (!rect.contains(polygon.boundingRect())) {
+        if (!sceneRect.contains(polygon.boundingRect())) {
             return;
         }
         geometryCache()->setControlPoints(ply);
@@ -295,21 +188,134 @@ void GraphicsArcItem::pointsChanged(const QPolygonF &ply)
     update();
 }
 
-void GraphicsArcItem::showHoverArc(const QPolygonF &ply)
+void GraphicsArcItem::updateHoverPreview(const QPointF &scenePos)
 {
-    switch (ply.size()) {
+    auto controlPoints = geometryCache()->controlPoints();
+    auto size = controlPoints.size();
+    if (size < 2 || size > 3) {
+        return;
+    }
+
+    controlPoints.append(scenePos);
+    size = controlPoints.size();
+
+    switch (size) {
     case 3:
         // QPainterPath::arcTo: Adding point with invalid coordinates, ignoring call
-        if (Utils::distance(ply[1], ply[2]) < margin()) {
+        if (Utils::distance(controlPoints[1], controlPoints[2]) < margin()) {
             return;
         }
-        Utils::calculateHalfArc(ply, d_ptr->cachePath);
+        Utils::calculateHalfArc(controlPoints, d_ptr->cachePath);
         break;
-    case 4: Utils::calculateAllArc(ply, d_ptr->cachePath, margin()); break;
+    case 4: Utils::calculateAllArc(controlPoints, d_ptr->cachePath, margin()); break;
     default: return;
     }
 
     update();
+}
+
+GraphicsBasicItem::MouseRegion GraphicsArcItem::detectEdgeRegion(const QPointF &scenePos)
+{
+    const double edgeMargin = margin() / 2.0;
+    const Arc &arc = d_ptr->arch;
+
+    // 计算点到圆心的距离
+    const double distanceToCenter = Utils::distance(scenePos, arc.center);
+
+    // 分别检查内外圆弧边缘 - 更清晰的逻辑
+    if (qAbs(distanceToCenter - arc.minRadius) < edgeMargin) {
+        d_ptr->mouseRegion = GraphicsArcItemPrivate::MouseEdgeRegion::InnerEdge;
+        setMyCursor(arc.center, scenePos);
+        setMouseRegion(GraphicsBasicItem::MouseRegion::EdgeArea);
+        return GraphicsBasicItem::MouseRegion::EdgeArea;
+    }
+
+    if (qAbs(distanceToCenter - arc.maxRadius) < edgeMargin) {
+        d_ptr->mouseRegion = GraphicsArcItemPrivate::MouseEdgeRegion::OuterEdge;
+        setMyCursor(arc.center, scenePos);
+        setMouseRegion(GraphicsBasicItem::MouseRegion::EdgeArea);
+        return GraphicsBasicItem::MouseRegion::EdgeArea;
+    }
+
+    // 计算侧边端点
+    const QPointF innerStart = Utils::pointFromCenter(arc.center, arc.minRadius, arc.startAngle);
+    const QPointF outerStart = Utils::pointFromCenter(arc.center, arc.maxRadius, arc.startAngle);
+
+    // 分别检查两个侧边
+    const QLineF startEdge(innerStart, outerStart);
+    if (Utils::isPointNearEdge(scenePos, startEdge, edgeMargin)) {
+        d_ptr->mouseRegion = GraphicsArcItemPrivate::MouseEdgeRegion::StartAngleSide;
+        setCursor(Utils::cursorForDirection(startEdge.angle()));
+        setMouseRegion(GraphicsBasicItem::MouseRegion::EdgeArea);
+        return GraphicsBasicItem::MouseRegion::EdgeArea;
+    }
+
+    const QPointF innerEnd = Utils::pointFromCenter(arc.center, arc.minRadius, arc.endAngle);
+    const QPointF outerEnd = Utils::pointFromCenter(arc.center, arc.maxRadius, arc.endAngle);
+
+    const QLineF endEdge(innerEnd, outerEnd);
+    if (Utils::isPointNearEdge(scenePos, endEdge, edgeMargin)) {
+        d_ptr->mouseRegion = GraphicsArcItemPrivate::MouseEdgeRegion::EndAngleSide;
+        setCursor(Utils::cursorForDirection(endEdge.angle()));
+        setMouseRegion(GraphicsBasicItem::MouseRegion::EdgeArea);
+        return GraphicsBasicItem::MouseRegion::EdgeArea;
+    }
+
+    // 不在任何区域
+    d_ptr->mouseRegion = GraphicsArcItemPrivate::MouseEdgeRegion::NoSelection;
+    setMouseRegion(GraphicsBasicItem::MouseRegion::NoSelection);
+    return GraphicsBasicItem::MouseRegion::NoSelection;
+}
+
+void GraphicsArcItem::handleMouseMoveEvent(const QPointF &scenePos,
+                                           const QPointF &clickedPos,
+                                           const QPointF delta)
+{
+    auto controlPoints = geometryCache()->controlPoints();
+    auto arch = d_ptr->arch;
+
+    switch (mouseRegion()) {
+    case GraphicsBasicItem::MouseRegion::EntireShape: controlPoints.translate(delta); break;
+    case GraphicsBasicItem::MouseRegion::AnchorPoint:
+        controlPoints[hoveredDotIndex()] += delta;
+        break;
+    case GraphicsBasicItem::MouseRegion::EdgeArea: {
+        auto distance = Utils::distance(arch.center, scenePos);
+        switch (d_ptr->mouseRegion) {
+        case GraphicsArcItemPrivate::MouseEdgeRegion::InnerEdge:
+            setMyCursor(arch.center, scenePos);
+            for (int i = 0; i < 3; ++i) {
+                controlPoints[i] = Utils::pointAtDistance(arch.center, controlPoints[i], distance);
+            }
+            break;
+        case GraphicsArcItemPrivate::MouseEdgeRegion::OuterEdge:
+            setMyCursor(arch.center, scenePos);
+            controlPoints[3] = Utils::pointAtDistance(arch.center, controlPoints[3], distance);
+            break;
+        case GraphicsArcItemPrivate::MouseEdgeRegion::StartAngleSide:
+        case GraphicsArcItemPrivate::MouseEdgeRegion::EndAngleSide: {
+            auto &targetAngle = (d_ptr->mouseRegion
+                                 == GraphicsArcItemPrivate::MouseEdgeRegion::StartAngleSide)
+                                    ? arch.startAngle
+                                    : arch.endAngle;
+            targetAngle = QLineF(arch.center, scenePos).angle();
+            setCursor(Utils::cursorForDirection(targetAngle));
+            while (arch.startAngle > arch.endAngle) {
+                arch.endAngle += 360;
+            }
+            if (arch.endAngle - arch.startAngle > 360) {
+                arch.endAngle -= 360;
+            }
+            controlPoints = arch.controlPoints();
+        } break;
+        default: return;
+        }
+        break;
+    }
+    default: return;
+    }
+
+    pointsChanged(controlPoints);
 }
 
 } // namespace Graphics

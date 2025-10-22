@@ -15,21 +15,20 @@ public:
     [[nodiscard]] auto setLine(const QLineF &line) -> bool;
     [[nodiscard]] auto line() const -> QLineF;
 
-    [[nodiscard]] auto type() const -> int override;
+    [[nodiscard]] auto type() const -> int override { return Shape::LINE; }
 
 signals:
     void lineChanged(const QLineF &line);
 
 protected:
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-    void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-
     void drawContent(QPainter *painter) override;
     void pointsChanged(const QPolygonF &ply) override;
+    void updateHoverPreview(const QPointF &scenePos) override;
+    void handleMouseMoveEvent(const QPointF &scenePos,
+                              const QPointF &clickedPos,
+                              const QPointF delta) override;
 
 private:
-    void showHoverLine(const QPolygonF &ply);
-
     class GraphicsLineItemPrivate;
     QScopedPointer<GraphicsLineItemPrivate> d_ptr;
 };

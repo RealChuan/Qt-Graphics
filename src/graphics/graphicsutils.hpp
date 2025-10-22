@@ -11,6 +11,7 @@ namespace Utils {
 auto createBoundingRect(const QPolygonF &ply, double margin) -> QRectF;
 auto expandAndUnitePath(const QPainterPath &path, qreal strokeWidth) -> QPainterPath;
 auto distance(QPointF pos, QPointF center) -> double;
+auto pointAtDistance(const QPointF &from, const QPointF &to, double distance) -> QPointF;
 auto normalizeAngle(double angle) -> double;
 auto cursorForDirection(double angle) -> QCursor;
 
@@ -29,7 +30,7 @@ auto calculateCircle(const QPolygonF &pts, QPointF &center, double &radius) -> b
 auto calculateHalfArc(const QPolygonF &ply, QPainterPath &path) -> bool;
 auto calculateAllArc(const QPolygonF &ply, QPainterPath &path, const double margin) -> bool;
 
-auto boundingFromLine(const QLineF &line, double margin) -> QPolygonF;
+auto isPointNearEdge(const QPointF &point, const QLineF &line, double margin) -> bool;
 
 } // namespace Utils
 

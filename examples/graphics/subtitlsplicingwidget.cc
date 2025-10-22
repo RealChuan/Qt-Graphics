@@ -216,17 +216,14 @@ void SubtitlSplicingWidget::onDown(int index)
 void SubtitlSplicingWidget::onLine1Changed()
 {
     auto *view = qobject_cast<SectionalSubtitlesView *>(sender());
-    if (!view) {
-        return;
-    }
-    if (view->index() != 0) {
+    if (!view || view->index() != 0) {
         return;
     }
 
     auto radoi = view->line1RatioOfHeight();
     for (int i = 1; i < d_ptr->listWidget->count(); i++) {
-        auto item = d_ptr->listWidget->item(i);
-        auto view = qobject_cast<SectionalSubtitlesView *>(d_ptr->listWidget->itemWidget(item));
+        auto *item = d_ptr->listWidget->item(i);
+        auto *view = qobject_cast<SectionalSubtitlesView *>(d_ptr->listWidget->itemWidget(item));
         view->setLine1RatioOfHeight(radoi);
     }
 }
@@ -234,10 +231,7 @@ void SubtitlSplicingWidget::onLine1Changed()
 void SubtitlSplicingWidget::onLine2Changed()
 {
     auto *view = qobject_cast<SectionalSubtitlesView *>(sender());
-    if (!view) {
-        return;
-    }
-    if (view->index() != 0) {
+    if (!view || view->index() != 0) {
         return;
     }
 

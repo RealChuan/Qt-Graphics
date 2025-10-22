@@ -5,7 +5,7 @@ namespace Graphics {
 GraphicsRectItem::GraphicsRectItem(QGraphicsItem *parent)
     : GraphicsRoundedRectItem(parent)
 {
-    m_roundedRect = m_tempRoundedRect = RoundedRect(QRectF());
+    m_roundedRect = RoundedRect(QRectF());
     buildConnect();
 }
 
@@ -27,11 +27,6 @@ auto GraphicsRectItem::setRect(const QRectF &rect) -> bool
 QRectF GraphicsRectItem::rect() const
 {
     return roundedRect().rect;
-}
-
-int GraphicsRectItem::type() const
-{
-    return RECT;
 }
 
 void GraphicsRectItem::onRoundedRectChanged(const RoundedRect &roundedRect)

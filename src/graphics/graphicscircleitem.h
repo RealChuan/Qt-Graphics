@@ -24,18 +24,18 @@ public:
     [[nodiscard]] auto setCircle(const Circle &circle) -> bool;
     [[nodiscard]] auto circle() const -> Circle;
 
-    [[nodiscard]] auto type() const -> int override;
+    [[nodiscard]] auto type() const -> int override { return Shape::CIRCLE; }
 
 protected:
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-    void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-
     void drawContent(QPainter *painter) override;
     void pointsChanged(const QPolygonF &ply) override;
+    void updateHoverPreview(const QPointF &scenePos) override;
+    MouseRegion detectEdgeRegion(const QPointF &scenePos) override;
+    void handleMouseMoveEvent(const QPointF &scenePos,
+                              const QPointF &clickedPos,
+                              const QPointF delta) override;
 
 private:
-    void showHoverCircle(const QPolygonF &ply);
-
     class GraphicsCircleItemPrivate;
     QScopedPointer<GraphicsCircleItemPrivate> d_ptr;
 };

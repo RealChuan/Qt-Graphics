@@ -57,16 +57,7 @@ GraphicsView::GraphicsView(QWidget *parent)
     , d_ptr(new ImageViewPrivate(this))
 {
     setScene(new QGraphicsScene(this));
-    setTransformationAnchor(AnchorUnderMouse);
-    //setDragMode(ScrollHandDrag);
-    setViewportUpdateMode(SmartViewportUpdate);
-    setFrameShape(QFrame::NoFrame);
-    setRenderHint(QPainter::SmoothPixmapTransform);
-    setCursor(Qt::CrossCursor);
-    setMouseTracking(true);
-    setAcceptDrops(true);
-    initScene();
-    createPopMenu();
+    initializeView();
 }
 
 GraphicsView::GraphicsView(QGraphicsScene *scene, QWidget *parent)
@@ -74,16 +65,7 @@ GraphicsView::GraphicsView(QGraphicsScene *scene, QWidget *parent)
     , d_ptr(new ImageViewPrivate(this))
 {
     setScene(scene);
-    setTransformationAnchor(AnchorUnderMouse);
-    //setDragMode(ScrollHandDrag);
-    setViewportUpdateMode(SmartViewportUpdate);
-    setFrameShape(QFrame::NoFrame);
-    setRenderHint(QPainter::SmoothPixmapTransform);
-    setCursor(Qt::CrossCursor);
-    setMouseTracking(true);
-    setAcceptDrops(true);
-    initScene();
-    createPopMenu();
+    initializeView();
 }
 
 GraphicsView::~GraphicsView() {}
@@ -310,6 +292,20 @@ void GraphicsView::dropEvent(QDropEvent *event)
 void GraphicsView::contextMenuEvent(QContextMenuEvent *event)
 {
     d_ptr->menu->exec(event->globalPos());
+}
+
+void GraphicsView::initializeView()
+{
+    setTransformationAnchor(AnchorUnderMouse);
+    //setDragMode(ScrollHandDrag);
+    setViewportUpdateMode(SmartViewportUpdate);
+    setFrameShape(QFrame::NoFrame);
+    setRenderHint(QPainter::SmoothPixmapTransform);
+    setCursor(Qt::CrossCursor);
+    setMouseTracking(true);
+    setAcceptDrops(true);
+    initScene();
+    createPopMenu();
 }
 
 void GraphicsView::initScene()

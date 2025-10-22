@@ -19,8 +19,6 @@ struct GRAPHICS_EXPORT Arc
 class GRAPHICS_EXPORT GraphicsArcItem : public GraphicsBasicItem
 {
 public:
-    enum MouseRegion : int { InEdge0, InEdge1, None, InEdgeL, InEdgeH };
-
     explicit GraphicsArcItem(QGraphicsItem *parent = nullptr);
     explicit GraphicsArcItem(const Arc &arc, QGraphicsItem *parent = nullptr);
     ~GraphicsArcItem() override;
@@ -28,18 +26,18 @@ public:
     [[nodiscard]] auto setArc(const Arc &arc) -> bool;
     [[nodiscard]] auto arch() const -> Arc;
 
-    [[nodiscard]] auto type() const -> int override;
+    [[nodiscard]] auto type() const -> int override { return GraphicsBasicItem::Shape::ARC; }
 
 protected:
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-    void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-
     void drawContent(QPainter *painter) override;
     void pointsChanged(const QPolygonF &ply) override;
+    void updateHoverPreview(const QPointF &scenePos) override;
+    GraphicsBasicItem::MouseRegion detectEdgeRegion(const QPointF &scenePos) override;
+    void handleMouseMoveEvent(const QPointF &scenePos,
+                              const QPointF &clickedPos,
+                              const QPointF delta) override;
 
 private:
-    void showHoverArc(const QPolygonF &ply);
-
     class GraphicsArcItemPrivate;
     QScopedPointer<GraphicsArcItemPrivate> d_ptr;
 };

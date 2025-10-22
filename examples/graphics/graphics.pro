@@ -23,7 +23,6 @@ SOURCES += \
     ../common/thumbnail.cc \
     ../common/imagelistmodel.cpp \
     capturewidget.cc \
-    customlineitem.cc \
     drawscene.cc \
     drawwidget.cpp \
     icoconverterwidget.cc \
@@ -42,6 +41,7 @@ SOURCES += \
     selectionwidget.cc \
     sizeselectorwidget.cc \
     stretchparamssettingdailog.cc \
+    subtitledividerlineitem.cc \
     subtitlsplicingwidget.cc
 
 HEADERS += \
@@ -50,7 +50,6 @@ HEADERS += \
     ../common/thumbnail.hpp \
     ../common/imagelistmodel.h \
     capturewidget.hpp \
-    customlineitem.hpp \
     drawscene.hpp \
     drawwidget.h \
     icoconverterwidget.hpp \
@@ -68,6 +67,7 @@ HEADERS += \
     selectionwidget.hpp \
     sizeselectorwidget.hpp \
     stretchparamssettingdailog.hpp \
+    subtitledividerlineitem.hpp \
     subtitlsplicingwidget.hpp
 
 win32 {

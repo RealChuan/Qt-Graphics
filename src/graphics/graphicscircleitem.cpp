@@ -20,8 +20,7 @@ auto Circle::boundingRect(double margin) const -> QRectF
     if (!isVaild(margin)) {
         return QRectF();
     }
-    double addLen = margin / 2;
-    return Utils::createBoundingRect(controlPoints(), margin);
+    return Utils::createBoundingRect(controlPoints(), margin / 2.0);
 }
 
 auto Circle::controlPoints() const -> QPolygonF
@@ -44,7 +43,6 @@ public:
     GraphicsCircleItem *q_ptr;
 
     Circle circle;
-    Circle tempCircle;
 };
 
 GraphicsCircleItem::GraphicsCircleItem(QGraphicsItem *parent)
@@ -88,92 +86,13 @@ auto GraphicsCircleItem::circle() const -> Circle
     return d_ptr->circle;
 }
 
-auto GraphicsCircleItem::type() const -> int
-{
-    return Shape::CIRCLE;
-}
-
-void GraphicsCircleItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
-{
-    if ((event->buttons() & Qt::LeftButton) == 0 || !isValid()) {
-        return;
-    }
-    if (!isSelected()) {
-        setSelected(true);
-    }
-    QPointF point = event->scenePos();
-    QPointF dp = point - clickedPos();
-    setClickedPos(point);
-
-    double radius = d_ptr->circle.radius;
-    QPointF center = d_ptr->circle.center;
-    switch (mouseRegion()) {
-    case MouseRegion::DotRegion:
-        switch (hoveredDotIndex()) {
-        case 0: // 上点 - 垂直移动控制半径 向上拖动增加半径，向下拖动减小半径
-            radius -= dp.y();
-            break;
-        case 1: // 右点 - 水平移动控制半径 向右拖动增加半径，向左拖动减小半径
-            radius += dp.x();
-            break;
-        case 2: // 下点 - 垂直移动控制半径 向下拖动增加半径，向上拖动减小半径
-            radius += dp.y();
-            break;
-        case 3: // 左点 - 水平移动控制半径 向左拖动增加半径，向右拖动减小半径
-            radius -= dp.x();
-            break;
-        default: break;
-        }
-        break;
-    case MouseRegion::Edge: {
-        QLineF lineF = QLineF(d_ptr->circle.center, point);
-        setMyCursor(d_ptr->circle.center, point);
-        radius = lineF.length();
-    } break;
-    case MouseRegion::All: center += dp; break;
-    default: return;
-    }
-
-    if (setCircle({center, radius})) {
-        update();
-    }
-}
-
-void GraphicsCircleItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
-{
-    auto scenePos = event->scenePos();
-    auto pts_tmp = geometryCache()->controlPoints();
-    if (pts_tmp.size() == 1) {
-        pts_tmp.append(scenePos);
-        showHoverCircle(pts_tmp);
-    }
-
-    GraphicsBasicItem::hoverMoveEvent(event);
-    if (mouseRegion() == MouseRegion::DotRegion) {
-        return;
-    }
-
-    const qreal distanceToCenter = Utils::distance(scenePos, d_ptr->circle.center);
-    const qreal distanceToEdge = qAbs(distanceToCenter - d_ptr->circle.radius);
-    if (distanceToEdge < margin() / 1.2) {
-        setMouseRegion(MouseRegion::Edge);
-        setMyCursor(d_ptr->circle.center, scenePos);
-    }
-}
-
 void GraphicsCircleItem::drawContent(QPainter *painter)
 {
-    painter->drawEllipse(isValid() ? d_ptr->circle.boundingRect(0)
-                                   : d_ptr->tempCircle.boundingRect(0));
+    painter->drawEllipse(d_ptr->circle.boundingRect(0));
 }
 
 void GraphicsCircleItem::pointsChanged(const QPolygonF &ply)
 {
-    auto rect = scene()->sceneRect();
-    if (!rect.contains(ply.last())) {
-        return;
-    }
-
     switch (ply.size()) {
     case 1: geometryCache()->setControlPoints(ply); break;
     case 2:
@@ -187,17 +106,72 @@ void GraphicsCircleItem::pointsChanged(const QPolygonF &ply)
     update();
 }
 
-void GraphicsCircleItem::showHoverCircle(const QPolygonF &ply)
+void GraphicsCircleItem::updateHoverPreview(const QPointF &scenePos)
 {
-    if (ply.size() != 2) {
+    auto controlPoints = geometryCache()->controlPoints();
+    if (controlPoints.size() != 1) {
         return;
     }
-    Circle circle(ply.first(), Utils::distance(ply.first(), ply.last()));
+
+    Circle circle(controlPoints[0], Utils::distance(controlPoints[0], scenePos));
     if (!circle.isVaild(margin())) {
         return;
     }
-    d_ptr->tempCircle = circle;
+    d_ptr->circle = circle;
     update();
+}
+
+GraphicsBasicItem::MouseRegion GraphicsCircleItem::detectEdgeRegion(const QPointF &scenePos)
+{
+    const auto &circle = d_ptr->circle;
+    const double edgeMargin = margin() / 2.0;
+    const double distance = Utils::distance(scenePos, circle.center);
+
+    if (distance >= circle.radius - edgeMargin && distance <= circle.radius + edgeMargin) {
+        setMouseRegion(MouseRegion::EdgeArea);
+        setMyCursor(circle.center, scenePos);
+        return MouseRegion::EdgeArea;
+    }
+
+    return MouseRegion::NoSelection;
+}
+
+void GraphicsCircleItem::handleMouseMoveEvent(const QPointF &scenePos,
+                                              const QPointF &clickedPos,
+                                              const QPointF delta)
+{
+    double radius = d_ptr->circle.radius;
+    auto center = d_ptr->circle.center;
+
+    switch (mouseRegion()) {
+    case MouseRegion::EntireShape: center += delta; break;
+    case MouseRegion::AnchorPoint:
+        switch (hoveredDotIndex()) {
+        case 0: // 上点 - 垂直移动控制半径 向上拖动增加半径，向下拖动减小半径
+            radius -= delta.y();
+            break;
+        case 1: // 右点 - 水平移动控制半径 向右拖动增加半径，向左拖动减小半径
+            radius += delta.x();
+            break;
+        case 2: // 下点 - 垂直移动控制半径 向下拖动增加半径，向上拖动减小半径
+            radius += delta.y();
+            break;
+        case 3: // 左点 - 水平移动控制半径 向左拖动增加半径，向右拖动减小半径
+            radius -= delta.x();
+            break;
+        default: break;
+        }
+        break;
+    case MouseRegion::EdgeArea:
+        setMyCursor(center, scenePos);
+        radius = Utils::distance(center, scenePos);
+        break;
+    default: return;
+    }
+
+    if (setCircle({center, radius})) {
+        update();
+    }
 }
 
 } // namespace Graphics

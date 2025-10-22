@@ -22,9 +22,10 @@ public:
         auto widgetSize = m_viewPtr->size();
         auto imageSize = image.size();
         image = image.scaled(widgetSize, Qt::KeepAspectRatio /*, Qt::SmoothTransformation*/);
+        auto view = m_viewPtr.data();
         QMetaObject::invokeMethod(
-            m_viewPtr.data(),
-            [this, image, imageSize] { m_viewPtr->setImage(image, imageSize); },
+            view,
+            [view, image, imageSize] { view->setImage(image, imageSize); },
             Qt::QueuedConnection);
     }
 

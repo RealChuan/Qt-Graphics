@@ -26,26 +26,25 @@ public:
     virtual ~GraphicsRoundedRectItem() override;
 
     [[nodiscard]] auto setRoundedRect(const RoundedRect &roundedRect) -> bool;
-    [[nodiscard]] auto roundedRect() const -> RoundedRect;
+    [[nodiscard]] auto roundedRect() const -> RoundedRect { return m_roundedRect; }
 
-    [[nodiscard]] auto type() const -> int override;
+    [[nodiscard]] auto type() const -> int override { return Shape::ROUNDEDRECT; }
 
 signals:
     void roundedRectChanged(const RoundedRect &roundedRect);
 
 protected:
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-    void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-
     void drawContent(QPainter *painter) override;
     void pointsChanged(const QPolygonF &ply) override;
+    void updateHoverPreview(const QPointF &scenePos) override;
+    MouseRegion detectEdgeRegion(const QPointF &scenePos) override;
+    void handleMouseMoveEvent(const QPointF &scenePos,
+                              const QPointF &clickedPos,
+                              const QPointF delta) override;
 
     RoundedRect m_roundedRect;
-    RoundedRect m_tempRoundedRect;
 
 private:
-    void showHoverRect(const QPolygonF &ply);
-
     class GraphicsRoundedRectItemPrivate;
     QScopedPointer<GraphicsRoundedRectItemPrivate> d_ptr;
 };

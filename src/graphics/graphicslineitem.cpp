@@ -9,12 +9,14 @@
 
 namespace Graphics {
 
-inline auto checkLineVaild(const QLineF &line, const double margin) -> bool
+namespace {
+
+auto checkLineVaild(const QLineF &line, const double margin) -> bool
 {
     return !line.isNull() && line.length() > margin;
 }
 
-inline auto lineShape(const QLineF &line, qreal extension) -> QPainterPath
+auto lineShape(const QLineF &line, qreal extension) -> QPainterPath
 {
     QPainterPath path;
 
@@ -51,6 +53,8 @@ inline auto lineShape(const QLineF &line, qreal extension) -> QPainterPath
     return path;
 }
 
+} // namespace
+
 class GraphicsLineItem::GraphicsLineItemPrivate
 {
 public:
@@ -61,7 +65,6 @@ public:
     GraphicsLineItem *q_ptr;
 
     QLineF line;
-    QLineF tempLine;
 };
 
 GraphicsLineItem::GraphicsLineItem(QGraphicsItem *parent)
@@ -86,7 +89,10 @@ auto GraphicsLineItem::setLine(const QLineF &line) -> bool
 
     QPolygonF anchorPoints{line.p1(), line.p2()};
     auto rect = Utils::createBoundingRect(anchorPoints, margin());
-    if (!scene()->sceneRect().contains(rect)) {
+    auto sceneRect = scene()->sceneRect();
+    if (rect.isValid() && !sceneRect.contains(rect)) {
+        return false;
+    } else if (!sceneRect.contains(line.p1()) || !sceneRect.contains(line.p2())) {
         return false;
     }
 
@@ -105,55 +111,13 @@ auto GraphicsLineItem::line() const -> QLineF
     return d_ptr->line;
 }
 
-auto GraphicsLineItem::type() const -> int
-{
-    return Shape::LINE;
-}
-
-void GraphicsLineItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
-{
-    if ((event->buttons() & Qt::LeftButton) == 0 || !isValid()) {
-        return;
-    }
-    if (!isSelected()) {
-        setSelected(true);
-    }
-    auto scenePos = event->scenePos();
-    auto dp = scenePos - clickedPos();
-    setClickedPos(scenePos);
-
-    auto pts_tmp = geometryCache()->controlPoints();
-    switch (mouseRegion()) {
-    case MouseRegion::DotRegion: pts_tmp.replace(hoveredDotIndex(), scenePos); break;
-    case MouseRegion::All: pts_tmp.translate(dp); break;
-    default: return;
-    }
-    pointsChanged(pts_tmp);
-}
-
-void GraphicsLineItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
-{
-    auto pts_tmp = geometryCache()->controlPoints();
-    if (pts_tmp.size() == 1) {
-        pts_tmp.append(event->scenePos());
-        showHoverLine(pts_tmp);
-    }
-
-    GraphicsBasicItem::hoverMoveEvent(event);
-}
-
 void GraphicsLineItem::drawContent(QPainter *painter)
 {
-    painter->drawLine(isValid() ? d_ptr->line : d_ptr->tempLine);
+    painter->drawLine(d_ptr->line);
 }
 
 void GraphicsLineItem::pointsChanged(const QPolygonF &ply)
 {
-    auto rect = scene()->sceneRect();
-    if (!rect.contains(ply.last())) {
-        return;
-    }
-
     switch (ply.size()) {
     case 1: geometryCache()->setControlPoints(ply); break;
     case 2:
@@ -166,13 +130,32 @@ void GraphicsLineItem::pointsChanged(const QPolygonF &ply)
     update();
 }
 
-void GraphicsLineItem::showHoverLine(const QPolygonF &ply)
+void GraphicsLineItem::updateHoverPreview(const QPointF &scenePos)
 {
-    if (ply.size() != 2) {
+    auto controlPoints = geometryCache()->controlPoints();
+    if (controlPoints.size() != 1) {
         return;
     }
-    d_ptr->tempLine.setPoints(ply[0], ply[1]);
+    auto line = QLineF(controlPoints[0], scenePos);
+    if (!checkLineVaild(line, margin())) {
+        return;
+    }
+    d_ptr->line = line;
     update();
+}
+
+void GraphicsLineItem::handleMouseMoveEvent(const QPointF &scenePos,
+                                            const QPointF &clickedPos,
+                                            const QPointF delta)
+{
+    auto controlPoints = geometryCache()->controlPoints();
+
+    switch (mouseRegion()) {
+    case MouseRegion::EntireShape: controlPoints.translate(delta); break;
+    case MouseRegion::AnchorPoint: controlPoints.replace(hoveredDotIndex(), scenePos); break;
+    default: return;
+    }
+    pointsChanged(controlPoints);
 }
 
 } // namespace Graphics

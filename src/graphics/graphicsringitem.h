@@ -19,7 +19,6 @@ struct GRAPHICS_EXPORT Ring
 class GRAPHICS_EXPORT GraphicsRingItem : public GraphicsBasicItem
 {
 public:
-    enum MouseRegion { InEdge0, InEdge1, None };
     explicit GraphicsRingItem(QGraphicsItem *parent = nullptr);
     explicit GraphicsRingItem(const Ring &ring, QGraphicsItem *parent = nullptr);
     ~GraphicsRingItem() override;
@@ -27,18 +26,18 @@ public:
     [[nodiscard]] auto setRing(const Ring &ring) -> bool;
     [[nodiscard]] auto ring() const -> Ring;
 
-    [[nodiscard]] auto type() const -> int override;
+    [[nodiscard]] auto type() const -> int override { return Shape::RING; }
 
 protected:
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-    void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-
     void drawContent(QPainter *painter) override;
     void pointsChanged(const QPolygonF &ply) override;
+    void updateHoverPreview(const QPointF &scenePos) override;
+    GraphicsBasicItem::MouseRegion detectEdgeRegion(const QPointF &scenePos) override;
+    void handleMouseMoveEvent(const QPointF &scenePos,
+                              const QPointF &clickedPos,
+                              const QPointF delta) override;
 
 private:
-    void showHoverRing(const QPolygonF &ply);
-
     class GraphicsRingItemPrivate;
     QScopedPointer<GraphicsRingItemPrivate> d_ptr;
 };

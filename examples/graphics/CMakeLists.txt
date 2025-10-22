@@ -9,8 +9,6 @@ set(PROJECT_SOURCES
     ../common/viewer.hpp
     capturewidget.cc
     capturewidget.hpp
-    customlineitem.cc
-    customlineitem.hpp
     drawscene.cc
     drawscene.hpp
     drawwidget.cpp
@@ -46,6 +44,8 @@ set(PROJECT_SOURCES
     sizeselectorwidget.hpp
     stretchparamssettingdailog.cc
     stretchparamssettingdailog.hpp
+    subtitledividerlineitem.cc
+    subtitledividerlineitem.hpp
     subtitlsplicingwidget.cc
     subtitlsplicingwidget.hpp)
 

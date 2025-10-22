@@ -9,6 +9,7 @@ struct GRAPHICS_EXPORT RotatedRect
     [[nodiscard]] auto isValid(double margin) const -> bool;
     [[nodiscard]] auto boundingRect(double margin) const -> QRectF;
     [[nodiscard]] auto controlPoints() const -> QPolygonF;
+    [[nodiscard]] auto rotationLine() const -> QLineF;
 
     QPointF center;
     double width = 0;
@@ -27,18 +28,18 @@ public:
     [[nodiscard]] auto setRotatedRect(const RotatedRect &rotatedRect) -> bool;
     [[nodiscard]] auto rotatedRect() const -> RotatedRect;
 
-    [[nodiscard]] auto type() const -> int override;
+    [[nodiscard]] auto type() const -> int override { return Shape::ROTATEDRECT; }
 
 protected:
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-    void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-
     void drawContent(QPainter *painter) override;
     void pointsChanged(const QPolygonF &ply) override;
+    void updateHoverPreview(const QPointF &scenePos) override;
+    MouseRegion detectEdgeRegion(const QPointF &scenePos) override;
+    void handleMouseMoveEvent(const QPointF &scenePos,
+                              const QPointF &clickedPos,
+                              const QPointF delta) override;
 
 private:
-    void showHoverRotatedRect(const QPolygonF &ply);
-
     class GraphicsRotatedRectItemPrivate;
     QScopedPointer<GraphicsRotatedRectItemPrivate> d_ptr;
 };

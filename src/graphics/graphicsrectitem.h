@@ -15,7 +15,7 @@ public:
     [[nodiscard]] auto setRect(const QRectF &rect) -> bool;
     [[nodiscard]] auto rect() const -> QRectF;
 
-    [[nodiscard]] auto type() const -> int override;
+    [[nodiscard]] auto type() const -> int override { return RECT; }
 
 signals:
     void rectChanged(const QRectF &rectF);

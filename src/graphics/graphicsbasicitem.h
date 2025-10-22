@@ -16,7 +16,7 @@ public:
     enum Shape : int { LINE = 1, RECT, ROUNDEDRECT, ROTATEDRECT, CIRCLE, POLYGON, RING, ARC };
     Q_ENUM(Shape)
 
-    enum MouseRegion : int { DotRegion, All, Edge, None };
+    enum class MouseRegion : int { NoSelection, AnchorPoint, EdgeArea, EntireShape };
 
     explicit GraphicsBasicItem(QGraphicsItem *parent = nullptr);
     ~GraphicsBasicItem() override;
@@ -42,8 +42,9 @@ public:
     bool showBoundingRect() const;
 
 protected:
-    //QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
 
@@ -69,6 +70,12 @@ protected:
     void drawShape(QPainter *painter);
 
     virtual void pointsChanged(const QPolygonF &ply) = 0;
+    virtual void updateHoverPreview(const QPointF &scenePos) = 0;
+    virtual MouseRegion detectEdgeRegion(const QPointF &scenePos);
+    virtual void handleMouseMoveEvent(const QPointF &scenePos,
+                                      const QPointF &clickedPos,
+                                      const QPointF delta)
+        = 0;
 
 private:
     class GraphicsBasicItemPrivate;

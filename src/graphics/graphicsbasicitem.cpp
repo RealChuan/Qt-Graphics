@@ -25,7 +25,7 @@ public:
     GraphicsBasicItem *q_ptr;
 
     QString name;
-    MouseRegion mouseRegin = MouseRegion::None;
+    MouseRegion mouseRegin = MouseRegion::NoSelection;
     int hoveredDotIndex = -1;
     QPointF clickedPos;
     double margin = 6;
@@ -120,47 +120,66 @@ bool GraphicsBasicItem::showBoundingRect() const
     return d_ptr->showBoundingRect;
 }
 
-//QVariant BasicGraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change,
-//                                       const QVariant &value)
-//{
-//    if (change == ItemPositionChange && scene()) {
-//        // value is the new position.
-//        QPointF newPos = value.toPointF();
-//        QRectF rect = scene()->sceneRect();
-//        if (!rect.contains(newPos)) {
-//            // Keep the item inside the scene rect.
-//            newPos.setX(qMin(rect.right(), qMax(newPos.x(), rect.left())));
-//            newPos.setY(qMin(rect.bottom(), qMax(newPos.y(), rect.top())));
-//            return newPos;
-//        }
-//    }
-//    return QGraphicsItem::itemChange(change, value);
-//}
-
 void GraphicsBasicItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
+    QAbstractGraphicsShapeItem::mousePressEvent(event);
+
     if (event->button() != Qt::LeftButton) {
-        return QAbstractGraphicsShapeItem::mousePressEvent(event);
+        return;
     }
     setClickedPos(event->scenePos());
     if (isValid()) {
         return;
     }
-    auto pts_tmp = d_ptr->geometryCachePtr->controlPoints();
-    pts_tmp.append(event->pos());
-    pointsChanged(pts_tmp);
+
+    auto pos = event->pos();
+    if (!scene()->sceneRect().contains(pos)) {
+        return;
+    }
+
+    auto controlPoints = d_ptr->geometryCachePtr->controlPoints();
+    controlPoints.append(pos);
+    pointsChanged(controlPoints);
+}
+
+void GraphicsBasicItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    if ((event->buttons() & Qt::LeftButton) == 0 || !isValid()) {
+        return;
+    }
+    if (!isSelected()) {
+        setSelected(true);
+    }
+    const auto scenePos = event->scenePos();
+    auto clickedPos = this->clickedPos();
+    const auto delta = scenePos - clickedPos;
+    setClickedPos(scenePos);
+
+    handleMouseMoveEvent(scenePos, clickedPos, delta);
+}
+
+void GraphicsBasicItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    d_ptr->clickedPos = QPointF();
+    QAbstractGraphicsShapeItem::mouseReleaseEvent(event);
 }
 
 void GraphicsBasicItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     QAbstractGraphicsShapeItem::hoverMoveEvent(event);
-    if (!isValid()) {
+
+    auto scenePos = event->scenePos();
+    if (!scene()->sceneRect().contains(scenePos)) {
         return;
     }
 
-    d_ptr->mouseRegin = MouseRegion::None;
+    if (!isValid()) {
+        updateHoverPreview(scenePos);
+        return;
+    }
+
+    d_ptr->mouseRegin = MouseRegion::NoSelection;
     d_ptr->hoveredDotIndex = -1;
-    const auto scenePos = event->scenePos();
     const auto &anchorPoints = d_ptr->geometryCachePtr->controlPoints();
     const qreal halfMargin = d_ptr->margin * 0.5;
     const QPointF marginOffset(halfMargin, halfMargin);
@@ -171,14 +190,18 @@ void GraphicsBasicItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 
         if (area.contains(scenePos)) {
             d_ptr->hoveredDotIndex = i;
-            d_ptr->mouseRegin = MouseRegion::DotRegion;
+            d_ptr->mouseRegin = MouseRegion::AnchorPoint;
             setCursor(Qt::PointingHandCursor);
             return;
         }
     }
 
+    if (detectEdgeRegion(scenePos) == MouseRegion::EdgeArea) {
+        return;
+    }
+
     if (shape().contains(scenePos)) {
-        d_ptr->mouseRegin = MouseRegion::All;
+        d_ptr->mouseRegin = MouseRegion::EntireShape;
         setCursor(Qt::SizeAllCursor);
     }
 }
@@ -186,7 +209,8 @@ void GraphicsBasicItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 void GraphicsBasicItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     unsetCursor();
-    d_ptr->mouseRegin = MouseRegion::None;
+    d_ptr->mouseRegin = MouseRegion::NoSelection;
+    d_ptr->hoveredDotIndex = -1;
     QAbstractGraphicsShapeItem::hoverLeaveEvent(event);
 }
 
@@ -282,6 +306,12 @@ void GraphicsBasicItem::setMyCursor(const QPointF &center, const QPointF &pos)
 {
     auto angle = QLineF(center, pos).angle();
     setCursor(Utils::cursorForDirection(angle - 90));
+}
+
+GraphicsBasicItem::MouseRegion GraphicsBasicItem::detectEdgeRegion(const QPointF &scenePos)
+{
+    Q_UNUSED(scenePos);
+    return MouseRegion::NoSelection;
 }
 
 } // namespace Graphics

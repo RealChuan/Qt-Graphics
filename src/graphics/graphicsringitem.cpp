@@ -57,6 +57,8 @@ auto Ring::controlPoints() const -> QPolygonF
 class GraphicsRingItem::GraphicsRingItemPrivate
 {
 public:
+    enum class MouseEdgeRegion : int { NoSelection, InnerEdge, OuterEdge };
+
     explicit GraphicsRingItemPrivate(GraphicsRingItem *q)
         : q_ptr(q)
     {}
@@ -64,9 +66,8 @@ public:
     GraphicsRingItem *q_ptr;
 
     Ring ring;
-    Ring tempRing;
-    Circle maxCircle;
-    GraphicsRingItem::MouseRegion mouseRegion = GraphicsRingItem::None;
+    Circle circle;
+    MouseEdgeRegion mouseRegion = MouseEdgeRegion::NoSelection;
 };
 
 GraphicsRingItem::GraphicsRingItem(QGraphicsItem *parent)
@@ -112,110 +113,6 @@ auto GraphicsRingItem::ring() const -> Ring
     return d_ptr->ring;
 }
 
-auto GraphicsRingItem::type() const -> int
-{
-    return Shape::RING;
-}
-
-void GraphicsRingItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
-{
-    if ((event->buttons() & Qt::LeftButton) == 0 || !isValid()) {
-        return;
-    }
-    if (!isSelected()) {
-        setSelected(true);
-    }
-    QPointF point = event->scenePos();
-    QPointF dp = point - clickedPos();
-    setClickedPos(point);
-
-    Ring ring = d_ptr->ring;
-    switch (mouseRegion()) {
-    case GraphicsBasicItem::MouseRegion::DotRegion:
-        switch (hoveredDotIndex()) {
-        case 0: // 上点 - 垂直移动控制外圆半径 向上拖动增加半径，向下拖动减小半径
-            ring.maxRadius -= dp.y();
-            break;
-        case 1: // 右点 - 水平移动控制外圆半径 向右拖动增加半径，向左拖动减小半径
-            ring.maxRadius += dp.x();
-            break;
-        case 2: // 下点 - 垂直移动控制外圆半径 向下拖动增加半径，向上拖动减小半径
-            ring.maxRadius += dp.y();
-            break;
-        case 3: // 左点 - 水平移动控制外圆半径 向左拖动增加半径，向右拖动减小半径
-            ring.maxRadius -= dp.x(); //
-            break;
-        // 内圆对角线控制点 沿对角线方向
-        case 4: // 右上点 - 对角线移动控制内圆半径
-            ring.minRadius += (dp.x() - dp.y()) / std::sqrt(2);
-            break;
-        case 5: // 左上点 - 对角线移动控制内圆半径
-            ring.minRadius += (-dp.x() - dp.y()) / std::sqrt(2);
-            break;
-        case 6: // 左下点 - 对角线移动控制内圆半径
-            ring.minRadius += (-dp.x() + dp.y()) / std::sqrt(2);
-            break;
-        case 7: // 右下点 - 对角线移动控制内圆半径
-            ring.minRadius += (dp.x() + dp.y()) / std::sqrt(2);
-            break;
-        default: break;
-        }
-        break;
-    case GraphicsBasicItem::MouseRegion::All: ring.center += dp; break;
-    case GraphicsBasicItem::MouseRegion::None:
-        switch (d_ptr->mouseRegion) {
-        case InEdge0:
-            setMyCursor(ring.center, point);
-            ring.minRadius = Utils::distance(ring.center, point);
-            break;
-        case InEdge1:
-            setMyCursor(ring.center, point);
-            ring.maxRadius = Utils::distance(ring.center, point);
-            break;
-        default: break;
-        }
-        break;
-    default: break;
-    }
-
-    if (setRing(ring)) {
-        update();
-    }
-}
-
-void GraphicsRingItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
-{
-    QPointF point = event->scenePos();
-    auto pts_tmp = geometryCache()->controlPoints();
-    int size = pts_tmp.size();
-    if (size == 1 || size == 2) {
-        pts_tmp.append(point);
-        showHoverRing(pts_tmp);
-    }
-    if (!isValid()) {
-        return;
-    }
-    GraphicsBasicItem::hoverMoveEvent(event);
-    if (mouseRegion() == GraphicsBasicItem::MouseRegion::DotRegion) {
-        return;
-    }
-    setMouseRegion(GraphicsBasicItem::MouseRegion::None);
-
-    if (qAbs(Utils::distance(point, d_ptr->ring.center) - d_ptr->ring.minRadius) < margin() / 3) {
-        d_ptr->mouseRegion = InEdge0;
-        setMyCursor(d_ptr->ring.center, point);
-    } else if (qAbs(Utils::distance(point, d_ptr->ring.center) - d_ptr->ring.maxRadius)
-               < margin() / 3) {
-        d_ptr->mouseRegion = InEdge1;
-        setMyCursor(d_ptr->ring.center, point);
-    } else if (shape().contains(point)) {
-        setMouseRegion(GraphicsBasicItem::MouseRegion::All);
-        setCursor(Qt::SizeAllCursor);
-    } else {
-        unsetCursor();
-    }
-}
-
 void GraphicsRingItem::drawContent(QPainter *painter)
 {
     if (isValid()) {
@@ -223,10 +120,10 @@ void GraphicsRingItem::drawContent(QPainter *painter)
         painter->drawEllipse(d_ptr->ring.minBoundingRect(0));
     } else {
         switch (geometryCache()->controlPoints().size()) {
-        case 1: painter->drawEllipse(d_ptr->maxCircle.boundingRect(0)); break;
+        case 1: painter->drawEllipse(d_ptr->circle.boundingRect(0)); break;
         case 2:
-            painter->drawEllipse(d_ptr->tempRing.boundingRect(0));
-            painter->drawEllipse(d_ptr->tempRing.minBoundingRect(0));
+            painter->drawEllipse(d_ptr->ring.boundingRect(0));
+            painter->drawEllipse(d_ptr->ring.minBoundingRect(0));
             break;
         default: break;
         }
@@ -235,51 +132,135 @@ void GraphicsRingItem::drawContent(QPainter *painter)
 
 void GraphicsRingItem::pointsChanged(const QPolygonF &ply)
 {
-    auto rect = scene()->sceneRect();
-    if (!rect.contains(ply.last())) {
-        return;
-    }
+    auto sceneRect = scene()->sceneRect();
 
     switch (ply.size()) {
     case 1: geometryCache()->setControlPoints(ply); break;
-    case 2: { //外圈
-        Circle circle(ply.first(), Utils::distance(ply.first(), ply.last()));
-        if (rect.contains(circle.boundingRect(0)) && circle.isVaild(margin())) {
-            d_ptr->maxCircle = circle;
+    case 2: {
+        Circle circle(ply[0], Utils::distance(ply[0], ply[1]));
+        if (sceneRect.contains(circle.boundingRect(0)) && circle.isVaild(margin())) {
+            d_ptr->circle = circle;
             geometryCache()->setControlPoints(ply);
         } else {
             return;
         }
     } break;
-    case 3:
-        if (!setRing({d_ptr->maxCircle.center,
-                      Utils::distance(d_ptr->maxCircle.center, ply[2]),
-                      d_ptr->maxCircle.radius})) {
+    case 3: {
+        auto radius = Utils::distance(d_ptr->circle.center, ply[2]);
+        auto ring = Ring{d_ptr->circle.center,
+                         qMin(d_ptr->circle.radius, radius),
+                         qMax(d_ptr->circle.radius, radius)};
+        if (!setRing(ring)) {
             return;
         }
-        break;
+    } break;
     default: return;
     }
     update();
 }
 
-void GraphicsRingItem::showHoverRing(const QPolygonF &ply)
+void GraphicsRingItem::updateHoverPreview(const QPointF &scenePos)
 {
-    switch (ply.size()) {
-    case 2: {
-        Circle circle(ply.first(), Utils::distance(ply.first(), ply.last()));
-        d_ptr->maxCircle = circle;
-    } break;
-    case 3: {
-        double minRadius = Utils::distance(d_ptr->maxCircle.center, ply[2]);
-        if (minRadius >= d_ptr->maxCircle.radius) {
+    auto controlPoints = geometryCache()->controlPoints();
+    int size = controlPoints.size();
+    if (size < 1 || size > 2) {
+        return;
+    }
+    switch (size) {
+    case 1: {
+        Circle circle(controlPoints[0], Utils::distance(controlPoints[0], scenePos));
+        if (!circle.isVaild(margin())) {
             return;
         }
-        d_ptr->tempRing = Ring{d_ptr->maxCircle.center, minRadius, d_ptr->maxCircle.radius};
+        d_ptr->circle = circle;
+    } break;
+    case 2: {
+        auto radius = Utils::distance(d_ptr->circle.center, scenePos);
+        auto ring = Ring{d_ptr->circle.center,
+                         qMin(radius, d_ptr->circle.radius),
+                         qMax(radius, d_ptr->circle.radius)};
+        if (!ring.isVaild(margin())) {
+            return;
+        }
+        d_ptr->ring = ring;
     } break;
     default: return;
     }
     update();
+}
+
+GraphicsBasicItem::MouseRegion GraphicsRingItem::detectEdgeRegion(const QPointF &scenePos)
+{
+    const double edgeMargin = margin() / 2.0;
+    const auto distance = Utils::distance(scenePos, d_ptr->ring.center);
+    if (qAbs(distance - d_ptr->ring.minRadius) < edgeMargin) {
+        d_ptr->mouseRegion = GraphicsRingItemPrivate::MouseEdgeRegion::InnerEdge;
+        setMyCursor(d_ptr->ring.center, scenePos);
+    } else if (qAbs(distance - d_ptr->ring.maxRadius) < edgeMargin) {
+        d_ptr->mouseRegion = GraphicsRingItemPrivate::MouseEdgeRegion::OuterEdge;
+        setMyCursor(d_ptr->ring.center, scenePos);
+    } else {
+        return GraphicsBasicItem::MouseRegion::NoSelection;
+    }
+
+    setMouseRegion(GraphicsBasicItem::MouseRegion::EdgeArea);
+    return GraphicsBasicItem::MouseRegion::EdgeArea;
+}
+
+void GraphicsRingItem::handleMouseMoveEvent(const QPointF &scenePos,
+                                            const QPointF &clickedPos,
+                                            const QPointF delta)
+{
+    auto ring = d_ptr->ring;
+
+    switch (mouseRegion()) {
+    case GraphicsBasicItem::MouseRegion::EntireShape: ring.center += delta; break;
+    case GraphicsBasicItem::MouseRegion::AnchorPoint:
+        switch (hoveredDotIndex()) {
+            // 外圆控制点 上下左右方向控制外圆半径
+        case 0: // 上点 - 垂直移动控制外圆半径 向上拖动增加半径，向下拖动减小半径
+            ring.maxRadius -= delta.y();
+            break;
+        case 1: // 右点 - 水平移动控制外圆半径 向右拖动增加半径，向左拖动减小半径
+            ring.maxRadius += delta.x();
+            break;
+        case 2: // 下点 - 垂直移动控制外圆半径 向下拖动增加半径，向上拖动减小半径
+            ring.maxRadius += delta.y();
+            break;
+        case 3: // 左点 - 水平移动控制外圆半径 向左拖动增加半径，向右拖动减小半径
+            ring.maxRadius -= delta.x(); //
+            break;
+        // 内圆对角线控制点 沿对角线方向
+        case 4: // 右上点 - 对角线移动控制内圆半径
+            ring.minRadius += (delta.x() - delta.y()) / std::sqrt(2);
+            break;
+        case 5: // 左上点 - 对角线移动控制内圆半径
+            ring.minRadius += (-delta.x() - delta.y()) / std::sqrt(2);
+            break;
+        case 6: // 左下点 - 对角线移动控制内圆半径
+            ring.minRadius += (-delta.x() + delta.y()) / std::sqrt(2);
+            break;
+        case 7: // 右下点 - 对角线移动控制内圆半径
+            ring.minRadius += (delta.x() + delta.y()) / std::sqrt(2);
+            break;
+        default: break;
+        }
+        break;
+    case GraphicsBasicItem::MouseRegion::EdgeArea: {
+        setMyCursor(ring.center, scenePos);
+        auto distance = Utils::distance(ring.center, scenePos);
+        switch (d_ptr->mouseRegion) {
+        case GraphicsRingItemPrivate::MouseEdgeRegion::InnerEdge: ring.minRadius = distance; break;
+        case GraphicsRingItemPrivate::MouseEdgeRegion::OuterEdge: ring.maxRadius = distance; break;
+        default: break;
+        }
+    } break;
+    default: break;
+    }
+
+    if (setRing(ring)) {
+        update();
+    }
 }
 
 } // namespace Graphics

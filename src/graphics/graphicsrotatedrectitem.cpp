@@ -9,7 +9,9 @@
 
 namespace Graphics {
 
-inline auto createRotatedRect(const QPointF &p1, const QPointF &p2, const QPointF &c) -> RotatedRect
+namespace {
+
+auto createRotatedRect(const QPointF &p1, const QPointF &p2, const QPointF &c) -> RotatedRect
 {
     RotatedRect rect;
 
@@ -56,6 +58,80 @@ inline auto createRotatedRect(const QPointF &p1, const QPointF &p2, const QPoint
     return rect;
 }
 
+void updateRotatedRectByMovingCorner(RotatedRect &rect, int cornerIndex, const QPointF &newPos)
+{
+    if (cornerIndex < 0 || cornerIndex > 3)
+        return;
+
+    // 获取当前控制点
+    const auto currentPoints = rect.controlPoints();
+    const int oppositeIndex = (cornerIndex + 2) % 4;
+    const QPointF fixedPoint = currentPoints[oppositeIndex];
+
+    // 计算新的中心点（移动点和对角点的中点）
+    rect.center = (newPos + fixedPoint) / 2;
+
+    // 计算新点在局部坐标系中的位置
+    const double radians = qDegreesToRadians(-rect.angle);
+    const double cosA = std::cos(radians);
+    const double sinA = std::sin(radians);
+
+    QPointF localNewPos = newPos - rect.center;
+    localNewPos = QPointF(localNewPos.x() * cosA - localNewPos.y() * sinA,
+                          localNewPos.x() * sinA + localNewPos.y() * cosA);
+
+    // 计算新的宽度和高度（取绝对值并乘以2）
+    rect.width = std::max(0.0, 2 * std::abs(localNewPos.x()));
+    rect.height = std::max(0.0, 2 * std::abs(localNewPos.y()));
+}
+
+void handleEdgeStretch(RotatedRect &rrt,
+                       QPolygonF &controlPoints,
+                       const QPointF &delta,
+                       const QPointF &clickedPos,
+                       QLineF &hoveredLine)
+{
+    // 计算移动距离
+    const double moveDistance = std::sqrt(delta.x() * delta.x() + delta.y() * delta.y());
+
+    // 获取被拖动的边对应的两个端点
+    const QPointF p1 = hoveredLine.p1();
+    const QPointF p2 = hoveredLine.p2();
+
+    // 找到这两个点在控制点数组中的索引
+    int index1 = controlPoints.indexOf(p1);
+    int index2 = controlPoints.indexOf(p2);
+
+    if (index1 < 0 || index2 < 0) {
+        return;
+    }
+
+    // 计算边的法向量方向（垂直于边的方向）
+    QLineF normalVector = hoveredLine.normalVector();
+
+    // 确定拉伸方向（根据鼠标移动方向判断是拉伸还是收缩）
+    bool isStretching = QLineF(rrt.center, clickedPos).length()
+                        < QLineF(rrt.center, clickedPos + delta).length();
+
+    // 计算移动向量
+    const QPointF moveVector = QPointF(normalVector.dx(), normalVector.dy()) * moveDistance
+                               / normalVector.length() * (isStretching ? 1 : -1);
+
+    // 移动边的两个端点，保持对边静止不动
+    controlPoints.replace(index1, p1 + moveVector);
+    controlPoints.replace(index2, p2 + moveVector);
+
+    // 更新被拖动的边
+    hoveredLine = QLineF(controlPoints[index1], controlPoints[index2]);
+
+    // 重新计算旋转矩形的参数
+    rrt.width = QLineF(controlPoints[0], controlPoints[1]).length();
+    rrt.height = QLineF(controlPoints[0], controlPoints[3]).length();
+    rrt.center = (controlPoints[0] + controlPoints[2]) / 2;
+}
+
+} // namespace
+
 auto RotatedRect::isValid(double margin) const -> bool
 {
     return width > 0 && height > 0 && width > margin && height > margin;
@@ -93,6 +169,14 @@ auto RotatedRect::controlPoints() const -> QPolygonF
     }
 
     return polygon;
+}
+
+auto RotatedRect::rotationLine() const -> QLineF
+{
+    const auto points = controlPoints();
+    const QPointF c1 = (points.at(1) + points.at(2)) / 2;
+    QLineF line(center, c1);
+    return QLineF(center, line.pointAt(0.9));
 }
 
 class GraphicsRotatedRectItem::GraphicsRotatedRectItemPrivate
@@ -156,124 +240,16 @@ auto GraphicsRotatedRectItem::rotatedRect() const -> RotatedRect
     return d_ptr->rotatedRect;
 }
 
-auto GraphicsRotatedRectItem::type() const -> int
-{
-    return Shape::ROTATEDRECT;
-}
-
-void GraphicsRotatedRectItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
-{
-    if ((event->buttons() & Qt::LeftButton) == 0 || !isValid()) {
-        return;
-    }
-    if (!isSelected()) {
-        setSelected(true);
-    }
-    QPointF point = event->scenePos();
-    QPointF dp = point - clickedPos();
-
-    RotatedRect rrt = d_ptr->rotatedRect;
-    QPointF c = rrt.center;
-    auto pts_tmp = geometryCache()->controlPoints();
-    QLineF l0(c, point);
-    QLineF l1(c, clickedPos());
-    double m = qSqrt(dp.x() * dp.x() + dp.y() * dp.y());
-    if (d_ptr->rotatedHovered) {
-        double angle = l0.angleTo(l1);
-        rrt.angle += angle;
-        rrt.angle = Utils::normalizeAngle(rrt.angle);
-        setCursor(Utils::cursorForDirection(360 - rrt.angle));
-    } else if (d_ptr->linehovered) {
-        QLineF dl = d_ptr->hoveredLine.normalVector();
-        QPointF p1 = d_ptr->hoveredLine.p1();
-        QPointF p2 = d_ptr->hoveredLine.p2();
-
-        int index0 = pts_tmp.indexOf(p1);
-        int index1 = pts_tmp.indexOf(p2);
-        if (index0 < 0 || index1 < 0) {
-            return;
-        }
-        bool strech = l0.length() > l1.length();
-        QPointF p3 = p1 + QPointF(dl.dx() * m, dl.dy() * m) / dl.length() * (strech ? 1 : -1);
-        QPointF p4 = p2 + QPointF(dl.dx() * m, dl.dy() * m) / dl.length() * (strech ? 1 : -1);
-
-        pts_tmp.replace(index0, p3);
-        pts_tmp.replace(index1, p4);
-        d_ptr->hoveredLine = QLineF(p3, p4);
-
-        rrt.width = QLineF(pts_tmp.at(0), pts_tmp.at(1)).length();
-        rrt.height = QLineF(pts_tmp.at(0), pts_tmp.at(3)).length();
-        rrt.center = (pts_tmp.at(0) + pts_tmp.at(2)) / 2;
-    } else {
-        switch (mouseRegion()) {
-        case MouseRegion::DotRegion: break;
-        case MouseRegion::All: rrt.center += dp; break;
-        default: return;
-        }
-    }
-    if (setRotatedRect(rrt)) {
-        update();
-    }
-
-    setClickedPos(point);
-}
-
-void GraphicsRotatedRectItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
-{
-    auto pts_tmp = geometryCache()->controlPoints();
-    QPointF point = event->scenePos();
-    if (pts_tmp.size() == 2) {
-        pts_tmp.append(point);
-        showHoverRotatedRect(pts_tmp);
-    }
-    if (!isValid()) {
-        return;
-    }
-    QPointF center = d_ptr->rotatedRect.center;
-
-    QPointF c1 = (pts_tmp[1] + pts_tmp[2]) / 2;
-    QLineF l = QLineF(center, c1);
-    l = QLineF(center, l.pointAt(0.9));
-
-    pts_tmp = Utils::boundingFromLine(l, margin() / 4);
-    if (pts_tmp.containsPoint(point, Qt::OddEvenFill)) {
-        d_ptr->rotatedHovered = true;
-        setCursor(Utils::cursorForDirection(l.angle()));
-        return;
-    }
-
-    pts_tmp = geometryCache()->controlPoints();
-    for (int i = 0; i < pts_tmp.count(); ++i) {
-        QLineF pl(pts_tmp.at(i), pts_tmp.at((i + 1) % 4));
-        QPolygonF tmp = Utils::boundingFromLine(pl, margin() / 4);
-        if (tmp.containsPoint(point, Qt::OddEvenFill)) {
-            d_ptr->linehovered = true;
-            d_ptr->hoveredLine = pl;
-            setCursor(Utils::cursorForDirection(pl.angle()));
-            return;
-        }
-    }
-
-    d_ptr->rotatedHovered = false;
-    d_ptr->linehovered = false;
-    GraphicsBasicItem::hoverMoveEvent(event);
-}
-
 void GraphicsRotatedRectItem::drawContent(QPainter *painter)
 {
     if (isValid()) {
-        auto center = d_ptr->rotatedRect.center;
-        auto anchorPoints = geometryCache()->controlPoints();
-        painter->drawPolygon(anchorPoints);
+        painter->drawPolygon(geometryCache()->controlPoints());
         if (isSelected()) {
             auto pen = painter->pen();
             pen.setColor(pen.color().darker());
             painter->setPen(pen);
-            QPointF c1 = (anchorPoints.at(1) + anchorPoints.at(2)) / 2;
-            QLineF l = QLineF(center, c1);
-            l = QLineF(center, l.pointAt(0.9));
-            painter->drawLine(l);
-            painter->drawEllipse(center, 5, 5);
+            painter->drawLine(d_ptr->rotatedRect.rotationLine());
+            painter->drawEllipse(d_ptr->rotatedRect.center, 5, 5);
         }
     } else {
         painter->drawPath(d_ptr->cachePath);
@@ -282,11 +258,6 @@ void GraphicsRotatedRectItem::drawContent(QPainter *painter)
 
 void GraphicsRotatedRectItem::pointsChanged(const QPolygonF &ply)
 {
-    auto rect = scene()->sceneRect();
-    if (!rect.contains(ply.last())) {
-        return;
-    }
-
     switch (ply.size()) {
     case 1:
     case 2: geometryCache()->setControlPoints(ply); break;
@@ -299,25 +270,89 @@ void GraphicsRotatedRectItem::pointsChanged(const QPolygonF &ply)
     }
 }
 
-void GraphicsRotatedRectItem::showHoverRotatedRect(const QPolygonF &ply)
+void GraphicsRotatedRectItem::updateHoverPreview(const QPointF &scenePos)
 {
-    switch (ply.size()) {
-    case 3: {
-        auto rrt = createRotatedRect(ply[0], ply[1], ply[2]);
-        if (!rrt.isValid(margin())) {
-            return;
+    auto controlPoints = geometryCache()->controlPoints();
+    if (controlPoints.size() != 2) {
+        return;
+    }
+
+    auto rrt = createRotatedRect(controlPoints[0], controlPoints[1], scenePos);
+    if (!rrt.isValid(margin())) {
+        return;
+    }
+    d_ptr->cachePath.clear();
+    d_ptr->cachePath.addPolygon(rrt.controlPoints());
+    d_ptr->cachePath.closeSubpath();
+
+    update();
+}
+
+GraphicsBasicItem::MouseRegion GraphicsRotatedRectItem::detectEdgeRegion(const QPointF &scenePos)
+{
+    const auto &controlPoints = geometryCache()->controlPoints();
+    const double edgeMargin = margin() / 2.0;
+
+    const QLineF rotationLine = d_ptr->rotatedRect.rotationLine();
+    if (Utils::isPointNearEdge(scenePos, rotationLine, edgeMargin)) {
+        d_ptr->rotatedHovered = true;
+        setCursor(Utils::cursorForDirection(rotationLine.angle()));
+        setMouseRegion(MouseRegion::EdgeArea);
+        return MouseRegion::EdgeArea;
+    }
+
+    for (int i = 0; i < 4; ++i) {
+        const QLineF edgeLine(controlPoints[i], controlPoints[(i + 1) % 4]);
+
+        if (!Utils::isPointNearEdge(scenePos, edgeLine, edgeMargin)) {
+            continue;
         }
-        if (!scene()->sceneRect().contains(rrt.boundingRect(margin()))) {
-            return;
+        d_ptr->linehovered = true;
+        d_ptr->hoveredLine = edgeLine;
+        setCursor(Utils::cursorForDirection(edgeLine.angle()));
+        setMouseRegion(MouseRegion::EdgeArea);
+        return MouseRegion::EdgeArea;
+    }
+
+    d_ptr->rotatedHovered = false;
+    d_ptr->linehovered = false;
+
+    return MouseRegion::NoSelection;
+}
+
+void GraphicsRotatedRectItem::handleMouseMoveEvent(const QPointF &scenePos,
+                                                   const QPointF &clickedPos,
+                                                   const QPointF delta)
+{
+    auto controlPoints = geometryCache()->controlPoints();
+
+    auto rrt = d_ptr->rotatedRect;
+    switch (mouseRegion()) {
+    case MouseRegion::EntireShape: rrt.center += delta; break;
+    case MouseRegion::AnchorPoint:
+        updateRotatedRectByMovingCorner(rrt, hoveredDotIndex(), scenePos);
+        break;
+    case MouseRegion::EdgeArea: {
+        QLineF currentLine(rrt.center, scenePos);
+        QLineF previousLine(rrt.center, clickedPos);
+
+        if (d_ptr->rotatedHovered) {
+            // 处理旋转操作
+            double angleDelta = currentLine.angleTo(previousLine);
+            rrt.angle += angleDelta;
+            rrt.angle = Utils::normalizeAngle(rrt.angle);
+            setCursor(Utils::cursorForDirection(360 - rrt.angle));
+        } else if (d_ptr->linehovered) {
+            // 处理边的拉伸操作
+            handleEdgeStretch(rrt, controlPoints, delta, clickedPos, d_ptr->hoveredLine);
         }
-        d_ptr->cachePath.clear();
-        d_ptr->cachePath.addPolygon(rrt.controlPoints());
-        d_ptr->cachePath.closeSubpath();
-    }; break;
+    } break;
     default: return;
     }
 
-    update();
+    if (setRotatedRect(rrt)) {
+        update();
+    }
 }
 
 } // namespace Graphics

@@ -1,5 +1,5 @@
 #include "sectionalsubtitlesview.hpp"
-#include "customlineitem.hpp"
+#include "subtitledividerlineitem.hpp"
 
 #include <QtWidgets>
 
@@ -8,14 +8,14 @@ class SectionalSubtitlesView::SectionalSubtitlesViewPrivate
 public:
     SectionalSubtitlesViewPrivate(QWidget *parent)
         : q_ptr(parent)
-        , line1Ptr(new CustomLineItem)
-        , line2Ptr(new CustomLineItem)
+        , line1Ptr(new SubtitleDividerLineItem)
+        , line2Ptr(new SubtitleDividerLineItem)
     {}
     ~SectionalSubtitlesViewPrivate() {}
 
     QWidget *q_ptr;
-    QScopedPointer<CustomLineItem> line1Ptr;
-    QScopedPointer<CustomLineItem> line2Ptr;
+    SubtitleDividerLineItemPtr line1Ptr;
+    SubtitleDividerLineItemPtr line2Ptr;
 };
 
 SectionalSubtitlesView::SectionalSubtitlesView(QWidget *parent)
@@ -31,10 +31,10 @@ void SectionalSubtitlesView::setImageAfter()
 {
     auto rect = sceneRect();
     auto y = rect.height() / 5.0 * 4;
-    d_ptr->line1Ptr->setLine(QLineF(1, y, rect.width() - 1, y));
-    d_ptr->line2Ptr->setLine(QLineF(1, rect.height() - 2, rect.width() - 1, rect.height() - 2));
     scene()->addItem(d_ptr->line1Ptr.data());
     scene()->addItem(d_ptr->line2Ptr.data());
+    d_ptr->line1Ptr->setLine(QLineF(1, y, rect.width() - 1, y));
+    d_ptr->line2Ptr->setLine(QLineF(1, rect.height() - 1, rect.width() - 1, rect.height() - 1));
 }
 
 auto SectionalSubtitlesView::clipImage() const -> QImage
@@ -64,7 +64,7 @@ auto SectionalSubtitlesView::info() const -> StitchingImageInfo
 
 auto SectionalSubtitlesView::line1RatioOfHeight() const -> double
 {
-    return (d_ptr->line1Ptr->line().y1() / pixmap().size().height());
+    return (static_cast<int>(d_ptr->line1Ptr->line().y1()) * 1.0 / pixmap().size().height());
 }
 
 void SectionalSubtitlesView::setLine1RatioOfHeight(double value)
@@ -76,7 +76,7 @@ void SectionalSubtitlesView::setLine1RatioOfHeight(double value)
 
 auto SectionalSubtitlesView::line2RatioOfHeight() const -> double
 {
-    return (d_ptr->line2Ptr->line().y1() / pixmap().size().height());
+    return (static_cast<int>(d_ptr->line2Ptr->line().y1()) * 1.0 / pixmap().size().height());
 }
 
 void SectionalSubtitlesView::setLine2RatioOfHeight(double value)
@@ -89,11 +89,11 @@ void SectionalSubtitlesView::setLine2RatioOfHeight(double value)
 void SectionalSubtitlesView::buildConnect()
 {
     connect(d_ptr->line1Ptr.data(),
-            &CustomLineItem::lineChanged,
+            &SubtitleDividerLineItem::lineChanged,
             this,
             &SectionalSubtitlesView::line1Changed);
     connect(d_ptr->line2Ptr.data(),
-            &CustomLineItem::lineChanged,
+            &SubtitleDividerLineItem::lineChanged,
             this,
             &SectionalSubtitlesView::line2Changed);
 }

@@ -57,6 +57,7 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
 
 private:
+    void initializeView();
     void initScene();
     void createPopMenu();
     auto textRect(const Qt::Corner pos, const QFontMetrics &metrics, const QString &text) -> QRect;
