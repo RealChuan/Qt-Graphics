@@ -88,14 +88,14 @@ void MaskDialog::onButtonClicked(int id)
     if (!pixmapItem) {
         return;
     }
-    GraphicsPixmapItem::Mode mode = GraphicsPixmapItem::Normal;
+    auto mode = GraphicsPixmapItem::MaskEditingMode::Normal;
     switch (id) {
-    case 1: mode = GraphicsPixmapItem::MaskDraw; break;
-    case 2: mode = GraphicsPixmapItem::MaskErase; break;
-    case 3: pixmapItem->clearMask(); break;
+    case 1: mode = GraphicsPixmapItem::MaskEditingMode::Draw; break;
+    case 2: mode = GraphicsPixmapItem::MaskEditingMode::Erase; break;
+    case 3: pixmapItem->resetMask(); break;
     default: break;
     }
-    pixmapItem->setPaintMode(mode);
+    pixmapItem->setMaskEditingMode(mode);
 }
 
 void MaskDialog::onPenSizeChanged(int value)
@@ -104,7 +104,7 @@ void MaskDialog::onPenSizeChanged(int value)
     if (!pixmapItem) {
         return;
     }
-    pixmapItem->setPenSize(value);
+    pixmapItem->setBrushSize(value);
 }
 
 void MaskDialog::onOpacityChanged(double value)
@@ -113,7 +113,7 @@ void MaskDialog::onOpacityChanged(double value)
     if (!pixmapItem) {
         return;
     }
-    pixmapItem->setOpacity(value);
+    pixmapItem->setMaskOpacity(value);
 }
 
 void MaskDialog::onSave()

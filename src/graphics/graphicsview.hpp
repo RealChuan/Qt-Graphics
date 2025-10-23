@@ -21,7 +21,7 @@ public:
 public slots:
     void createScene(const QString &imageUrlChanged);
     void setPixmap(const QPixmap &pixmap);
-    void setImagerReader(QImageReader *imageReader);
+    void setImagerReader(QImageReader &imageReader);
 
     void setViewBackground(bool enable);
     void setViewOutline(bool enable);

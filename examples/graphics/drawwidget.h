@@ -6,6 +6,10 @@ class QToolBar;
 class QListWidgetItem;
 class QGraphicsItem;
 
+namespace Graphics {
+class GraphicsTextItem;
+}
+
 class DrawWidget : public QWidget
 {
     Q_OBJECT
@@ -21,7 +25,7 @@ private slots:
     void handleFontChange();
     void textButtonTriggered();
     void textColorChanged();
-    void itemSelected(QGraphicsItem *item);
+    void itemSelected(Graphics::GraphicsTextItem *item);
 
 private:
     void setupUI();

@@ -76,7 +76,7 @@ auto GraphicsCircleItem::setCircle(const Circle &circle) -> bool
 
     prepareGeometryChange();
     d_ptr->circle = circle;
-    geometryCache()->setControlPoints(d_ptr->circle.controlPoints(), rect, shape);
+    geometryCache()->setGeometryData(d_ptr->circle.controlPoints(), rect, shape);
 
     return true;
 }

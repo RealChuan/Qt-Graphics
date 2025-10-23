@@ -230,7 +230,7 @@ auto GraphicsRotatedRectItem::setRotatedRect(const RotatedRect &rotatedRect) -> 
 
     d_ptr->rotatedRect = rotatedRect;
 
-    geometryCache()->setControlPoints(anchorPoints, rect, shape);
+    geometryCache()->setGeometryData(anchorPoints, rect, shape);
 
     return true;
 }

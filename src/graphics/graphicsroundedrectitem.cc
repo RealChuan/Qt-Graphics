@@ -68,9 +68,9 @@ auto GraphicsRoundedRectItem::setRoundedRect(const RoundedRect &roundedRect) -> 
 
     prepareGeometryChange();
     m_roundedRect = roundedRect;
-    geometryCache()->setControlPoints(anchorPoints,
-                                      Utils::createBoundingRect(anchorPoints, 0),
-                                      shape);
+    geometryCache()->setGeometryData(anchorPoints,
+                                     Utils::createBoundingRect(anchorPoints, 0),
+                                     shape);
     emit roundedRectChanged(m_roundedRect);
 
     return true;

@@ -98,9 +98,9 @@ auto GraphicsLineItem::setLine(const QLineF &line) -> bool
 
     prepareGeometryChange();
     d_ptr->line = line;
-    geometryCache()->setControlPoints(anchorPoints,
-                                      Utils::createBoundingRect(anchorPoints, 0),
-                                      lineShape(d_ptr->line, 6));
+    geometryCache()->setGeometryData(anchorPoints,
+                                     Utils::createBoundingRect(anchorPoints, 0),
+                                     lineShape(d_ptr->line, 6));
     emit lineChanged(line);
 
     return true;

@@ -71,7 +71,7 @@ auto GraphicsPolygonItem::setPolygon(const QPolygonF &ply) -> bool
 
     prepareGeometryChange();
     d_ptr->polygon = ply;
-    geometryCache()->setControlPoints(ply, Utils::createBoundingRect(ply, 0), simplifiedPath(ply));
+    geometryCache()->setGeometryData(ply, Utils::createBoundingRect(ply, 0), simplifiedPath(ply));
 
     return true;
 }

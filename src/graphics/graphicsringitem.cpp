@@ -103,7 +103,7 @@ auto GraphicsRingItem::setRing(const Ring &ring) -> bool
     prepareGeometryChange();
 
     d_ptr->ring = ring;
-    geometryCache()->setControlPoints(ring.controlPoints(), rect, shape);
+    geometryCache()->setGeometryData(ring.controlPoints(), rect, shape);
 
     return true;
 }

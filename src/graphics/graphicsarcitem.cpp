@@ -136,9 +136,9 @@ auto GraphicsArcItem::setArc(const Arc &arc) -> bool
 
     prepareGeometryChange();
     d_ptr->arch = arc;
-    geometryCache()->setControlPoints(anchorPoints,
-                                      Utils::createBoundingRect(pts, 0),
-                                      d_ptr->arcPath);
+    geometryCache()->setGeometryData(anchorPoints,
+                                     Utils::createBoundingRect(pts, 0),
+                                     d_ptr->arcPath);
 
     return true;
 }

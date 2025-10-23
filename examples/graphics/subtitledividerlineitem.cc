@@ -5,7 +5,7 @@
 SubtitleDividerLineItem::SubtitleDividerLineItem(QGraphicsItem *parent)
     : GraphicsLineItem(parent)
 {
-    setMargin(0.5);
+    setMargin(1);
     setShowBoundingRect(false);
     setShowShape(false);
 }

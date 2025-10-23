@@ -13,9 +13,9 @@ public:
     GeometryCache() = default;
     ~GeometryCache() = default;
 
-    void setControlPoints(const QPolygonF &points) { setControlPoints(points, {}, {}); }
+    void setControlPoints(const QPolygonF &points) { setGeometryData(points, {}, {}); }
 
-    void setControlPoints(const QPolygonF &points, const QRectF &bounds, const QPainterPath &path)
+    void setGeometryData(const QPolygonF &points, const QRectF &bounds, const QPainterPath &path)
     {
         if (m_controlPoints == points && m_bounds == bounds && m_basePath == path) {
             return;
@@ -29,25 +29,24 @@ public:
 
     QPolygonF controlPoints() const { return m_controlPoints; }
 
-    QRectF boundingRect(double margin, double penWidth, double expandAmount)
+    QRectF visualBoundingRect(double margin, double penWidth, double expandAmount)
     {
-        updateCachedData(margin, penWidth, expandAmount);
+        updateCacheIfNeeded(margin, penWidth, expandAmount);
         return m_cachedBounds;
     }
 
-    QPainterPath shape(double margin, double penWidth, double expandAmount)
+    QPainterPath visualShape(double margin, double penWidth, double expandAmount)
     {
-        updateCachedData(margin, penWidth, expandAmount);
+        updateCacheIfNeeded(margin, penWidth, expandAmount);
         return m_cachedPath;
     }
 
-    bool isValid() const { return !m_bounds.isNull() && !m_controlPoints.isEmpty(); }
-    void invalidate() { m_bounds = QRectF(); }
+    bool hasValidGeometry() const { return !m_bounds.isNull() && !m_controlPoints.isEmpty(); }
 
 private:
-    void updateCachedData(double margin, double penWidth, double expandAmount)
+    void updateCacheIfNeeded(double margin, double penWidth, double expandAmount)
     {
-        const double expansion = computeExpansion(margin, penWidth, expandAmount);
+        const double expansion = calculateTotalExpansion(margin, penWidth, expandAmount);
         if (!m_cacheDirty && qFuzzyCompare(m_cachedExpansion, expansion)) {
             return; // 缓存仍然有效
         }
@@ -59,7 +58,7 @@ private:
         m_cachedBounds = m_cachedPath.controlPointRect();
     }
 
-    static double computeExpansion(double margin, double penWidth, double expandAmount)
+    static double calculateTotalExpansion(double margin, double penWidth, double expandAmount)
     {
         return std::max({margin * 0.5, penWidth, expandAmount});
     }
@@ -71,8 +70,7 @@ private:
     bool m_cacheDirty = true;     // 路径是否需要重新计算
     double m_cachedExpansion = 0; // 路径扩展长度
     QPainterPath m_cachedPath;    // 缓存路径
-
-    QRectF m_cachedBounds; // 缓存矩形
+    QRectF m_cachedBounds;        // 缓存矩形
 };
 
 using GeometryCachePtr = QScopedPointer<GeometryCache>;

@@ -1,5 +1,4 @@
-#ifndef GRAPHICSPIXMAPITEM_H
-#define GRAPHICSPIXMAPITEM_H
+#pragma once
 
 #include "graphics_global.h"
 
@@ -10,47 +9,46 @@ namespace Graphics {
 class GRAPHICS_EXPORT GraphicsPixmapItem : public QGraphicsPixmapItem
 {
 public:
-    enum Mode { Normal, MaskErase, MaskDraw };
+    enum class MaskEditingMode : int { Normal, Erase, Draw };
 
     explicit GraphicsPixmapItem(QGraphicsItem *parent = nullptr);
     ~GraphicsPixmapItem() override;
 
-    void setCustomPixmap(const QPixmap &pixmap);
+    void setSourcePixmap(const QPixmap &pixmap);
 
     void setMaskImage(const QImage &mask);
     [[nodiscard]] auto maskImage() const -> QImage;
 
-    void setPaintMode(Mode mode);
-    [[nodiscard]] auto paintMode() const -> Mode;
+    void setMaskEditingMode(MaskEditingMode mode);
+    [[nodiscard]] auto maskEditingMode() const -> MaskEditingMode;
 
-    void setPenSize(int size);
-    [[nodiscard]] auto penSize() const -> int;
+    void setBrushSize(int size);
+    [[nodiscard]] auto brushSize() const -> int;
 
-    void setOpacity(double opacity);
-    auto opacity() -> double;
+    void setMaskOpacity(double opacity);
+    auto maskOpacity() const -> double;
 
-    void setMaskColor1(const QColor &color);
-    auto maskColor1() -> QColor;
+    void setCheckerColor1(const QColor &color);
+    auto checkerColor1() const -> QColor;
 
-    void setMaskColor12(const QColor &color);
-    auto maskColor2() -> QColor;
+    void setCheckerColor2(const QColor &color);
+    auto checkerColor2() const -> QColor;
 
-    void clearMask();
+    void resetMask();
 
 protected:
-    void setCursorPixmap();
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
-    void paintImage();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
 private:
+    void updateMaskWithBrushStroke();
+    void updateCursor();
+
     class GraphicsPixmapItemPrivate;
     QScopedPointer<GraphicsPixmapItemPrivate> d_ptr;
 };
 
-}
-
-#endif // GRAPHICSPIXMAPITEM_H
+} // namespace Graphics

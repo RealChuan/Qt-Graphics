@@ -87,7 +87,7 @@ auto calculateCircle(const QPolygonF &pts, QPointF &center, double &radius) -> b
 
 auto createBoundingRect(const QPolygonF &ply, double margin) -> QRectF
 {
-    double addLen = margin / 2;
+    double addLen = margin * 0.5;
     return ply.boundingRect().adjusted(-addLen, -addLen, addLen, addLen);
 }
 

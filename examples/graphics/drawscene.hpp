@@ -1,5 +1,4 @@
-#ifndef DRAWSCENE_HPP
-#define DRAWSCENE_HPP
+#pragma once
 
 #include <QGraphicsScene>
 
@@ -18,7 +17,7 @@ public:
 
 signals:
     void deleteItem();
-    void itemSelected(QGraphicsItem *item);
+    void itemSelected(Graphics::GraphicsTextItem *item);
 
 private slots:
     void editorLostFocus(Graphics::GraphicsTextItem *item);
@@ -31,5 +30,3 @@ private:
     bool m_drawText = false;
     QColor m_textColor;
 };
-
-#endif // DRAWSCENE_HPP

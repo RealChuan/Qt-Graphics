@@ -52,20 +52,22 @@ GraphicsBasicItem::~GraphicsBasicItem() {}
 
 auto GraphicsBasicItem::isValid() const -> bool
 {
-    return d_ptr->geometryCachePtr->isValid();
+    return d_ptr->geometryCachePtr->hasValidGeometry();
 }
 
 auto GraphicsBasicItem::boundingRect() const -> QRectF
 {
-    return d_ptr->geometryCachePtr->isValid()
-               ? d_ptr->geometryCachePtr->boundingRect(margin(), pen().width(), d_ptr->minExpandSize)
+    return d_ptr->geometryCachePtr->hasValidGeometry()
+               ? d_ptr->geometryCachePtr->visualBoundingRect(margin(),
+                                                             pen().width(),
+                                                             d_ptr->minExpandSize)
                : scene()->sceneRect();
 }
 
 auto GraphicsBasicItem::shape() const -> QPainterPath
 {
-    return d_ptr->geometryCachePtr->isValid()
-               ? d_ptr->geometryCachePtr->shape(margin(), pen().width(), d_ptr->minExpandSize)
+    return d_ptr->geometryCachePtr->hasValidGeometry()
+               ? d_ptr->geometryCachePtr->visualShape(margin(), pen().width(), d_ptr->minExpandSize)
                : QAbstractGraphicsShapeItem::shape();
 }
 

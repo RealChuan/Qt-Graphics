@@ -191,9 +191,9 @@ void DrawWidget::textColorChanged()
     textButtonTriggered();
 }
 
-void DrawWidget::itemSelected(QGraphicsItem *item)
+void DrawWidget::itemSelected(Graphics::GraphicsTextItem *item)
 {
-    auto textItem = qgraphicsitem_cast<GraphicsTextItem *>(item);
+    auto *textItem = qgraphicsitem_cast<GraphicsTextItem *>(item);
     if (!textItem) {
         return;
     }

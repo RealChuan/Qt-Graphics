@@ -18,7 +18,7 @@ public:
 
 signals:
     void lostFocus(Graphics::GraphicsTextItem *item);
-    void selectedChange(QGraphicsItem *item);
+    void selectedChange(Graphics::GraphicsTextItem *item);
 
 protected:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;

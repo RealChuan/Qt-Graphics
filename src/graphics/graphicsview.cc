@@ -96,7 +96,7 @@ void GraphicsView::createScene(const QString &imageUrl)
     }
 
     emit imageUrlChanged(imageUrl);
-    setImagerReader(&imageRender);
+    setImagerReader(imageRender);
 }
 
 void GraphicsView::setPixmap(const QPixmap &pixmap)
@@ -106,7 +106,7 @@ void GraphicsView::setPixmap(const QPixmap &pixmap)
         return;
     }
 
-    d_ptr->pixmapItem->setCustomPixmap(pixmap);
+    d_ptr->pixmapItem->setSourcePixmap(pixmap);
     auto rectF = d_ptr->pixmapItem->boundingRect();
     d_ptr->backgroundItem->setRect(rectF);
     d_ptr->outlineItem->setRect(rectF);
@@ -121,22 +121,22 @@ void GraphicsView::setPixmap(const QPixmap &pixmap)
     emit imageSizeChanged(pixmap.size());
 }
 
-void GraphicsView::setImagerReader(QImageReader *imageReader)
+void GraphicsView::setImagerReader(QImageReader &imageReader)
 {
-    if (!imageReader->supportsAnimation()) {
+    if (!imageReader.supportsAnimation()) {
         d_ptr->movie.reset();
         QImage image;
-        if (!Utils::ImageCache::instance()->find(imageReader->fileName(), image)) {
+        if (!Utils::ImageCache::instance()->find(imageReader.fileName(), image)) {
             QMessageBox::warning(this,
                                  tr("WARNING"),
-                                 tr("Picture failed to open, Url: %1!").arg(imageReader->fileName()));
+                                 tr("Picture failed to open, Url: %1!").arg(imageReader.fileName()));
             return;
         }
         setPixmap(QPixmap::fromImage(image));
         return;
     }
 
-    d_ptr->movie.reset(new QMovie(imageReader->fileName()));
+    d_ptr->movie.reset(new QMovie(imageReader.fileName()));
     if (!d_ptr->movie->isValid()) {
         qWarning() << d_ptr->movie->lastError() << d_ptr->movie->lastErrorString();
     }
