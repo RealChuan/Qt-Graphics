@@ -84,7 +84,8 @@ runs:
       run: |
         sudo apt-get update
         sudo apt-get install ninja-build build-essential libgl1-mesa-dev clang \
-          libltdl-dev libxi-dev libxtst-dev libx11-dev libxft-dev libxext-dev libxrandr-dev
+          libltdl-dev libxi-dev libxtst-dev libx11-dev libxft-dev libxext-dev libxrandr-dev \
+          autoconf autoconf-archive automake libtool
         ninja --version
         cmake --version
         gcc --version
