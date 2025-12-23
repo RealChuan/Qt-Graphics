@@ -3,33 +3,33 @@ name: CMake Build
 on:
   push:
     paths-ignore:
-      - 'docs/**'
-      - 'qmake/**'
-      - 'translations/**'
-      - '**/*.md'
-      - '**/*.txt'
-      - '**/.clang-*'
-      - '**/.gitignore'
-      - '**/*.pri'
-      - '**/LICENSE*'
-      - '**/*.pro'
-      - '**/README*'
+      - "docs/**"
+      - "qmake/**"
+      - "translations/**"
+      - "**/*.md"
+      - "**/*.txt"
+      - "**/.clang-*"
+      - "**/.gitignore"
+      - "**/*.pri"
+      - "**/LICENSE*"
+      - "**/*.pro"
+      - "**/README*"
   pull_request:
     paths-ignore:
-      - 'docs/**'
-      - 'qmake/**'
-      - 'translations/**'
-      - '**/*.md'
-      - '**/*.txt'
-      - '**/.clang-*'
-      - '**/.gitignore'
-      - '**/*.pri'
-      - '**/LICENSE*'
-      - '**/*.pro'
-      - '**/README*'
+      - "docs/**"
+      - "qmake/**"
+      - "translations/**"
+      - "**/*.md"
+      - "**/*.txt"
+      - "**/.clang-*"
+      - "**/.gitignore"
+      - "**/*.pri"
+      - "**/LICENSE*"
+      - "**/*.pro"
+      - "**/README*"
 
 env:
-  MACOSX_DEPLOYMENT_TARGET: '13.0'
+  MACOSX_DEPLOYMENT_TARGET: "13.0"
   BUILD_DIR: build
   BUILD_TYPE: RelWithDebInfo
 
@@ -54,10 +54,10 @@ jobs:
             arch: arm64
 
     steps:
-      - uses: actions/checkout@v5
-        with: 
+      - uses: actions/checkout@v6
+        with:
           fetch-depth: 1
-          
+
       - uses: ./.github/actions/install-dependencies
 
       - name: Configure and build windows
@@ -94,7 +94,7 @@ jobs:
             -DCMAKE_OSX_ARCHITECTURES="${{ matrix.arch }}" \
             -G "${{ matrix.generators }}"
           cmake --build "${{ env.BUILD_DIR }}" --config ${{ env.BUILD_TYPE }}
-          
+
       - name: Display binary directory tree (Windows)
         if: runner.os == 'Windows'
         shell: pwsh

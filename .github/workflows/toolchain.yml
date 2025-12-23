@@ -1,8 +1,8 @@
 name: Build toolchain
 
-on: 
+on:
   # 清理 Cache 后触发
-  workflow_run: 
+  workflow_run:
     workflows: [Cleanup caches by a branch]
     types: completed
   # 手动触发
@@ -23,8 +23,8 @@ jobs:
           - ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
-        with: 
+      - uses: actions/checkout@v6
+        with:
           fetch-depth: 1
 
       - uses: ./.github/actions/install-dependencies

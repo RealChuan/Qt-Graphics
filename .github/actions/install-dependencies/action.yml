@@ -1,30 +1,30 @@
-name: 'Install Build Dependencies'
-description: 'Install vcpkg libraries and Qt environment for cross-platform builds'
+name: "Install Build Dependencies"
+description: "Install vcpkg libraries and Qt environment for cross-platform builds"
 
 inputs:
   vcpkg_libs:
-    description: 'vcpkg libraries to install'
+    description: "vcpkg libraries to install"
     required: false
-    default: 'breakpad crashpad freeimage giflib opencv[contrib,thread] tl-expected'
+    default: "breakpad crashpad freeimage giflib opencv[contrib,thread] tl-expected"
     type: string
   qt_modules:
-    description: 'Qt modules to install'
+    description: "Qt modules to install"
     required: false
-    default: 'qt5compat qtnetworkauth qtimageformats'
+    default: "qt5compat qtnetworkauth qtimageformats"
     type: string
   qt_ver:
-    description: 'Qt version to install'
+    description: "Qt version to install"
     required: false
-    default: '6.10.0'
+    default: "6.10.1"
     type: string
 
 runs:
-  using: 'composite'
+  using: "composite"
 
   steps:
     - name: Install Custom VCPKG
       uses: RealChuan/install-vcpkg@main
-        
+
     - name: Delete vcpkg.json
       shell: bash
       run: |
@@ -32,8 +32,8 @@ runs:
 
     - name: Cache windows vcpkg
       if: runner.os == 'Windows'
-      uses: actions/cache@v4
-      with: 
+      uses: actions/cache@v5
+      with:
         path: C:\vcpkg\installed
         key: ${{ runner.os }}-vcpkg-installed-${{ github.sha }}
         restore-keys: |
@@ -42,8 +42,8 @@ runs:
 
     - name: Cache macos or linux vcpkg
       if: runner.os == 'macOS' || runner.os == 'Linux'
-      uses: actions/cache@v4
-      with: 
+      uses: actions/cache@v5
+      with:
         path: /usr/local/share/vcpkg/installed
         key: ${{ runner.os }}-vcpkg-installed-${{ github.sha }}
         restore-keys: |
@@ -60,8 +60,8 @@ runs:
           --clean-buildtrees-after-build --clean-packages-after-build \
           || (cat C:/vcpkg/installed/vcpkg/issue_body.md && exit 1)
         # vcpkg install ${{ inputs.vcpkg_libs }} --triplet x64-windows-static-md \
-        #   --clean-buildtrees-after-build --clean-packages-after-build \
-        #   || (cat C:/vcpkg/installed/vcpkg/issue_body.md && exit 1)
+        #  --clean-buildtrees-after-build --clean-packages-after-build \
+        #  || (cat C:/vcpkg/installed/vcpkg/issue_body.md && exit 1)
 
     - name: Install dependencies on macos
       if: runner.os == 'macOS'
